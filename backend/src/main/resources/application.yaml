@@ -1,0 +1,15 @@
+spring:
+  application:
+    name: connect-in
+
+  datasource:
+    url: jdbc:mysql://localhost:3306/connect_in
+    username: root
+    password: password
+    driver-class-name: com.mysql.jdbc.Driver
+
+  flyway:
+    baseline-on-migrate: true
+    enabled: true
+  main:
+    allow-bean-definition-overriding: true
