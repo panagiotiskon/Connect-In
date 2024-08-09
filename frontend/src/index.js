@@ -1,7 +1,7 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 import "./index.css";
-import { router } from "./routes/LoginRoute";
+import { router } from "./routes/Routing";
 import reportWebVitals from "./reportWebVitals";
 import { RouterProvider } from "react-router-dom";
 import "mdb-react-ui-kit/dist/css/mdb.min.css";

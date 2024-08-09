@@ -10,15 +10,11 @@ import { useNavigate } from "react-router-dom";
 import "./LoginComponent.scss";
 import AuthService from "../api/AuthenticationAPI";
 import Form from "react-validation/build/form";
-import Input from "react-validation/build/input";
-import CheckButton from "react-validation/build/button";
 import ConnectInLogo from "../assets/ConnectIn.png";
 const requiredField = (value) => {
   if (!value) {
     return (
-      <div className="alert alert-danger" role="alert">
-        This field is required!
-      </div>
+      <div className="invalid-feedback d-block">This field is required!</div>
     );
   }
 };
@@ -55,7 +51,8 @@ const LoginComponent = () => {
     if (checkBtn.current.context._errors.length === 0) {
       AuthService.login(email, password).then(
         () => {
-          //NAVIGATE TO PROFILE
+          // navigate("/profile");
+          // window.location.reload();
         },
         (error) => {
           const resMessage =
@@ -77,9 +74,9 @@ const LoginComponent = () => {
   return (
     <div className="login-wrapper">
       <img src={ConnectInLogo} alt="ConnectIn Logo" className="connectInLogo" />
-      <h2 className="text-center mb-4">
+      <h2 className="welcome-message">
         Welcome to your professional community!
-      </h2>{" "}
+      </h2>
       {
         <Form onSubmit={handleLogin} ref={form}>
           <MDBContainer>
@@ -127,9 +124,15 @@ const LoginComponent = () => {
                 </div>
               </div>
             )}
-            <div className="text-center">
+            <div
+              className="text-center"
+              onClick={() => {
+                navigate("/register");
+                window.location.reload();
+              }}
+            >
               <p>
-                Not a member? <a href="#!">Register</a>
+                New to ConnectIn? <a href="#!">Join Now</a>
               </p>
             </div>
           </MDBContainer>
