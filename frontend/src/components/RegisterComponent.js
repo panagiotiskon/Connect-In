@@ -7,6 +7,8 @@ import Form from "react-validation/build/form";
 import CheckButton from "react-validation/build/button";
 import "./RegisterComponent.scss";
 import register from "../assets/register.svg";
+import PhotoUpload from "./PhotoUpload"; // Import the PhotoUpload component
+
 import {
   MDBBtn,
   MDBContainer,
@@ -86,7 +88,8 @@ const RegisterComponent = (props) => {
   const [phoneNumber, setPhoneNumber] = useState("");
   const [successful, setSuccessful] = useState(false);
   const [message, setMessage] = useState("");
-  const [passwordMatchError, setPasswordMatchError] = useState(""); // Added state for password match error
+  const [passwordMatchError, setPasswordMatchError] = useState("");
+  const [photo, setPhoto] = useState(null);
 
   const onChangeName = (e) => {
     const name = e.target.value;
@@ -128,6 +131,10 @@ const RegisterComponent = (props) => {
     setPhoneNumber(phoneNumber);
   };
 
+  const handleFileUpload = (file) => {
+    setPhoto(file);
+  };
+
   const handleRegister = (e) => {
     e.preventDefault();
 
@@ -136,16 +143,28 @@ const RegisterComponent = (props) => {
 
     form.current.validateAll();
 
-    if (checkBtn.current.context._errors.length === 0) {
+    if (
+      checkBtn.current &&
+      checkBtn.current.context &&
+      checkBtn.current.context._errors.length === 0
+    ) {
       if (password !== repeatPassword) {
         setMessage("Passwords do not match.");
         setSuccessful(false);
         return;
       }
 
-      AuthService.register(email, name, surname, password, phoneNumber).then(
+      AuthService.register(
+        email,
+        name,
+        surname,
+        password,
+        phoneNumber,
+        photo
+      ).then(
         () => {
-          navigate("/profile");
+          navigate("/home");
+          window.location.reload();
         },
         (error) => {
           const resMessage =
@@ -165,9 +184,18 @@ const RegisterComponent = (props) => {
   return (
     <div className="register-wrapper">
       <img src={ConnectInLogo} alt="ConnectIn Logo" className="connectInLogo" />
-      <h2 className="register-message">
-        Make the most of your professional life
-      </h2>
+      <div style={{ position: "relative" }}>
+        <h2
+          style={{
+            position: "absolute",
+            left: "50px",
+            bottom: "50px",
+            margin: 0,
+          }}
+        >
+          Make the most of your professional life
+        </h2>
+      </div>
       <Form onSubmit={handleRegister} ref={form}>
         {!successful && (
           <>
@@ -259,6 +287,8 @@ const RegisterComponent = (props) => {
                       validators={{ requiredField, validPhoneNumber }}
                     />
                   </div>
+
+                  <PhotoUpload onFileUpload={handleFileUpload} />
 
                   <MDBBtn className="mb-4" size="lg">
                     Register
