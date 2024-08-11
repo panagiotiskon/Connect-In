@@ -100,14 +100,16 @@ const LoginComponent = () => {
               onChange={onChangePassword}
               validations={{ requiredField }}
             />
-            <div className="d-flex justify-content-between mx-3 mb-4">
+            <div className="d-flex justify-content-between mx-5 mb-5">
               <MDBCheckbox
                 name="flexCheck"
                 value=""
                 id="flexCheckDefault"
                 label="Remember me"
               />
-              <a href="!#">Forgot password?</a>
+              <a href="#!" style={{ marginLeft: "40px" }}>
+                Forgot password?
+              </a>
             </div>
             <MDBBtn size="lg" className="mb-10" disabled={loading}>
               {loading && (

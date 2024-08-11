@@ -185,14 +185,7 @@ const RegisterComponent = (props) => {
     <div className="register-wrapper">
       <img src={ConnectInLogo} alt="ConnectIn Logo" className="connectInLogo" />
       <div style={{ position: "relative" }}>
-        <h2
-          style={{
-            position: "absolute",
-            left: "50px",
-            bottom: "50px",
-            margin: 0,
-          }}
-        >
+        <h2 className="register-message">
           Make the most of your professional life
         </h2>
       </div>
