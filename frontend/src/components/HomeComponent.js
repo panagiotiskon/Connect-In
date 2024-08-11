@@ -26,6 +26,7 @@ const HomeComponent = () => {
   const [openNavSecond, setOpenNavSecond] = useState(false);
 
   const currentUser = AuthService.getCurrentUser();
+  const [comments, setComments] = useState({}); // To manage comments
 
   const posts = [
     {
@@ -35,11 +36,15 @@ const HomeComponent = () => {
       content: "Lorem ipsum dolor, sit amet #consectetur adipisicing elit.",
       imageUrl: currentUser.photo, // Use current user's image
       mediaUrl: "https://www.youtube.com/embed/vlDzYIIOYmM",
-
+      cardImage: "https://via.placeholder.com/150",
+      cardText: "Card Title",
+      cardDetails: "Card details go here.",
+      cardLink: "https://example.com",
       stats: { comments: 51, retweets: 7, likes: 35, shares: 10 },
     },
     // Add more posts here...
   ];
+
   if (!currentUser) {
     return null;
   }
@@ -54,6 +59,19 @@ const HomeComponent = () => {
   const handleNotificationsClick = () => navigate("/notifications");
   const handleProfilePageClick = () => navigate("/profile");
   const handleSettingsClick = () => navigate("/settings");
+
+  const handleCommentChange = (postId, value) => {
+    setComments((prev) => ({
+      ...prev,
+      [postId]: value,
+    }));
+  };
+
+  const handleCommentSubmit = (postId) => {
+    alert(`Comment submitted for post ${postId}: ${comments[postId]}`);
+    // Reset comment input
+    handleCommentChange(postId, "");
+  };
 
   return (
     <>
@@ -183,8 +201,8 @@ const HomeComponent = () => {
             </MDBCard>
           </MDBCol>
 
-          <MDBCol md="6" className="pe-0">
-            <MDBCard className="shadow-0 mb-4">
+          <MDBCol md="6" style={{ marginRight: "300px" }}>
+            <MDBCard className="shadow-0">
               <MDBCardBody className="border-bottom pb-2">
                 <div className="d-flex">
                   <img
@@ -205,7 +223,7 @@ const HomeComponent = () => {
                     </div>
                   </div>
                 </div>
-                <div className="d-flex justify-content-between mt-3">
+                <div className="d-flex justify-content-between">
                   <MDBTypography
                     listUnStyled
                     className="d-flex flex-row ps-3 pt-3"
@@ -290,70 +308,85 @@ const HomeComponent = () => {
                             <MDBCard
                               className="border mb-3 shadow-0"
                               style={{ maxWidth: "540px" }}
-                            >
-                              <MDBRow className="g-0">
-                                <MDBCol md="3">
-                                  <img
-                                    src={post.cardImage}
-                                    alt="Card"
-                                    className="img-fluid rounded-left"
-                                  />
-                                </MDBCol>
-                                <MDBCol md="9">
-                                  <MDBCardBody>
-                                    <MDBCardText style={{ lineHeight: "1" }}>
-                                      {post.cardText}
-                                    </MDBCardText>
-                                    <MDBCardText
-                                      className="small mb-0"
-                                      style={{ lineHeight: "1.2" }}
-                                    >
-                                      {post.cardDetails}
-                                    </MDBCardText>
-                                    <MDBCardText
-                                      className="small mb-0"
-                                      style={{ lineHeight: "1.2" }}
-                                    >
-                                      <MDBIcon
-                                        fas
-                                        icon="link"
-                                        size="xs"
-                                        className="pe-1"
-                                      />
-                                      {post.cardLink}
-                                    </MDBCardText>
-                                  </MDBCardBody>
-                                </MDBCol>
-                              </MDBRow>
-                            </MDBCard>
+                            ></MDBCard>
                           )}
                           <MDBTypography
                             listUnStyled
                             className="d-flex justify-content-between mb-0 pe-xl-5"
                           >
-                            <li>
-                              <MDBIcon far icon="comment" />{" "}
-                              {post.stats.comments}
-                            </li>
-                            <li>
-                              <MDBIcon fas icon="retweet" />
-                              <span className="small ps-2">
-                                {post.stats.retweets}
-                              </span>
-                            </li>
-                            <li>
-                              <MDBIcon far icon="heart" />
-                              <span className="small ps-2">
-                                {post.stats.likes}
-                              </span>
-                            </li>
-                            <li>
-                              <MDBIcon fas icon="share" />
-                              <span className="small ps-2">
-                                {post.stats.shares}
-                              </span>
-                            </li>
+                            <MDBRow className="w-100">
+                              <MDBCol>
+                                <MDBBtn
+                                  color="primary"
+                                  size="sm"
+                                  rounded
+                                  onClick={() =>
+                                    alert("Interested in this post!")
+                                  }
+                                >
+                                  <MDBIcon
+                                    fas
+                                    icon="thumbs-up"
+                                    className="me-1"
+                                  />
+                                  Interested
+                                </MDBBtn>
+                              </MDBCol>
+                              <MDBCol className="text-end">
+                                <MDBTypography
+                                  listUnStyled
+                                  className="d-flex justify-content-end mb-0"
+                                >
+                                  <li className="d-flex align-items-center me-4">
+                                    <MDBIcon
+                                      far
+                                      icon="thumbs-up"
+                                      className="me-2"
+                                      style={{ fontSize: "1.5rem" }} // Adjust size as needed
+                                    />
+                                    {post.stats.likes}
+                                  </li>
+                                  <li className="d-flex align-items-center me-4">
+                                    <MDBIcon
+                                      far
+                                      icon="comment"
+                                      className="me-2"
+                                      style={{ fontSize: "1.5rem" }} // Adjust size as needed
+                                    />
+                                    {post.stats.comments}
+                                  </li>
+                                </MDBTypography>
+                              </MDBCol>
+                            </MDBRow>
                           </MDBTypography>
+                          <div className="mt-4 d-flex align-items-center">
+                            <img
+                              src={currentUser.photo}
+                              className="rounded-circle"
+                              height="50"
+                              alt="Avatar"
+                              loading="lazy"
+                            />
+                            <input
+                              type="text"
+                              placeholder="Add a comment..."
+                              className="form-control"
+                              value={comments[index] || ""}
+                              onChange={(e) =>
+                                handleCommentChange(index, e.target.value)
+                              }
+                              style={{ flex: 1 }} // Ensure input field takes available space
+                            />
+                            <MDBBtn
+                              color="primary"
+                              size="sm"
+                              className="mt-0 ms-2"
+                              rounded
+                              onClick={() => handleCommentSubmit(index)}
+                            >
+                              Submit
+                            </MDBBtn>
+                          </div>
                         </div>
                       </div>
                     </div>
