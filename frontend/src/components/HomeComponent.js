@@ -57,12 +57,12 @@ const HomeComponent = () => {
 
       <MDBContainer fluid className="mt-5" style={{ padding: 0 }}>
         <MDBRow>
-          <MDBCol md="3" className="ps-2">
+          <MDBCol md="3" className="ps-12">
             <ProfileCard currentUser={currentUser} />
             {/* Use ProfileCard component here */}
           </MDBCol>
 
-          <MDBCol md="7">
+          <MDBCol md="6">
             <MDBCard className="shadow-0">
               <MDBCardBody className="border-bottom pb-2">
                 <div className="d-flex">

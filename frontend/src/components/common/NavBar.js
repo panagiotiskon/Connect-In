@@ -18,7 +18,10 @@ const NavbarComponent = () => {
   const [openNavSecond, setOpenNavSecond] = useState(false);
   const currentUser = AuthService.getCurrentUser();
 
-  const handleHomeClick = () => navigate("/home");
+  const handleHomeClick = () => {
+    navigate("/home");
+    window.location.reload();
+  };
   const handleNetworkClick = () => navigate("/network");
   const handleJobsClick = () => navigate("/jobs");
   const handleMessagingClick = () => navigate("/messaging");
