@@ -4,6 +4,7 @@ import Register from "../pages/Register";
 import Home from "../pages/Home";
 import Profile from "../pages/Profile";
 import Settings from "../pages/Settings";
+import Notifications from "../pages/Notifications";
 export const router = createBrowserRouter([
   {
     path: "/",
@@ -24,5 +25,9 @@ export const router = createBrowserRouter([
   {
     path: "/settings",
     element: <Settings />,
+  },
+  {
+    path: "/notifications",
+    element: <Notifications />,
   },
 ]);
