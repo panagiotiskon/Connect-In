@@ -4,7 +4,6 @@ import { useNavigate } from "react-router-dom";
 import ConnectInLogo from "../assets/ConnectIn.png";
 import { isEmail } from "validator";
 import Form from "react-validation/build/form";
-import CheckButton from "react-validation/build/button";
 import "./RegisterComponent.scss";
 import register from "../assets/register.svg";
 import PhotoUpload from "./PhotoUpload"; // Import the PhotoUpload component
@@ -16,7 +15,6 @@ import {
   MDBCol,
   MDBIcon,
   MDBInput,
-  MDBCardImage,
 } from "mdb-react-ui-kit";
 
 const requiredField = (value) => {
