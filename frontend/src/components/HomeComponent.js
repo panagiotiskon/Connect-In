@@ -57,7 +57,7 @@ const HomeComponent = () => {
 
       <MDBContainer fluid className="mt-5" style={{ padding: 0 }}>
         <MDBRow>
-          <MDBCol md="3" className="ps-12">
+          <MDBCol md="4" className="ps-12">
             <ProfileCard currentUser={currentUser} />
             {/* Use ProfileCard component here */}
           </MDBCol>
