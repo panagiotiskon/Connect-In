@@ -1,6 +1,5 @@
 package backend.connectin.domain;
 
-import backend.connectin.domain.enums.UserType;
 import jakarta.persistence.*;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
@@ -115,7 +114,7 @@ public class User {
     }
 
     // Relationship with Role entity (Many-to-Many)
-    @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL) // Eager fetching, all operations cascaded
+    @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.MERGE) // Eager fetching, all operations cascaded
     @JoinTable(name = "user_roles", // Join table name
             joinColumns = @JoinColumn(name = "user_id", referencedColumnName = "id"), // User FK
             inverseJoinColumns = @JoinColumn(name = "role_id", referencedColumnName = "id")) // Role FK

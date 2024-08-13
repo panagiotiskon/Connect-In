@@ -1,6 +1,6 @@
 CREATE TABLE roles (
                        id INT AUTO_INCREMENT PRIMARY KEY,
-                       name VARCHAR(255)
+                       name VARCHAR(255) NOT NULL UNIQUE
 );
 
 CREATE TABLE user_roles (
@@ -15,6 +15,4 @@ CREATE TABLE user_roles (
 
 -- Insert admin role
 INSERT INTO roles (name) VALUES ('ROLE_ADMIN');
-
--- Insert user role
 INSERT INTO roles (name) VALUES ('ROLE_USER');

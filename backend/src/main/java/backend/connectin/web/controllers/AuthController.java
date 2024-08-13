@@ -36,6 +36,7 @@ public class AuthController {
 
     @PostMapping("/register")
     public ResponseEntity<String> saveUser(@RequestBody UserRegisterRequest userRegisterRequest) {
+
         return ResponseEntity.ok("User registered successfully");
     }
 
