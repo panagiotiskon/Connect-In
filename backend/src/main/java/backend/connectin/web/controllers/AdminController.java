@@ -2,15 +2,13 @@ package backend.connectin.web.controllers;
 
 import backend.connectin.service.UserService;
 import backend.connectin.web.resources.UserResourceDto;
+import jakarta.validation.groups.Default;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.*;
 
 @Controller
 @RequestMapping("api/admin")
@@ -31,7 +29,7 @@ public class AdminController {
     @GetMapping("/users")
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
-    public Page<UserResourceDto> getUsers(Pageable pageable) {
-        return userService.fetchAll(pageable);
+    public Page<UserResourceDto> getUsers(@RequestParam(required = false, defaultValue = "ROLE_USER") String role , Pageable pageable) {
+        return userService.fetchAll(role, pageable);
     }
 }
