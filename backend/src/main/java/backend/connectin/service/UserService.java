@@ -6,12 +6,13 @@ import backend.connectin.web.mappers.UserMapper;
 import backend.connectin.web.requests.UserRegisterRequest;
 import backend.connectin.web.resources.UserResourceDto;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.util.Optional;
+import java.util.List;
 
 @Service
 public class UserService {
@@ -34,9 +35,14 @@ public class UserService {
         userRepository.save(user);
     }
 
-    public Page<UserResourceDto> fetchAll(Pageable pageable) {
-        Page<User> usersPage = userRepository.findAll(pageable);
-        return usersPage.map(UserResourceDto::new);
-    }
+    public Page<UserResourceDto> fetchAll(String roleName, Pageable pageable) {
+        List<User> users = userRepository.findUsersByRoleName(roleName);
+        // Implement pagination manually
+        int start = (int) pageable.getOffset();
+        int end = Math.min((start + pageable.getPageSize()), users.size());
+        List<User> pagedUsers = users.subList(start, end);
+
+        return new PageImpl<>(pagedUsers, pageable, users.size())
+                .map(UserResourceDto::new);    }
 
 }
