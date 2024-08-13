@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState } from "react";
 import {
   MDBContainer,
   MDBInput,
@@ -9,66 +9,40 @@ import {
 import { useNavigate } from "react-router-dom";
 import "./LoginComponent.scss";
 import AuthService from "../api/AuthenticationAPI";
-import Form from "react-validation/build/form";
+import { useForm } from "react-hook-form";
 import ConnectInLogo from "../assets/ConnectIn.png";
-const requiredField = (value) => {
-  if (!value) {
-    return (
-      <div className="invalid-feedback d-block">This field is required!</div>
-    );
-  }
-};
 
 const LoginComponent = () => {
-  const form = useRef();
-  const checkBtn = useRef();
-
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm();
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
-
   const navigate = useNavigate();
 
-  const onChangeEmail = (e) => {
-    const email = e.target.value;
-    setEmail(email);
-  };
-
-  const onChangePassword = (e) => {
-    const password = e.target.value;
-    setPassword(password);
-  };
-
-  const handleLogin = (e) => {
-    e.preventDefault();
-
+  const onSubmit = (data) => {
     setMessage("");
     setLoading(true);
 
-    form.current.validateAll();
+    AuthService.login(data.email, data.password).then(
+      () => {
+        navigate("/home");
+        window.location.reload();
+      },
+      (error) => {
+        const resMessage =
+          (error.response &&
+            error.response.data &&
+            error.response.data.message) ||
+          error.message ||
+          error.toString();
 
-    if (checkBtn.current.context._errors.length === 0) {
-      AuthService.login(email, password).then(
-        () => {
-          navigate("/home");
-          window.location.reload();
-        },
-        (error) => {
-          const resMessage =
-            (error.response &&
-              error.response.data &&
-              error.response.data.message) ||
-            error.message ||
-            error.toString();
-
-          setLoading(false);
-          setMessage(resMessage);
-        }
-      );
-    } else {
-      setLoading(false);
-    }
+        setLoading(false);
+        setMessage(resMessage);
+      }
+    );
   };
 
   return (
@@ -77,69 +51,75 @@ const LoginComponent = () => {
       <h2 className="welcome-message">
         Welcome to your professional community!
       </h2>
-      {
-        <Form onSubmit={handleLogin} ref={form}>
-          <MDBContainer>
-            <MDBInput
-              size="lg"
-              wrapperClass="mb-4"
-              label="Email address"
-              id="form1"
-              type="email"
-              value={email}
-              onChange={onChangeEmail}
-              validations={{ requiredField }}
-            />
-            <MDBInput
-              size="lg"
-              wrapperClass="mb-4"
-              label="Password"
-              id="form2"
-              type="password"
-              value={password}
-              onChange={onChangePassword}
-              validations={{ requiredField }}
-            />
-            <div className="d-flex justify-content-between mx-5 mb-5">
-              <MDBCheckbox
-                name="flexCheck"
-                value=""
-                id="flexCheckDefault"
-                label="Remember me"
-              />
-              <a href="#!" style={{ marginLeft: "40px" }}>
-                Forgot password?
-              </a>
+      <form onSubmit={handleSubmit(onSubmit)}>
+        <MDBContainer>
+          <MDBInput
+            size="lg"
+            wrapperClass="mb-4"
+            label="Email address"
+            id="form1"
+            type="email"
+            {...register("email", { required: "Email is required" })}
+          />
+          {errors.email && (
+            <div className="invalid-feedback d-block">
+              {errors.email.message}
             </div>
-            <MDBBtn size="lg" className="mb-10" disabled={loading}>
-              {loading && (
-                <MDBSpinner className="mx-2" size="sm" color="secondary">
-                  <span className="visually-hidden"></span>
-                </MDBSpinner>
-              )}
-              <span>Sign in</span>
-            </MDBBtn>
-            {message && (
-              <div className="form-group">
-                <div className="alert alert-danger" role="alert">
-                  {message}
-                </div>
-              </div>
+          )}
+
+          <MDBInput
+            size="lg"
+            wrapperClass="mb-4"
+            label="Password"
+            id="form2"
+            type="password"
+            {...register("password", { required: "Password is required" })}
+          />
+          {errors.password && (
+            <div className="invalid-feedback d-block">
+              {errors.password.message}
+            </div>
+          )}
+
+          <div className="d-flex justify-content-between mx-5 mb-5">
+            <MDBCheckbox
+              name="flexCheck"
+              value=""
+              id="flexCheckDefault"
+              label="Remember me"
+            />
+            <a href="#!" style={{ marginLeft: "40px" }}>
+              Forgot password?
+            </a>
+          </div>
+          <MDBBtn type="submit" size="lg" className="mb-10" disabled={loading}>
+            {loading && (
+              <MDBSpinner className="mx-2" size="sm" color="secondary">
+                <span className="visually-hidden"></span>
+              </MDBSpinner>
             )}
-            <div
-              className="text-center"
-              onClick={() => {
-                navigate("/register");
-                window.location.reload();
-              }}
-            >
-              <p>
-                New to ConnectIn? <a href="#!">Join Now</a>
-              </p>
+            <span>Sign in</span>
+          </MDBBtn>
+          {message && (
+            <div className="form-group">
+              <div className="alert alert-danger" role="alert">
+                {message}
+              </div>
             </div>
-          </MDBContainer>
-        </Form>
-      }
+          )}
+          <div
+            className="text-center"
+            onClick={() => {
+              navigate("/register");
+              window.location.reload();
+            }}
+          >
+            <p>
+              New to ConnectIn? <a href="#!">Join Now</a>
+            </p>
+          </div>
+        </MDBContainer>
+      </form>
     </div>
   );
 };
