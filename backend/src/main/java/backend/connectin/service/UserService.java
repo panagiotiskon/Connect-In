@@ -6,6 +6,7 @@ import backend.connectin.web.mappers.UserMapper;
 import backend.connectin.web.requests.UserRegisterRequest;
 import backend.connectin.web.resources.UserResourceDto;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -33,6 +34,9 @@ public class UserService {
         userRepository.save(user);
     }
 
-//    public Page<UserResourceDto> getUsers(Pageable pageable) {}
+    public Page<UserResourceDto> fetchAll(Pageable pageable) {
+        Page<User> usersPage = userRepository.findAll(pageable);
+        return usersPage.map(UserResourceDto::new);
+    }
 
 }

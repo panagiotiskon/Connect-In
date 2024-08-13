@@ -1,7 +1,7 @@
 package backend.connectin.web.controllers;
 
-import backend.connectin.domain.User;
 import backend.connectin.service.UserService;
+import backend.connectin.web.resources.UserResourceDto;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -9,9 +9,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.ResponseStatus;
 
 @Controller
-@RequestMapping("api")
+@RequestMapping("api/admin")
 public class AdminController {
 
     private final UserService userService;
@@ -21,12 +23,15 @@ public class AdminController {
         this.userService = userService;
     }
 
-    @GetMapping("/admin")
+    @GetMapping("")
     public ResponseEntity<String> admin() {
         return new ResponseEntity<>("new", HttpStatus.OK);
     }
 
-    public Page<User> getUsers(Pageable pageable) {
-
+    @GetMapping("/users")
+    @ResponseStatus(HttpStatus.OK)
+    @ResponseBody
+    public Page<UserResourceDto> getUsers(Pageable pageable) {
+        return userService.fetchAll(pageable);
     }
 }
