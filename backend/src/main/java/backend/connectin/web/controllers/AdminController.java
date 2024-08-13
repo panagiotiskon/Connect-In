@@ -1,6 +1,9 @@
 package backend.connectin.web.controllers;
 
+import backend.connectin.domain.User;
 import backend.connectin.service.UserService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -21,5 +24,9 @@ public class AdminController {
     @GetMapping("/admin")
     public ResponseEntity<String> admin() {
         return new ResponseEntity<>("new", HttpStatus.OK);
+    }
+
+    public Page<User> getUsers(Pageable pageable) {
+
     }
 }
