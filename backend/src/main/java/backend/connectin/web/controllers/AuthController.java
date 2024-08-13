@@ -1,6 +1,5 @@
 package backend.connectin.web.controllers;
 
-import backend.connectin.domain.User;
 import backend.connectin.security.JWTGenerator;
 import backend.connectin.service.UserService;
 import backend.connectin.web.requests.UserLoginRequest;
@@ -14,30 +13,46 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 
 @RestController
 @RequestMapping("api/auth")
 public class AuthController {
 
-    private AuthenticationManager authenticationManager;
-    private UserService userService;
-    private PasswordEncoder passwordEncoder;
-    private JWTGenerator jwtGenerator;
+    private final AuthenticationManager authenticationManager;
+    private final UserService userService;
+    private final JWTGenerator jwtGenerator;
 
     @Autowired
     public AuthController(AuthenticationManager authenticationManager, UserService userService, PasswordEncoder passwordEncoder, JWTGenerator jwtGenerator) {
         this.authenticationManager = authenticationManager;
         this.userService = userService;
-        this.passwordEncoder = passwordEncoder;
         this.jwtGenerator = jwtGenerator;
     }
 
 
     @PostMapping("/register")
-    public ResponseEntity<String> saveUser(@RequestBody UserRegisterRequest userRegisterRequest) {
+    public ResponseEntity<AuthResource> register(@RequestBody UserRegisterRequest userRegisterRequest) {
+        try {
+            userService.registerUser(userRegisterRequest);
+            // Authenticate the user to generate a JWT token
+            Authentication authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(
+                            userRegisterRequest.getEmail(),
+                            userRegisterRequest.getPassword() // Assuming you want to use the same password for authentication
+                    ));
 
-        return ResponseEntity.ok("User registered successfully");
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+            String token = jwtGenerator.generateToken(authentication);
+            return new ResponseEntity<>(new AuthResource(token), HttpStatus.OK);
+
+        } catch (ResponseStatusException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).build();
+        }
     }
 
     @PostMapping("/login")
@@ -47,8 +62,9 @@ public class AuthController {
                         userLoginRequest.getEmail(),
                         userLoginRequest.getPassword()
                 ));
-                SecurityContextHolder.getContext().setAuthentication(authentication);
-                String token = jwtGenerator.generateToken(authentication);
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+        String token = jwtGenerator.generateToken(authentication);
         return new ResponseEntity<>(new AuthResource(token), HttpStatus.OK);
+
     }
 }

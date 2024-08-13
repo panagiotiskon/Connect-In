@@ -113,7 +113,6 @@ public class User {
         this.updatedAt = updatedAt;
     }
 
-    // Relationship with Role entity (Many-to-Many)
     @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.MERGE) // Eager fetching, all operations cascaded
     @JoinTable(name = "user_roles", // Join table name
             joinColumns = @JoinColumn(name = "user_id", referencedColumnName = "id"), // User FK
