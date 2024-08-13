@@ -1,30 +1,19 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import {
   MDBContainer,
-  MDBNavbar,
-  MDBNavbarToggler,
-  MDBNavbarNav,
-  MDBNavbarLink,
-  MDBIcon,
-  MDBCollapse,
-  MDBNavbarItem,
   MDBCardBody,
-  MDBCardImage,
   MDBCard,
   MDBTypography,
   MDBBtn,
   MDBRow,
   MDBCol,
-  MDBCardText,
+  MDBIcon,
 } from "mdb-react-ui-kit";
-import ConnectInLogo from "../assets/ConnectIn.png"; // Adjust the path if needed
+import NavbarComponent from "./common/NavBar";
 import AuthService from "../api/AuthenticationAPI";
+import ProfileCard from "../components/common/ProfileCard"; // Import the new ProfileCard component
 
 const HomeComponent = () => {
-  const navigate = useNavigate();
-  const [openNavSecond, setOpenNavSecond] = useState(false);
-
   const currentUser = AuthService.getCurrentUser();
   const [comments, setComments] = useState({}); // To manage comments
 
@@ -49,17 +38,6 @@ const HomeComponent = () => {
     return null;
   }
 
-  const handleProfileClick = () =>
-    navigate(`/profile/${currentUser.name}-${currentUser.surname}`);
-  const handleConnectionsClick = () => navigate("/network");
-  const handleHomeClick = () => window.location.reload();
-  const handleNetworkClick = () => navigate("/network");
-  const handleJobsClick = () => navigate("/jobs");
-  const handleMessagingClick = () => navigate("/messaging");
-  const handleNotificationsClick = () => navigate("/notifications");
-  const handleProfilePageClick = () => navigate("/profile");
-  const handleSettingsClick = () => navigate("/settings");
-
   const handleCommentChange = (postId, value) => {
     setComments((prev) => ({
       ...prev,
@@ -75,133 +53,16 @@ const HomeComponent = () => {
 
   return (
     <>
-      <MDBNavbar expand="lg" light bgColor="light">
-        <MDBContainer
-          fluid
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-          }}
-        >
-          <div style={{ flex: "0 1 auto" }}>
-            <img
-              src={ConnectInLogo}
-              alt="ConnectIn Logo"
-              style={{ width: "200px", height: "auto", marginLeft: "60px" }}
-            />
-          </div>
-          <MDBNavbarToggler
-            aria-expanded="false"
-            aria-label="Toggle navigation"
-            onClick={() => setOpenNavSecond(!openNavSecond)}
-            style={{ flex: "0 1 auto", marginLeft: "20px" }} // Add margin here
-          >
-            <MDBIcon icon="bars" fas />
-          </MDBNavbarToggler>
-          <MDBCollapse navbar open={openNavSecond}>
-            <MDBNavbarNav
-              style={{
-                display: "flex",
-                justifyContent: "flex-end",
-                gap: "100px", // Space between icons
-                alignItems: "center",
-              }}
-            >
-              <MDBNavbarItem
-                className="d-flex flex-column align-items-center me-3 me-lg-0"
-                style={{ margin: "0 325px" }}
-              >
-                <MDBNavbarLink
-                  active
-                  aria-current="page"
-                  onClick={handleHomeClick}
-                >
-                  <MDBIcon fas icon="home" size="2x" />
-                </MDBNavbarLink>
-                <span>Home</span>
-              </MDBNavbarItem>
-              <MDBNavbarItem className="d-flex flex-column align-items-center">
-                <MDBNavbarLink onClick={handleNetworkClick}>
-                  <MDBIcon fas icon="users" size="2x" />
-                </MDBNavbarLink>
-                <span>Network</span>
-              </MDBNavbarItem>
-              <MDBNavbarItem className="d-flex flex-column align-items-center">
-                <MDBNavbarLink onClick={handleJobsClick}>
-                  <MDBIcon fas icon="suitcase" size="2x" />
-                </MDBNavbarLink>
-                <span>Jobs</span>
-              </MDBNavbarItem>
-              <MDBNavbarItem className="d-flex flex-column align-items-center">
-                <MDBNavbarLink onClick={handleMessagingClick}>
-                  <MDBIcon fas icon="message" size="2x" />
-                </MDBNavbarLink>
-                <span>Messaging</span>
-              </MDBNavbarItem>
-              <MDBNavbarItem className="d-flex flex-column align-items-center">
-                <MDBNavbarLink onClick={handleNotificationsClick}>
-                  <MDBIcon fas icon="exclamation" size="2x" />
-                </MDBNavbarLink>
-                <span>Notifications</span>
-              </MDBNavbarItem>
-              <MDBNavbarItem className="d-flex flex-column align-items-center">
-                <MDBNavbarLink onClick={handleProfilePageClick}>
-                  <MDBIcon fas icon="user-circle" size="2x" />
-                </MDBNavbarLink>
-                <span>Profile</span>
-              </MDBNavbarItem>
-              <MDBNavbarItem className="d-flex flex-column align-items-center">
-                <MDBNavbarLink onClick={handleSettingsClick}>
-                  <MDBIcon fas icon="cog" size="2x" />
-                </MDBNavbarLink>
-                <span>Settings</span>
-              </MDBNavbarItem>
-            </MDBNavbarNav>
-          </MDBCollapse>
-        </MDBContainer>
-      </MDBNavbar>
+      <NavbarComponent />
 
-      <MDBContainer fluid className="mt-4" style={{ padding: 0 }}>
+      <MDBContainer fluid className="mt-5" style={{ padding: 0 }}>
         <MDBRow>
-          <MDBCol md="4" className="ps-0">
-            <MDBCard
-              className="mb-4"
-              style={{ width: "400px", marginLeft: "80px" }}
-            >
-              <MDBCardBody className="text-center">
-                <MDBCardImage
-                  src={currentUser.photo}
-                  alt="avatar"
-                  className="rounded-circle"
-                  style={{ width: "120px", marginBottom: "1.5rem" }}
-                  fluid
-                />
-                <p
-                  onClick={handleProfileClick}
-                  style={{
-                    fontWeight: "bold",
-                    fontSize: "1.2rem",
-                    cursor: "pointer",
-                  }}
-                >
-                  {`${currentUser.name} ${currentUser.surname}`}
-                </p>
-                <p
-                  onClick={handleConnectionsClick}
-                  style={{
-                    fontWeight: "bold",
-                    fontSize: "1rem",
-                    cursor: "pointer",
-                  }}
-                >
-                  Connections
-                </p>
-              </MDBCardBody>
-            </MDBCard>
+          <MDBCol md="4" className="ps-12">
+            <ProfileCard currentUser={currentUser} />
+            {/* Use ProfileCard component here */}
           </MDBCol>
 
-          <MDBCol md="6" style={{ marginRight: "300px" }}>
+          <MDBCol md="6">
             <MDBCard className="shadow-0">
               <MDBCardBody className="border-bottom pb-2">
                 <div className="d-flex">
@@ -342,7 +203,7 @@ const HomeComponent = () => {
                                       far
                                       icon="thumbs-up"
                                       className="me-2"
-                                      style={{ fontSize: "1.5rem" }} // Adjust size as needed
+                                      style={{ fontSize: "1.5rem" }}
                                     />
                                     {post.stats.likes}
                                   </li>
@@ -351,7 +212,7 @@ const HomeComponent = () => {
                                       far
                                       icon="comment"
                                       className="me-2"
-                                      style={{ fontSize: "1.5rem" }} // Adjust size as needed
+                                      style={{ fontSize: "1.5rem" }}
                                     />
                                     {post.stats.comments}
                                   </li>
