@@ -1,7 +1,7 @@
 import axios from "axios";
 import test from "../assets/test-photo-profile.png";
 
-const API_URL = "http://localhost:8080/api/auth";
+const API_URL = "http://localhost:8080/auth";
 axios.defaults.withCredentials = true;
 
 // Login Function
@@ -9,15 +9,25 @@ const login = (email, password) => {
   return axios
     .post(API_URL + "/login", { email, password })
     .then((response) => {
-      console.log("Login Response:", response); // Log the full response object
+      // Log the full response object
+      console.log("Login Response:", response);
+
+      // Log specific parts of the response data
+      console.log("Response Data:", response.data);
+
+      // Check and log access token if available
       if (response.data.accessToken) {
+        console.log("Access Token:", response.data.accessToken);
+        // Save user data to localStorage
         localStorage.setItem("user", JSON.stringify(response.data));
       }
+
       return response.data;
     })
     .catch((error) => {
       // Enhanced error logging
       console.error("Login Error:", error.message); // Log the error message
+
       if (error.response) {
         // The request was made and the server responded with a status code
         console.error("Error Response Data:", error.response.data); // Log response data
@@ -30,7 +40,10 @@ const login = (email, password) => {
         // Something happened in setting up the request that triggered an Error
         console.error("Error Message:", error.message); // Log error message
       }
+
+      // Log the config used for the request
       console.error("Error Config:", error.config); // Log error config
+
       throw error; // Re-throw error after logging
     });
 };

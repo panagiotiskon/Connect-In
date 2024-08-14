@@ -34,7 +34,7 @@ const ProfileCard = ({ currentUser }) => {
             cursor: "pointer",
           }}
         >
-          {`${currentUser.name} ${currentUser.surname}`}
+          {`${currentUser.firstName} ${currentUser.lastName}`}
         </p>
         <p
           onClick={handleConnectionsClick}
