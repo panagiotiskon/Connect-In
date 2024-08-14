@@ -32,4 +32,12 @@ public class AdminController {
     public Page<UserResourceDto> getUsers(@RequestParam(required = false, defaultValue = "ROLE_USER") String role , Pageable pageable) {
         return userService.fetchAll(role, pageable);
     }
+
+//    @GetMapping("/{userId}")
+//    @ResponseStatus(HttpStatus.OK)
+//    @ResponseBody
+//    public Page<UserResourceDto> getUser(@RequestParam String userId) {
+//
+//    }
+
 }
