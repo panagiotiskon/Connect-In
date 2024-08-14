@@ -3,7 +3,6 @@ import {
   MDBContainer,
   MDBInput,
   MDBBtn,
-  MDBIcon,
   MDBRow,
   MDBCol,
   MDBSpinner,
@@ -26,7 +25,7 @@ const RegisterComponent = () => {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const navigate = useNavigate();
-  const [photo, setPhoto] = useState(null);
+  const [photo, setPhoto] = useState(null); // State to handle photo
 
   const onSubmit = (data) => {
     setMessage("");
@@ -44,7 +43,7 @@ const RegisterComponent = () => {
       data.surname,
       data.password,
       data.phoneNumber,
-      photo
+      photo // Include the photo in the registration data
     ).then(
       () => {
         navigate("/home");
@@ -65,7 +64,7 @@ const RegisterComponent = () => {
   };
 
   const handleFileUpload = (file) => {
-    setPhoto(file);
+    setPhoto(file); // Set the photo when successfully uploaded
   };
 
   return (
@@ -204,6 +203,7 @@ const RegisterComponent = () => {
                 </div>
               )}
 
+              {/* PhotoUpload component */}
               <PhotoUpload onFileUpload={handleFileUpload} />
 
               <MDBBtn
@@ -219,6 +219,7 @@ const RegisterComponent = () => {
                 )}
                 <span>Register</span>
               </MDBBtn>
+
               {message && (
                 <div className="form-group">
                   <div className="alert alert-danger" role="alert">
