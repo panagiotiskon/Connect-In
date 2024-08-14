@@ -51,16 +51,6 @@ const login = (email, password) => {
 // Logout Function
 const logout = () => {
   localStorage.removeItem("user");
-  return axios
-    .post(API_URL + "/signout")
-    .then((response) => {
-      console.log("Logout Response:", response); // Log the full response object
-      return response.data;
-    })
-    .catch((error) => {
-      console.error("Logout Error:", error.message, error.config); // Log error message and config
-      throw error; // Re-throw error after logging
-    });
 };
 
 // Register Function
