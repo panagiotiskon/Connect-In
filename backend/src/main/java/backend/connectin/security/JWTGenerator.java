@@ -39,8 +39,6 @@ public class JWTGenerator {
                 .expiration(expireDate)
                 .signWith(key)
                 .compact();
-        System.out.println("New token :");
-        System.out.println(token);
         return token;
     }
 

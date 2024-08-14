@@ -1,11 +1,21 @@
 package backend.connectin.web.resources;
 
+import backend.connectin.domain.Role;
+
+import java.util.List;
 import java.util.Objects;
 
 public class AuthResource {
 
     private String accessToken;
     private String tokenType = "Bearer";
+    private String firstName;
+    private String lastName;
+    private List<Role> roles;
+
+    public AuthResource() {
+
+    }
 
     public AuthResource(String accessToken) {
         this.accessToken = accessToken;
@@ -25,6 +35,30 @@ public class AuthResource {
 
     public void setTokenType(String tokenType) {
         this.tokenType = tokenType;
+    }
+
+    public String getFirstName() {
+        return firstName;
+    }
+
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
+    }
+
+    public String getLastName() {
+        return lastName;
+    }
+
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
+    }
+
+    public List<Role> getRoles() {
+        return roles;
+    }
+
+    public void setRoles(List<Role> roles) {
+        this.roles = roles;
     }
 
     @Override

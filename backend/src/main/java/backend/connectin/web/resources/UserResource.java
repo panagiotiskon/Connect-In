@@ -2,22 +2,22 @@ package backend.connectin.web.resources;
 
 import backend.connectin.domain.User;
 
-public class UserResourceDto {
+public class UserResource {
 
     private Long id;
     private String firstName;
     private String lastName;
 
-    public UserResourceDto(User user) {
+    public UserResource(User user) {
         this.id = user.getId();
         this.firstName = user.getFirstName();
         this.lastName = user.getLastName();
     }
 
-    public UserResourceDto() {
+    public UserResource() {
     }
 
-    public UserResourceDto(Object o) {
+    public UserResource(Object o) {
     }
 
     public String getLastName() {
