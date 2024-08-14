@@ -6,8 +6,7 @@ import backend.connectin.web.mappers.UserMapper;
 import backend.connectin.web.requests.UserChangeEmailRequest;
 import backend.connectin.web.requests.UserChangePasswordRequest;
 import backend.connectin.web.requests.UserRegisterRequest;
-import backend.connectin.web.resources.UserResourceDto;
-import org.aspectj.weaver.patterns.ReferencePointcut;
+import backend.connectin.web.resources.UserResource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -45,7 +44,7 @@ public class UserService {
         userRepository.save(user);
     }
 
-    public Page<UserResourceDto> fetchAll(String roleName, Pageable pageable) {
+    public Page<UserResource> fetchAll(String roleName, Pageable pageable) {
         List<User> users = userRepository.findUsersByRoleName(roleName);
         // Implement pagination manually
         int start = (int) pageable.getOffset();
@@ -53,13 +52,13 @@ public class UserService {
         if (start >= users.size()) {
             // Return an empty PageImpl if the start index is out of bounds
             return new PageImpl<>(Collections.emptyList(), pageable, users.size())
-                    .map(UserResourceDto::new);
+                    .map(UserResource::new);
         }
         int end = Math.min((start + pageable.getPageSize()), users.size());
         List<User> pagedUsers = users.subList(start, end);
 
         return new PageImpl<>(pagedUsers, pageable, users.size())
-                .map(UserResourceDto::new);
+                .map(UserResource::new);
     }
 
     public Optional<User> findUserByEmail(String email) {
@@ -80,8 +79,7 @@ public class UserService {
     public ResponseEntity<String> updateUserEmail(User user, UserChangeEmailRequest userChangeEmailRequest) {
         if (userRepository.findUserByEmail(userChangeEmailRequest.getNewEmail()).isPresent()) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Email already exists");
-        }
-        else if (userRepository.findUserByEmail(userChangeEmailRequest.getOldEmail()).isEmpty()) {
+        } else if (userRepository.findUserByEmail(userChangeEmailRequest.getOldEmail()).isEmpty()) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Email not found");
         }
         user.setEmail(userChangeEmailRequest.getNewEmail());
