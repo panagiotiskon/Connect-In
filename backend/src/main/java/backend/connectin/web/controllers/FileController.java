@@ -10,32 +10,70 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
-import java.util.List;
-import java.util.NoSuchElementException;
+import java.util.*;
 
-@CrossOrigin("*")
+@CrossOrigin(origins = "http://localhost:3000", allowCredentials = "true")
 @RestController
 @RequestMapping("/auth")
 public class FileController {
 
     private final FileService fileService;
+    private final Map<String, FileDB> tempStorage = new HashMap<>();
 
     public FileController(FileService fileService) {
         this.fileService = fileService;
     }
+    @PostMapping("/pre-upload")
+    public ResponseEntity<Map<String, String>> preStageUpload(@RequestParam("file") MultipartFile file) {
+        try {
+            // Generate a unique ID for the temporary file
+            String tempId = UUID.randomUUID().toString();
+
+            // Create a temporary FileDB object (without associating it with a user)
+            FileDB tempFile = new FileDB(null, file.getBytes(), file.getContentType(), file.getOriginalFilename());
+
+            // Store the file in the temporary storage with the generated ID
+            tempStorage.put(tempId, tempFile);
+
+            // Return the temp ID and original file name to the frontend
+            Map<String, String> response = new HashMap<>();
+            response.put("tempId", tempId);
+            response.put("fileName", file.getOriginalFilename());
+
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(HttpStatus.EXPECTATION_FAILED);
+        }
+    }
 
     @PostMapping("/upload")
-    public ResponseEntity<?> uploadFile(@RequestParam("file") MultipartFile file) {
+    public ResponseEntity<String> uploadFile(
+            @RequestParam("preUploadId") String preUploadId,
+            @RequestParam("isProfilePicture") Boolean isProfilePicture,
+            @RequestParam("userEmail") String userEmail) {
         String message = "";
         try {
-            fileService.store(file);
-            message = "Uploaded the file successfully: " + file.getOriginalFilename();
+            // Retrieve the pre-uploaded file from temp storage
+            FileDB preUploadedFile = tempStorage.get(preUploadId);
+            if (preUploadedFile == null) {
+                return new ResponseEntity<>("Pre-uploaded file not found!", HttpStatus.BAD_REQUEST);
+            }
+
+            // Store the file permanently
+            FileDB fileToSave = new FileDB(preUploadedFile.getName(), preUploadedFile.getType(), preUploadedFile.getData(), isProfilePicture, userEmail);
+            fileService.save(fileToSave);
+
+            // Remove the file from temporary storage
+            tempStorage.remove(preUploadId);
+
+            message = "Uploaded the file successfully: " + preUploadedFile.getName();
             return new ResponseEntity<>(message, HttpStatus.OK);
         } catch (Exception e) {
-            message = "Could not upload the file: " + file.getOriginalFilename() + "!";
+            message = "Could not upload the file!";
             return new ResponseEntity<>(message, HttpStatus.EXPECTATION_FAILED);
         }
     }
+
 
     @GetMapping("/files")
     public ResponseEntity<List<?>> getListFiles() {

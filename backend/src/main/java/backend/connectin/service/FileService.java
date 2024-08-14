@@ -2,7 +2,6 @@ package backend.connectin.service;
 
 import backend.connectin.domain.FileDB;
 import backend.connectin.domain.repository.FileDBRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
@@ -15,15 +14,18 @@ public class FileService {
 
     private final FileDBRepository fileDBRepository;
 
-    public FileService(FileDBRepository fileDBRepository) {
+    public FileService(FileDBRepository fileDBRepository, UserService userService) {
         this.fileDBRepository = fileDBRepository;
     }
 
-    public FileDB store(MultipartFile file) throws IOException {
-        String fileName = StringUtils.cleanPath(file.getOriginalFilename());
-        FileDB FileDB = new FileDB(fileName, file.getContentType(), file.getBytes());
+    public void save(FileDB fileDB) {
+        fileDBRepository.save(fileDB);
+    }
 
-        return fileDBRepository.save(FileDB);
+    public void store(MultipartFile file, Boolean isProfilePicture, String userEmail) throws IOException {
+        String fileName = StringUtils.cleanPath(file.getOriginalFilename());
+        FileDB FileDB = new FileDB(fileName, file.getContentType(), file.getBytes(), isProfilePicture, userEmail);
+        fileDBRepository.save(FileDB);
     }
 
     public FileDB getFile(String id) {
