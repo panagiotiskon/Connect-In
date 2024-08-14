@@ -27,11 +27,22 @@ const LoginComponent = () => {
     setLoading(true);
 
     AuthService.login(data.email, data.password).then(
-      () => {
-        navigate("/home");
-        window.location.reload();
+      (response) => {
+        setLoading(false);
+        if (response.roles[0].name === "ROLE_ADMIN") {
+          navigate("/admin");
+        } else if (response.roles[0].name === "ROLE_USER") {
+          navigate("/home");
+        } else {
+          // Handle unexpected role
+          setMessage("Unexpected user role");
+        }
+
+        // Optionally, you may want to reload the page after redirection
+        // window.location.reload();
       },
       (error) => {
+        setLoading(false);
         const resMessage =
           (error.response &&
             error.response.data &&
@@ -39,7 +50,6 @@ const LoginComponent = () => {
           error.message ||
           error.toString();
 
-        setLoading(false);
         setMessage(resMessage);
       }
     );
