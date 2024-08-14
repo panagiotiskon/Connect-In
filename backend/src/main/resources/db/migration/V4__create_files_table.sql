@@ -1,0 +1,7 @@
+CREATE TABLE files
+(
+    id   VARCHAR(36)  NOT NULL PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    type VARCHAR(100) NOT NULL,
+    data LONGBLOB
+);

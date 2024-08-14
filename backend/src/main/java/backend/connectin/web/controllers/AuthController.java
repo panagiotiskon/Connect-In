@@ -59,14 +59,14 @@ public class AuthController {
 
     @PostMapping("/change-password")
     @ResponseBody
-    public ResponseEntity<String> changePassword(@RequestParam UserChangePasswordRequest userChangePasswordRequest) {
+    public ResponseEntity<String> changePassword(@RequestBody UserChangePasswordRequest userChangePasswordRequest) {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         User user = userService.findUserByEmail(email).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
         return userService.updatePassword(user, userChangePasswordRequest);
     }
 
     @PostMapping("/change-email")
-    public ResponseEntity<String> changeEmail(@RequestParam UserChangeEmailRequest userChangeEmailRequest) {
+    public ResponseEntity<String> changeEmail(@RequestBody UserChangeEmailRequest userChangeEmailRequest) {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         User user = userService.findUserByEmail(email).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
         return userService.updateUserEmail(user, userChangeEmailRequest);
