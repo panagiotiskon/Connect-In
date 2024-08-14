@@ -51,31 +51,31 @@ const logout = () => {
 };
 
 // Register Function
-const register = (email, name, surname, password, phoneNumber, photo) => {
-  const formData = new FormData();
-  formData.append("email", email);
-  formData.append("name", name);
-  formData.append("surname", surname);
-  formData.append("password", password);
-  formData.append("phoneNumber", phoneNumber);
-  if (photo) {
-    formData.append("photo", photo); // Add the photo file to the form data
-  }
+const register = (email, name, surname, password, phoneNumber) => {
+  const data = {
+    email,
+    password,
+    firstName: name,
+    lastName: surname,
+    phoneNumber,
+  };
 
   return axios
-    .post(API_URL + "/signup", formData, {
-      headers: { "Content-Type": "multipart/form-data" },
+    .post(API_URL + "/register", data, {
+      headers: {
+        "Content-Type": "application/json",
+      },
     })
     .then((response) => {
-      console.log("Register Response:", response); // Log the full response object
+      console.log("Register Response:", response);
       if (response.data.accessToken) {
         localStorage.setItem("user", JSON.stringify(response.data));
       }
       return response.data;
     })
     .catch((error) => {
-      console.error("Register Error:", error.message, error.config); // Log error message and config
-      throw error; // Re-throw error after logging
+      console.error("Register Error:", error.message, error.config);
+      throw error;
     });
 };
 
