@@ -24,6 +24,8 @@ public class User {
 
     private List<Role> roles = new ArrayList<>();
 
+    private FileDB profilePicture;
+
     public User() {
     }
 
@@ -123,5 +125,14 @@ public class User {
 
     public void setRoles(List<Role> roles) {
         this.roles = roles;
+    }
+
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    public FileDB getProfilePicture() {
+        return profilePicture;
+    }
+
+    public void setProfilePicture(FileDB profilePicture) {
+        this.profilePicture = profilePicture;
     }
 }
