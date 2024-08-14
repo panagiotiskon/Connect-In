@@ -10,15 +10,17 @@ import {
   MDBBtn,
 } from "mdb-react-ui-kit";
 import ConnectInLogo from "../assets/ConnectIn.png"; // Adjust the path if needed
-import AuthService from "../api/AuthenticationAPI";
+import AuthService from "../api/AuthenticationAPI"; // Import the AuthenticationAPI service
 
 const NavBarAdminComponent = () => {
   const navigate = useNavigate();
   const [openNavSecond, setOpenNavSecond] = useState(false);
   const currentUser = AuthService.getCurrentUser();
 
+  // Handle logout and redirect to login page
   const handleLogoutClick = () => {
-    navigate("/logout");
+    AuthService.logout(); // Call the logout method to clear the user data
+    navigate("/"); // Redirect to login page
   };
 
   return (
@@ -51,7 +53,7 @@ const NavBarAdminComponent = () => {
               color="danger"
               className="d-flex align-items-center"
               style={{ marginLeft: "1500px" }}
-              onClick={handleLogoutClick}
+              onClick={handleLogoutClick} // Handle logout click
             >
               <MDBIcon fas icon="sign-out-alt" className="me-2" />
               Logout
