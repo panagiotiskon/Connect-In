@@ -2,7 +2,28 @@ import axios from "axios";
 import test from "../assets/test-photo-profile.png";
 
 const API_URL = "http://localhost:8080/auth";
+const UPLOAD_URL = "http://localhost:8080/upload"; // Add your upload URL here
+
 axios.defaults.withCredentials = true;
+
+// Upload Photo Function
+const uploadPhoto = async (file) => {
+  const formData = new FormData();
+  formData.append("file", file);
+
+  try {
+    const response = await axios.post(UPLOAD_URL, formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+    console.log("Upload Response:", response.data);
+    return response.data; // Assuming it contains the photo URL or success message
+  } catch (error) {
+    console.error("Upload Error:", error.message);
+    throw error;
+  }
+};
 
 // Login Function
 const login = (email, password) => {
@@ -54,32 +75,48 @@ const logout = () => {
 };
 
 // Register Function
-const register = (email, name, surname, password, phoneNumber) => {
-  const data = {
-    email,
-    password,
-    firstName: name,
-    lastName: surname,
-    phoneNumber,
-  };
+const register = async (
+  email,
+  name,
+  surname,
+  password,
+  phoneNumber,
+  photoFile
+) => {
+  try {
+    // Step 1: Upload photo
+    const uploadResponse = await uploadPhoto(photoFile);
+    console.log("Photo uploaded successfully!");
 
-  return axios
-    .post(API_URL + "/register", data, {
+    // Step 2: Prepare registration data (excluding photo)
+    const data = {
+      email,
+      password,
+      firstName: name,
+      lastName: surname,
+      phoneNumber,
+      // Add photo URL to registration data if needed
+      // photoUrl: uploadResponse.photoUrl,  // Assuming backend returns URL of the uploaded photo
+    };
+
+    // Step 3: Register the user
+    const registerResponse = await axios.post(API_URL + "/register", data, {
       headers: {
         "Content-Type": "application/json",
       },
-    })
-    .then((response) => {
-      console.log("Register Response:", response);
-      if (response.data.accessToken) {
-        localStorage.setItem("user", JSON.stringify(response.data));
-      }
-      return response.data;
-    })
-    .catch((error) => {
-      console.error("Register Error:", error.message, error.config);
-      throw error;
     });
+
+    console.log("Register Response:", registerResponse);
+
+    if (registerResponse.data.accessToken) {
+      localStorage.setItem("user", JSON.stringify(registerResponse.data));
+    }
+
+    return registerResponse.data;
+  } catch (error) {
+    console.error("Registration Error:", error.message, error.config);
+    throw error;
+  }
 };
 
 // Get Current User Function
@@ -94,6 +131,7 @@ const AuthService = {
   login,
   logout,
   getCurrentUser,
+  uploadPhoto, // Optional: You can keep this method public in case you need it elsewhere
 };
 
 export default AuthService;

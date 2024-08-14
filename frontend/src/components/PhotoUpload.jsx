@@ -2,25 +2,38 @@ import React, { useCallback, useState } from "react";
 import { useDropzone } from "react-dropzone";
 import Popup from "reactjs-popup";
 import { MDBIcon } from "mdb-react-ui-kit";
+import AuthService from "../api/AuthenticationAPI"; // Adjust the path
 import "reactjs-popup/dist/index.css";
 
 const PhotoUpload = ({ onFileUpload }) => {
   const [popupOpen, setPopupOpen] = useState(false);
   const [popupContent, setPopupContent] = useState("");
-  const [popupType, setPopupType] = useState("success"); // Use 'success' or 'error'
+  const [popupType, setPopupType] = useState("success");
 
   const onDrop = useCallback(
-    (acceptedFiles) => {
+    async (acceptedFiles) => {
       const file = acceptedFiles[0];
 
       if (file && file.type.startsWith("image/")) {
-        onFileUpload(file);
+        try {
+          // Call AuthService to upload the photo
+          await AuthService.uploadPhoto(file);
 
-        // Show success popup
-        setPopupType("success");
-        setPopupContent("Photo uploaded successfully!");
+          // Show success popup
+          setPopupType("success");
+          setPopupContent("Photo uploaded successfully!");
+
+          // Notify parent about success
+          onFileUpload(file);
+        } catch (error) {
+          console.error("Upload failed:", error);
+
+          // Show error popup
+          setPopupType("error");
+          setPopupContent("Failed to upload the photo.");
+        }
       } else {
-        // Show error popup
+        // Show error popup for invalid file
         setPopupType("error");
         setPopupContent("The file selected is not an image.");
       }
