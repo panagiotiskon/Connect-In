@@ -3,8 +3,13 @@ package backend.connectin.service;
 import backend.connectin.domain.Role;
 import backend.connectin.domain.User;
 import backend.connectin.domain.repository.UserRepository;
+import backend.connectin.security.JWTGenerator;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -20,7 +25,6 @@ public class AuthService implements UserDetailsService {
 
     private UserRepository userRepository;
 
-
     public AuthService(UserRepository userRepository) {
         this.userRepository = userRepository;
     }
@@ -35,4 +39,5 @@ public class AuthService implements UserDetailsService {
         return roles.stream()
                 .map(role -> new SimpleGrantedAuthority(role.getName())).collect(toList());
     }
+
 }

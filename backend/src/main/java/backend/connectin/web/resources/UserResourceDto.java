@@ -14,10 +14,10 @@ public class UserResourceDto {
         this.lastName = user.getLastName();
     }
 
-    public UserResourceDto(Long id, String lastName, String firstName) {
-        this.id = id;
-        this.lastName = lastName;
-        this.firstName = firstName;
+    public UserResourceDto() {
+    }
+
+    public UserResourceDto(Object o) {
     }
 
     public String getLastName() {
