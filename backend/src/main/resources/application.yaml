@@ -27,6 +27,12 @@ spring:
       max-request-size: 2MB
 
 server:
+  port: 8443
+  ssl:
+    key-store: classpath:keystore.p12
+    key-store-password: password
+    keyStoreType: PKCS12
+    keyAlias: tomcat
   servlet:
     session:
       timeout: 10m
