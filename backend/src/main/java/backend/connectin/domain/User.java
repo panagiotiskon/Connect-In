@@ -26,6 +26,8 @@ public class User {
 
     private FileDB profilePicture;
 
+    private List<Post> posts;
+
     public User() {
     }
 
@@ -134,5 +136,14 @@ public class User {
 
     public void setProfilePicture(FileDB profilePicture) {
         this.profilePicture = profilePicture;
+    }
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true )
+    public List<Post> getPosts() {
+        return posts;
+    }
+
+    public void setPosts(List<Post> posts) {
+        this.posts = posts;
     }
 }
