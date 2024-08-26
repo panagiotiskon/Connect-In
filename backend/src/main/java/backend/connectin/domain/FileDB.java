@@ -16,6 +16,7 @@ public class FileDB {
     private String name;
 
     private String type;
+
     @Lob
     private byte[] data;
 
