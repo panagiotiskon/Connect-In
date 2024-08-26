@@ -25,7 +25,7 @@ public class Reaction {
     }
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
+    @JoinColumn(name = "user_id", referencedColumnName = "id", insertable = false, updatable = false)
     public User getUser() {
         return user;
     }
@@ -34,8 +34,8 @@ public class Reaction {
         this.user = user;
     }
 
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "post_id", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "post_id", referencedColumnName = "id", insertable = false, updatable = false)
     public Post getPost() {
         return post;
     }
