@@ -2,19 +2,21 @@ package backend.connectin.domain;
 
 import jakarta.persistence.*;
 
+import java.io.Serializable;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
 @Table(name = "posts")
-public class Post {
+public class Post implements Serializable {
 
     private Long id;
     private String content;
     private Instant createdAt;
-    private List<FileDB> files;
-    private List<Comment> comments;
-    private List<Reaction> reactions;
+    private List<FileDB> files = new ArrayList<>();
+    private List<Comment> comments = new ArrayList<>();
+    private List<Reaction> reactions = new ArrayList<>();
     private User user;
 
     @Id
@@ -37,16 +39,7 @@ public class Post {
         this.content = content;
     }
 
-    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL)
-    public List<FileDB> getFiles() {
-        return files;
-    }
-
-    public void setFiles(List<FileDB> files) {
-        this.files = files;
-    }
-
-    @Column(name ="created_date")
+    @Column(name = "created_date")
     public Instant getCreatedAt() {
         return createdAt;
     }
@@ -55,7 +48,17 @@ public class Post {
         this.createdAt = createdAt;
     }
 
-    @OneToMany(mappedBy = "users", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "postId", cascade = CascadeType.ALL)
+    public List<FileDB> getFiles() {
+        return files;
+    }
+
+    public void setFiles(List<FileDB> files) {
+        this.files = files;
+    }
+
+
+    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL)
     public List<Comment> getComments() {
         return comments;
     }
@@ -64,7 +67,7 @@ public class Post {
         this.comments = comments;
     }
 
-    @OneToMany(mappedBy = "users", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL)
     public List<Reaction> getReactions() {
         return reactions;
     }
@@ -74,7 +77,7 @@ public class Post {
     }
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
+    @JoinColumn(name = "user_id", referencedColumnName = "id", insertable = false, updatable = false)
     public User getUser() {
         return user;
     }

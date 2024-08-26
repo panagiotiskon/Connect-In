@@ -12,14 +12,10 @@ public class FileDB {
     @GeneratedValue(generator = "uuid")
     @GenericGenerator(name = "uuid", strategy = "uuid2")
     private String id;
-
     private String name;
-
     private String type;
-
     @Lob
     private byte[] data;
-
     private Boolean isProfilePicture;
 
     @Column(name = "user_email", nullable = false)
@@ -28,6 +24,9 @@ public class FileDB {
     @OneToOne
     @JoinColumn(name = "user_email", referencedColumnName = "email", insertable = false, updatable = false)
     private User user;
+
+    @Column(name = "post_id")
+    private Long postId;
 
     public FileDB() {
     }
@@ -97,6 +96,14 @@ public class FileDB {
 
     public void setUser(User user) {
         this.user = user;
-        this.userEmail = user.getEmail(); // Ensure userEmail is in sync
+        this.userEmail = user.getEmail();
+    }
+
+    public Long getPostId() {
+        return postId;
+    }
+
+    public void setPostId(Long post) {
+        this.postId = post;
     }
 }

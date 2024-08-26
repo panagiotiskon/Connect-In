@@ -42,8 +42,8 @@ public class Comment {
         this.createdAt = createdAt;
     }
 
-    @ManyToOne
-    @JoinColumn(name = "user_id", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id",  referencedColumnName = "id", insertable = false, updatable = false)
     public User getUser() {
         return user;
     }
@@ -52,8 +52,8 @@ public class Comment {
         this.user = user;
     }
 
-    @ManyToOne
-    @JoinColumn(name = "post_id", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "post_id",  referencedColumnName = "id", insertable = false, updatable = false)
     public Post getPost() {
         return post;
     }
