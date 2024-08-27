@@ -19,6 +19,9 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @RestController
 @RequestMapping("auth")
 @CrossOrigin(origins = "http://localhost:3000", allowCredentials = "true")
@@ -54,6 +57,19 @@ public class AuthController {
 
         } catch (ResponseStatusException e) {
             return ResponseEntity.status(HttpStatus.CONFLICT).build();
+        }
+    }
+
+    @PostMapping("/validate-email")
+    public ResponseEntity<Map<String, Boolean>> validateEmail(@RequestBody String email) {
+        Map<String, Boolean> response = new HashMap<>();
+        try{
+            userService.validateEmail(email);
+            response.put("isValid", true);
+            return ResponseEntity.ok(response); // Send a JSON response with isValid: true
+        } catch (ResponseStatusException e) {
+            response.put("isValid", false);
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(response); // Send a JSON response with isValid: false
         }
     }
 
