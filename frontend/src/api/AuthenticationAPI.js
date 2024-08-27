@@ -1,8 +1,8 @@
 import axios from "axios";
 import test from "../assets/test-photo-profile.png";
 
-const API_URL = "http://localhost:8080/auth";
-const UPLOAD_URL = "http://localhost:8080/auth/upload"; // Add your upload URL here
+const API_URL = "https://localhost:8443/auth";
+const UPLOAD_URL = "https://localhost:8443/auth/upload"; // Add your upload URL here
 
 axios.defaults.withCredentials = true;
 

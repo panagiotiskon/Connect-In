@@ -21,8 +21,9 @@ public class User {
     private String photoPath;
     private Instant createdAt;
     private Instant updatedAt;
-
     private List<Role> roles = new ArrayList<>();
+    private FileDB profilePicture;
+    private List<Post> posts = new ArrayList<>();
 
     public User() {
     }
@@ -123,5 +124,23 @@ public class User {
 
     public void setRoles(List<Role> roles) {
         this.roles = roles;
+    }
+
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    public FileDB getProfilePicture() {
+        return profilePicture;
+    }
+
+    public void setProfilePicture(FileDB profilePicture) {
+        this.profilePicture = profilePicture;
+    }
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    public List<Post> getPosts() {
+        return posts;
+    }
+
+    public void setPosts(List<Post> posts) {
+        this.posts = posts;
     }
 }
