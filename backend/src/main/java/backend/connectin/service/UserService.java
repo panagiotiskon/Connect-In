@@ -34,12 +34,16 @@ public class UserService {
         this.passwordEncoder = passwordEncoder;
     }
 
-    public void registerUser(UserRegisterRequest userRegisterRequest) {
-        String email = userRegisterRequest.getEmail();
-        // Check if user with the given email already exists
+    // Check if user with the given email already exists
+    public void validateEmail(String email) {
         if (userRepository.findUserByEmail(email).isPresent()) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Email already exists");
         }
+    }
+
+    public void registerUser(UserRegisterRequest userRegisterRequest) {
+        String email = userRegisterRequest.getEmail();
+        validateEmail(email);
         User user = userMapper.mapToUser(userRegisterRequest);
         userRepository.save(user);
     }

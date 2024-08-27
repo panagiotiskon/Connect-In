@@ -46,34 +46,50 @@ public class FileController {
         }
     }
 
+//    @PostMapping("/upload")
+//    public ResponseEntity<String> uploadFile(
+//            //@RequestParam("preUploadId") String preUploadId,
+//            @RequestParam("isProfilePicture") Boolean isProfilePicture,
+//            @RequestParam("userEmail") String userEmail) {
+//        String message = "";
+//        try {
+//            // Retrieve the pre-uploaded file from temp storage
+//            FileDB preUploadedFile = tempStorage.get(preUploadId);
+//            if (preUploadedFile == null) {
+//                return new ResponseEntity<>("Pre-uploaded file not found!", HttpStatus.BAD_REQUEST);
+//            }
+//
+//            // Store the file permanently
+//            FileDB fileToSave = new FileDB(preUploadedFile.getName(), preUploadedFile.getType(), preUploadedFile.getData(), isProfilePicture, userEmail);
+//            fileService.save(fileToSave);
+//
+//            // Remove the file from temporary storage
+//            tempStorage.remove(preUploadId);
+//
+//            message = "Uploaded the file successfully: " + preUploadedFile.getName();
+//            return new ResponseEntity<>(message, HttpStatus.OK);
+//        } catch (Exception e) {
+//            message = "Could not upload the file!";
+//            return new ResponseEntity<>(message, HttpStatus.EXPECTATION_FAILED);
+//        }
+//    }
+
+
     @PostMapping("/upload")
-    public ResponseEntity<String> uploadFile(
-            @RequestParam("preUploadId") String preUploadId,
-            @RequestParam("isProfilePicture") Boolean isProfilePicture,
-            @RequestParam("userEmail") String userEmail) {
+    public ResponseEntity<?> uploadFile(@RequestParam("file") MultipartFile file,
+                                        @RequestParam("isProfilePicture") String isProfilePicture,
+                                        @RequestParam("userEmail") String userEmail) {
         String message = "";
         try {
-            // Retrieve the pre-uploaded file from temp storage
-            FileDB preUploadedFile = tempStorage.get(preUploadId);
-            if (preUploadedFile == null) {
-                return new ResponseEntity<>("Pre-uploaded file not found!", HttpStatus.BAD_REQUEST);
-            }
-
-            // Store the file permanently
-            FileDB fileToSave = new FileDB(preUploadedFile.getName(), preUploadedFile.getType(), preUploadedFile.getData(), isProfilePicture, userEmail);
-            fileService.save(fileToSave);
-
-            // Remove the file from temporary storage
-            tempStorage.remove(preUploadId);
-
-            message = "Uploaded the file successfully: " + preUploadedFile.getName();
+            Boolean flag = Boolean.parseBoolean(isProfilePicture);
+            fileService.store(file, flag, userEmail);
+            message = "Uploaded the file successfully: " + file.getOriginalFilename();
             return new ResponseEntity<>(message, HttpStatus.OK);
         } catch (Exception e) {
-            message = "Could not upload the file!";
+            message = "Could not upload the file: " + file.getOriginalFilename() + "!";
             return new ResponseEntity<>(message, HttpStatus.EXPECTATION_FAILED);
         }
     }
-
 
     @GetMapping("/files")
     public ResponseEntity<List<?>> getListFiles() {
