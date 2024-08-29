@@ -4,7 +4,32 @@
   align-items: center;
   justify-content: center;
   min-height: 100vh; /* Ensures it covers the full viewport height */
+  padding: 50px;
   margin: 0;
+}
+
+.connectInLogo {
+  width: 200px; /* Adjust the size of the logo */
+  height: auto; /* Maintain aspect ratio */
+  margin-bottom: 20px; /* Space below the logo */
+}
+
+/* Responsive design adjustments */
+
+@media (max-width: 768px) {
+  .register-wrapper {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .connectInLogo {
+    width: 180px; /* Reduce the logo size for smaller screens */
+  }
+
+  .register-message {
+    font-size: 24px; /* Adjust font size for smaller screens */
+    margin-bottom: 20px; /* Reduce space below the heading */
+  }
 }
 
 .register-message {
@@ -15,4 +40,8 @@
   line-height: 1.2;
   color: #000000aa;
   text-shadow: 0 1px 1px rgba(0, 0, 0, 0.1);
+}
+
+.register-photo {
+  max-width: 100%; /* Ensures the image is responsive */
 }

@@ -25,7 +25,7 @@ const RegisterComponent = () => {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const navigate = useNavigate();
-  const [photo, setPhoto] = useState(null); // State to handle photo
+  const [photo, setPhoto] = useState(null);
 
   const onSubmit = (data) => {
     setMessage("");
@@ -43,28 +43,27 @@ const RegisterComponent = () => {
       data.surname,
       data.password,
       data.phoneNumber,
-      photo // Include the photo in the registration data
-    ).then(
-      () => {
-        navigate("/home");
-        window.location.reload();
-      },
-      (error) => {
-        const resMessage =
-          (error.response &&
-            error.response.data &&
-            error.response.data.message) ||
-          error.message ||
-          error.toString();
+      photo
+    )
+    .then(() => {
+      navigate("/home");
+      window.location.reload();
+    })
+    .catch((error) => {
+      const resMessage =
+        (error.response &&
+          error.response.data &&
+          error.response.data.message) ||
+        error.message ||
+        error.toString();
 
-        setLoading(false);
-        setMessage(resMessage);
-      }
-    );
+      setLoading(false);
+      setMessage(resMessage);
+    });
   };
 
   const handleFileUpload = (file) => {
-    setPhoto(file); // Set the photo when successfully uploaded
+    setPhoto(file);
   };
 
   return (
@@ -209,7 +208,7 @@ const RegisterComponent = () => {
               <MDBBtn
                 type="submit"
                 size="lg"
-                className="mb-4"
+                className="mb-4 mt-5"
                 disabled={loading}
               >
                 {loading && (
