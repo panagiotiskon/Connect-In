@@ -2,7 +2,7 @@ package backend.connectin.web.controllers;
 
 import backend.connectin.domain.User;
 import backend.connectin.security.JWTGenerator;
-import backend.connectin.service.AuthService;
+import backend.connectin.service.FileService;
 import backend.connectin.service.UserService;
 import backend.connectin.web.mappers.AuthResourceMapper;
 import backend.connectin.web.requests.UserChangeEmailRequest;
@@ -17,6 +17,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.HashMap;
@@ -32,7 +33,7 @@ public class AuthController {
     private final JWTGenerator jwtGenerator;
     private final AuthResourceMapper authResourceMapper;
 
-    public AuthController(UserService userService, AuthService authService, AuthenticationManager authenticationManager, JWTGenerator jwtGenerator, AuthResourceMapper authResourceMapper) {
+    public AuthController(UserService userService, AuthenticationManager authenticationManager, JWTGenerator jwtGenerator, AuthResourceMapper authResourceMapper, FileService fileService) {
         this.userService = userService;
         this.authenticationManager = authenticationManager;
         this.jwtGenerator = jwtGenerator;
@@ -48,22 +49,32 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<AuthResource> register(@RequestBody UserRegisterRequest userRegisterRequest) {
+    public ResponseEntity<AuthResource> register(
+            @RequestParam("email") String email,
+            @RequestParam("password") String password,
+            @RequestParam("firstName") String firstName,
+            @RequestParam("lastName") String lastName,
+            @RequestParam("phoneNumber") String phoneNumber,
+            @RequestParam("profilePicture") MultipartFile profilePicture) {
+
         try {
+            UserRegisterRequest userRegisterRequest = new UserRegisterRequest(email, password, lastName,
+                    firstName, profilePicture, phoneNumber);
             userService.registerUser(userRegisterRequest);
-            String token = authenticateUser(userRegisterRequest.getEmail(), userRegisterRequest.getPassword());
-            AuthResource authResource = authResourceMapper.mapToAuthResource(token, userRegisterRequest.getEmail());
+            String token = authenticateUser(email, password);
+            AuthResource authResource = authResourceMapper.mapToAuthResource(token, email);
             return new ResponseEntity<>(authResource, HttpStatus.OK);
 
         } catch (ResponseStatusException e) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).build();
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
         }
     }
+
 
     @PostMapping("/validate-email")
     public ResponseEntity<Map<String, Boolean>> validateEmail(@RequestBody String email) {
         Map<String, Boolean> response = new HashMap<>();
-        try{
+        try {
             userService.validateEmail(email);
             response.put("isValid", true);
             return ResponseEntity.ok(response); // Send a JSON response with isValid: true
