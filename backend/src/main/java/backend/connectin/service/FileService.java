@@ -14,7 +14,7 @@ public class FileService {
 
     private final FileDBRepository fileDBRepository;
 
-    public FileService(FileDBRepository fileDBRepository, UserService userService) {
+    public FileService(FileDBRepository fileDBRepository) {
         this.fileDBRepository = fileDBRepository;
     }
 
