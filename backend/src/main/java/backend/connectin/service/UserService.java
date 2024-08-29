@@ -7,6 +7,7 @@ import backend.connectin.web.requests.UserChangeEmailRequest;
 import backend.connectin.web.requests.UserChangePasswordRequest;
 import backend.connectin.web.requests.UserRegisterRequest;
 import backend.connectin.web.resources.UserResource;
+import jakarta.transaction.Transactional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -14,8 +15,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -26,12 +29,14 @@ public class UserService {
     private final UserRepository userRepository;
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
+    private final FileService fileService;
 
 
-    public UserService(UserRepository userRepository, UserMapper userMapper, PasswordEncoder passwordEncoder) {
+    public UserService(UserRepository userRepository, UserMapper userMapper, PasswordEncoder passwordEncoder, FileService fileService) {
         this.userRepository = userRepository;
         this.userMapper = userMapper;
         this.passwordEncoder = passwordEncoder;
+        this.fileService = fileService;
     }
 
     // Check if user with the given email already exists
@@ -41,11 +46,24 @@ public class UserService {
         }
     }
 
-    public void registerUser(UserRegisterRequest userRegisterRequest) {
+    @Transactional
+    public void registerUser(UserRegisterRequest userRegisterRequest){
         String email = userRegisterRequest.getEmail();
-        validateEmail(email);
-        User user = userMapper.mapToUser(userRegisterRequest);
-        userRepository.save(user);
+        try{
+            validateEmail(email);
+            User user = userMapper.mapToUser(userRegisterRequest);
+            userRepository.save(user);
+        }
+        catch(ResponseStatusException e){
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Email already exists");
+        }
+        try{
+            fileService.store(userRegisterRequest.getProfilePicture(), true, email); // Adjusted to directly use the MultipartFile
+        }
+        catch(IOException e){
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Profile picture cannot be saved");
+        }
+
     }
 
     public Page<UserResource> fetchAll(String roleName, Pageable pageable) {
