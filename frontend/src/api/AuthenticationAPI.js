@@ -9,7 +9,9 @@ axios.defaults.withCredentials = true;
 // Upload Photo Function
 const uploadPhoto = async (file) => {
   const formData = new FormData();
-  formData.append("file", file);
+  if(file){
+    formData.append("file", file);
+  }
 
   try {
     const response = await axios.post(UPLOAD_URL, formData, {
@@ -75,48 +77,59 @@ const logout = () => {
 };
 
 // Register Function
-const register = async (
-  email,
-  name,
-  surname,
-  password,
-  phoneNumber,
-  photoFile
-) => {
-  try {
-    // Step 1: Upload photo
-    const uploadResponse = await uploadPhoto(photoFile);
-    console.log("Photo uploaded successfully!");
+const register = (email, name, surname, password, phoneNumber, photo) => {
+  // Prepare form data to send to the server
+  const formData = new FormData();
+  formData.append("email", email);
+  formData.append("firstName", name);
+  formData.append("lastName", surname);
+  formData.append("password", password);
+  formData.append("phoneNumber", phoneNumber);
 
-    // Step 2: Prepare registration data (excluding photo)
-    const data = {
-      email,
-      password,
-      firstName: name,
-      lastName: surname,
-      phoneNumber,
-      // Add photo URL to registration data if needed
-      // photoUrl: uploadResponse.photoUrl,  // Assuming backend returns URL of the uploaded photo
-    };
+  // Append the photo file if it exists
+  if (photo) {
+    formData.append("profilePicture", photo); // Ensure this matches your backend field name
+  }
 
-    // Step 3: Register the user
-    const registerResponse = await axios.post(API_URL + "/register", data, {
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
+  // Send the form data using axios
+  return axios.post(API_URL + "/register", formData, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  })
+  .then((response) => {
+    // Log the full response object
+    console.log("Register Response:", response);
 
-    console.log("Register Response:", registerResponse);
-
-    if (registerResponse.data.accessToken) {
-      localStorage.setItem("user", JSON.stringify(registerResponse.data));
+    // Save user data to localStorage if accessToken is available
+    if (response.data.accessToken) {
+      localStorage.setItem("user", JSON.stringify(response.data));
     }
 
-    return registerResponse.data;
-  } catch (error) {
+    return response.data;
+  })
+  .catch((error) => {
+    // Enhanced error logging
     console.error("Registration Error:", error.message, error.config);
-    throw error;
-  }
+
+    if (error.response) {
+      // The request was made and the server responded with a status code
+      console.error("Error Response Data:", error.response.data); // Log response data
+      console.error("Error Response Status:", error.response.status); // Log response status
+      console.error("Error Response Headers:", error.response.headers); // Log response headers
+    } else if (error.request) {
+      // The request was made but no response was received
+      console.error("Error Request:", error.request); // Log request data
+    } else {
+      // Something happened in setting up the request that triggered an Error
+      console.error("Error Message:", error.message); // Log error message
+    }
+
+    // Log the config used for the request
+    console.error("Error Config:", error.config); // Log error config
+
+    throw error; // Re-throw error after logging
+  });
 };
 
 // Get Current User Function
@@ -126,14 +139,16 @@ const getCurrentUser = () => {
   return user;
 };
 
+// AuthService Object
 const AuthService = {
   register,
+  uploadPhoto,
   login,
   logout,
   getCurrentUser,
-  uploadPhoto, // Optional: You can keep this method public in case you need it elsewhere
 };
 
+// Export AuthService as default
 export default AuthService;
 
 // const mockUser = {
