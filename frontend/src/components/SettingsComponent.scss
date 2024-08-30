@@ -1,0 +1,87 @@
+* {
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+    background-color: #f3f2ef;
+}
+
+.mt-5 {
+    margin-top: 3rem !important;
+}
+
+.mb-5 {
+    margin-bottom: 3rem !important;
+}
+
+.column-uniform {
+    padding-left: 40px;
+    padding-right: 40px;
+}
+
+.card-custom {
+    min-height: 25vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.card-active {
+    border: 1px solid red;
+}
+
+.card-body-flex {
+    flex: 1;
+}
+
+.card-title {
+    display: flex;
+    align-self: center;
+}
+
+.form-control {
+    margin-bottom: 1rem;
+}
+
+.input-active {
+    border-color: rgb(236, 232, 232);
+}
+
+.btn-custom {
+    background-color: #35677e !important;
+    color: #fff;
+    margin: 16px;
+    border: none;
+    transition: background-color 0.3s;
+
+    &:hover {
+        background-color: #0056b3;
+    }
+}
+
+.button-container {
+    display: flex;
+    justify-content: center;
+    margin-top: 1rem;
+}
+
+
+.footer {
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    color: white;
+    background-color: #35677e;
+    text-align: center;
+    font-size: 10pt;
+    overflow: hidden;
+    display: flex;
+    align-items: center !important;
+    justify-content: center;
+    margin-top: 5px;
+}
+
+.footer-text {
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    margin-top: 5px;
+    margin-bottom: 5px;
+}

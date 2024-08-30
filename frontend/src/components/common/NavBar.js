@@ -57,45 +57,45 @@ const NavbarComponent = () => {
                 aria-current="page"
                 onClick={handleHomeClick}
               >
-                <MDBIcon fas icon="home" size="2x" />
+                <MDBIcon fas icon="home" style={{ fontSize: '1.4rem' }} />
               </MDBNavbarLink>
-              <span>Home</span>
+              <span style={{ fontSize: '0.9rem' }}>Home</span>
             </MDBNavbarItem>
             <MDBNavbarItem className="d-flex flex-column align-items-center navbar-nav-item">
               <MDBNavbarLink onClick={handleNetworkClick}>
-                <MDBIcon fas icon="users" size="2x" />
+              <MDBIcon fas icon="users" style={{ fontSize: '1.4rem' }} />
               </MDBNavbarLink>
-              <span>Network</span>
+              <span style={{ fontSize: '0.9rem' }}>Network</span>
             </MDBNavbarItem>
             <MDBNavbarItem className="d-flex flex-column align-items-center navbar-nav-item">
               <MDBNavbarLink onClick={handleJobsClick}>
-                <MDBIcon fas icon="suitcase" size="2x" />
+                <MDBIcon fas icon="suitcase" style={{ fontSize: '1.4rem' }}/>
               </MDBNavbarLink>
-              <span>Jobs</span>
+              <span style={{ fontSize: '0.9rem' }}>Jobs</span>
             </MDBNavbarItem>
             <MDBNavbarItem className="d-flex flex-column align-items-center navbar-nav-item">
               <MDBNavbarLink onClick={handleMessagingClick}>
-                <MDBIcon fas icon="message" size="2x" />
+                <MDBIcon fas icon="message" style={{ fontSize: '1.4rem' }} />
               </MDBNavbarLink>
-              <span>Messaging</span>
+              <span style={{ fontSize: '0.9rem' }}>Messaging</span>
             </MDBNavbarItem>
             <MDBNavbarItem className="d-flex flex-column align-items-center navbar-nav-item">
               <MDBNavbarLink onClick={handleNotificationsClick}>
-                <MDBIcon fas icon="exclamation" size="2x" />
+                <MDBIcon fas icon="exclamation" style={{ fontSize: '1.4rem' }} />
               </MDBNavbarLink>
-              <span>Notifications</span>
+              <span style={{ fontSize: '0.9rem' }}>Notifications</span>
             </MDBNavbarItem>
             <MDBNavbarItem className="d-flex flex-column align-items-center navbar-nav-item">
               <MDBNavbarLink onClick={handleProfilePageClick}>
-                <MDBIcon fas icon="user-circle" size="2x" />
+                <MDBIcon fas icon="user-circle" style={{ fontSize: '1.4rem' }} />
               </MDBNavbarLink>
-              <span>Profile</span>
+              <span style={{ fontSize: '0.9rem' }}>Profile</span>
             </MDBNavbarItem>
             <MDBNavbarItem className="d-flex flex-column align-items-center navbar-nav-item">
               <MDBNavbarLink onClick={handleSettingsClick}>
-                <MDBIcon fas icon="cog" size="2x" />
+                <MDBIcon fas icon="cog" style={{ fontSize: '1.4rem' }}/>
               </MDBNavbarLink>
-              <span>Settings</span>
+              <span style={{ fontSize: '0.9rem' }}>Settings</span>
             </MDBNavbarItem>
           </MDBNavbarNav>
         </MDBCollapse>
