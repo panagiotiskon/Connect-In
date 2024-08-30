@@ -80,13 +80,16 @@ body {
 
 /* Style for Sign In button */
 .sign-in-button {
-  margin-bottom: 15px;
+  margin: 5%;
+  border: 100px !important;
+    
   width: 100%;
   max-width: 350px;
   height: 45px;
   background-color: #35677e !important;
-  color: white; /* Text color on the button */
-  cursor: pointer; /* Change cursor to pointer on hover */
+  border: 100px;
+  color: white; 
+  cursor: pointer; 
 }
 
 
