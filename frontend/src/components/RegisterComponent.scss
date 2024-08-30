@@ -24,7 +24,6 @@ body {
   max-width: 400px;
 }
 
-/* Style for ConnectIn Logo */
 .connectInLogo {
   width: 200px;
   margin-bottom: 20px;
@@ -41,22 +40,18 @@ body {
   margin-bottom: 20px;
 }
 
-/* Wider input fields */
 .wide-input {
   width: 100%;
   max-width: 350px;
-  /* Adjust input width */
   margin-bottom: 20px;
 }
 
-/* Centering the Register button */
 .text-center {
   display: flex;
   justify-content: center;
   margin-top: 10px;
 }
 
-/* Style for Register button */
 .register-button {
   margin-bottom: 15px;
   width: 100%;
@@ -68,10 +63,9 @@ body {
 }
 
 .register-button:hover {
-  background-color: #2a4d6a; /* Optional: Darker shade on hover for better UX */
+  background-color: #2a4d6a; 
 }
 
-/* Styling for links and error message placeholders */
 .link {
   color: #35677e;
   text-decoration: none;
@@ -82,8 +76,6 @@ body {
 .link:hover {
   text-decoration: underline;
 }
-
-
 
 .inner-footer-text {
   text-align: center;

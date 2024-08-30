@@ -241,7 +241,6 @@ const RegisterComponent = () => {
           </MDBContainer>
         </form>
 
-        {/* Footer Link */}
         <div className="text-center"
           onClick={() => {
             navigate("/");
