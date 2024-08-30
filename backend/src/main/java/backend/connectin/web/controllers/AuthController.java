@@ -95,8 +95,7 @@ public class AuthController {
     @PostMapping("/change-email")
     public ResponseEntity<String> changeEmail(@RequestBody UserChangeEmailRequest userChangeEmailRequest) {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
-        User user = userService.findUserByEmail(email).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
-        return userService.updateUserEmail(user, userChangeEmailRequest);
+        return userService.updateUserEmail(userChangeEmailRequest);
     }
 
     private String authenticateUser(String email, String password) {
