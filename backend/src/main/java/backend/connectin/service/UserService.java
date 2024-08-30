@@ -88,7 +88,6 @@ public class UserService {
     }
 
     public ResponseEntity<String> updatePassword(User user, UserChangePasswordRequest userChangePasswordRequest) {
-        // Check if the old password matches
         if (!passwordEncoder.matches(userChangePasswordRequest.getOldPassword(), user.getPassword())) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Old password is incorrect.");
         }
@@ -98,13 +97,15 @@ public class UserService {
         return ResponseEntity.ok("Password updated successfully.");
     }
 
-    public ResponseEntity<String> updateUserEmail(User user, UserChangeEmailRequest userChangeEmailRequest) {
-        if (userRepository.findUserByEmail(userChangeEmailRequest.getNewEmail()).isPresent()) {
+    public ResponseEntity<String> updateUserEmail(UserChangeEmailRequest userChangeEmailRequest) {
+        String oldEmail = userChangeEmailRequest.getOldEmail();
+        String newEmail = userChangeEmailRequest.getNewEmail();
+        User user = findUserByEmail(oldEmail).orElseThrow(()-> new ResponseStatusException(HttpStatus.NOT_FOUND, "User with email '" + oldEmail + "' not found."));
+
+        if (userRepository.findUserByEmail(newEmail).isPresent()) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Email already exists");
-        } else if (userRepository.findUserByEmail(userChangeEmailRequest.getOldEmail()).isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Email not found");
         }
-        user.setEmail(userChangeEmailRequest.getNewEmail());
+        user.setEmail(newEmail);
         userRepository.save(user);
         return ResponseEntity.ok("Email updated successfully.");
     }
