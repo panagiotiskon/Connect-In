@@ -78,6 +78,8 @@ const LoginComponent = () => {
               {...register("password", { required: "Password is required" })}
               className={errors.password ? "is-invalid" : ""}
             />
+
+            {/* Centered Button Container */}
             <div className="text-center">
               <MDBBtn
                 type="submit"

@@ -3,15 +3,12 @@ import {
   MDBContainer,
   MDBInput,
   MDBBtn,
-  MDBRow,
-  MDBCol,
   MDBSpinner,
 } from "mdb-react-ui-kit";
 import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import AuthService from "../api/AuthenticationAPI";
 import ConnectInLogo from "../assets/ConnectIn.png";
-import register from "../assets/register.svg";
 import PhotoUpload from "./PhotoUpload";
 import "./RegisterComponent.scss";
 
@@ -37,7 +34,7 @@ const RegisterComponent = () => {
       return;
     }
 
-    AuthService.register(
+      AuthService.register(
       data.email,
       data.name,
       data.surname,
@@ -45,21 +42,21 @@ const RegisterComponent = () => {
       data.phoneNumber,
       photo
     )
-    .then(() => {
-      navigate("/home");
-      window.location.reload();
-    })
-    .catch((error) => {
-      const resMessage =
-        (error.response &&
-          error.response.data &&
-          error.response.data.message) ||
-        error.message ||
-        error.toString();
+      .then(() => {
+        navigate("/home");
+        window.location.reload();
+      })
+      .catch((error) => {
+        const resMessage =
+          (error.response &&
+            error.response.data &&
+            error.response.data.message) ||
+          error.message ||
+          error.toString();
 
-      setLoading(false);
-      setMessage(resMessage);
-    });
+        setLoading(false);
+        setMessage(resMessage);
+      });
   };
 
   const handleFileUpload = (file) => {
@@ -69,85 +66,89 @@ const RegisterComponent = () => {
   return (
     <div className="register-wrapper">
       <img src={ConnectInLogo} alt="ConnectIn Logo" className="connectInLogo" />
-      <h2 className="register-message">
-        Make the most of your professional life
-      </h2>
-      <form onSubmit={handleSubmit(onSubmit)}>
-        <MDBContainer>
-          <MDBRow>
-            <MDBCol
-              md="10"
-              lg="6"
-              className="order-2 order-lg-1 d-flex flex-column align-items-center"
-            >
+      <div className="form-container">
+        <h2 className="subheading">Make the most of your professional life</h2>
+        <form onSubmit={handleSubmit(onSubmit)}>
+          <MDBContainer>
+
+            <div className="form-group mb-4">
               <MDBInput
                 size="lg"
-                wrapperClass="mb-4"
-                label="Your Email"
+                label="Email address"
                 id="form2"
                 type="email"
+                placeholder={errors.email ? errors.email.message : "Email"}
                 {...formRegister("email", { required: "Email is required" })}
+                className={errors.email ? "is-invalid" : ""}
               />
               {errors.email && (
                 <div className="invalid-feedback d-block">
                   {errors.email.message}
                 </div>
               )}
+            </div>
 
+            <div className="form-group mb-4">
               <MDBInput
                 size="lg"
-                wrapperClass="mb-4"
-                label="Your Name"
+                label="First Name"
                 id="form1"
                 type="text"
+                placeholder={errors.name ? errors.name.message : "First Name"}
                 {...formRegister("name", {
-                  required: "Name is required",
+                  required: "First name is required",
                   minLength: {
                     value: 3,
-                    message: "Name must be at least 3 characters long",
+                    message: "First name must be at least 3 characters long",
                   },
                   maxLength: {
                     value: 20,
-                    message: "Name must be less than 20 characters long",
+                    message: "First name must be less than 20 characters long",
                   },
                 })}
+                className={errors.name ? "is-invalid" : ""}
               />
               {errors.name && (
                 <div className="invalid-feedback d-block">
                   {errors.name.message}
                 </div>
               )}
+            </div>
 
+            <div className="form-group mb-4">
               <MDBInput
                 size="lg"
-                wrapperClass="mb-4"
-                label="Your Surname"
+                label="Last Name"
                 id="form1"
                 type="text"
+                placeholder={errors.surname ? errors.surname.message : "Last Name"}
                 {...formRegister("surname", {
-                  required: "Surname is required",
+                  required: "Last name is required",
                   minLength: {
                     value: 3,
-                    message: "Surname must be at least 3 characters long",
+                    message: "Last name must be at least 3 characters long",
                   },
                   maxLength: {
                     value: 20,
-                    message: "Surname must be less than 20 characters long",
+                    message: "Last name must be less than 20 characters long",
                   },
                 })}
+                className={errors.surname ? "is-invalid" : ""}
               />
               {errors.surname && (
                 <div className="invalid-feedback d-block">
                   {errors.surname.message}
                 </div>
               )}
+            </div>
 
+            <div className="form-group mb-4">
               <MDBInput
                 size="lg"
-                wrapperClass="mb-4"
                 label="Password"
                 id="form3"
                 type="password"
+                placeholder={errors.password ? errors.password.message : "Password"}
                 {...formRegister("password", {
                   required: "Password is required",
                   minLength: {
@@ -159,35 +160,43 @@ const RegisterComponent = () => {
                     message: "Password must be less than 20 characters long",
                   },
                 })}
+                className={errors.password ? "is-invalid" : ""}
               />
               {errors.password && (
                 <div className="invalid-feedback d-block">
                   {errors.password.message}
                 </div>
               )}
+            </div>
 
+            <div className="form-group mb-4">
               <MDBInput
                 size="lg"
-                wrapperClass="mb-4"
-                label="Repeat your password"
+                label="Repeat Password"
                 id="form4"
                 type="password"
+                placeholder="Repeat Password"
                 {...formRegister("repeatPassword", {
                   required: "Please confirm your password",
                 })}
+                className={
+                  watch("password") !== watch("repeatPassword") ? "is-invalid" : ""
+                }
               />
               {watch("password") !== watch("repeatPassword") && (
                 <div className="invalid-feedback d-block">
                   Passwords do not match.
                 </div>
               )}
+            </div>
 
+            <div className="form-group mb-4">
               <MDBInput
                 size="lg"
-                wrapperClass="mb-4"
-                label="Your Phone Number"
+                label="Phone Number"
                 id="form1"
                 type="tel"
+                placeholder={errors.phoneNumber ? errors.phoneNumber.message : "Phone Number"}
                 {...formRegister("phoneNumber", {
                   required: "Phone number is required",
                   pattern: {
@@ -195,20 +204,22 @@ const RegisterComponent = () => {
                     message: "Phone number must contain 10 digits",
                   },
                 })}
+                className={errors.phoneNumber ? "is-invalid" : ""}
               />
               {errors.phoneNumber && (
                 <div className="invalid-feedback d-block">
                   {errors.phoneNumber.message}
                 </div>
               )}
+            </div>
 
-              {/* PhotoUpload component */}
-              <PhotoUpload onFileUpload={handleFileUpload} />
+            <PhotoUpload onFileUpload={handleFileUpload} />
 
+            <div className="text-center">
               <MDBBtn
                 type="submit"
                 size="lg"
-                className="mb-4 mt-5"
+                className="sign-in-button"
                 disabled={loading}
               >
                 {loading && (
@@ -218,26 +229,33 @@ const RegisterComponent = () => {
                 )}
                 <span>Register</span>
               </MDBBtn>
+            </div>
 
-              {message && (
-                <div className="form-group">
-                  <div className="alert alert-danger" role="alert">
-                    {message}
-                  </div>
+            {message && (
+              <div className="form-group">
+                <div className="alert alert-danger" role="alert">
+                  {message}
                 </div>
-              )}
-            </MDBCol>
+              </div>
+            )}
+          </MDBContainer>
+        </form>
 
-            <MDBCol
-              md="10"
-              lg="6"
-              className="order-1 order-lg-2 d-flex align-items-center"
-            >
-              <img src={register} alt="register" className="register-photo" />
-            </MDBCol>
-          </MDBRow>
-        </MDBContainer>
-      </form>
+        {/* Footer Link */}
+        <div className="text-center"
+          onClick={() => {
+            navigate("/");
+            window.location.reload();
+          }}
+        >
+          <p className="inner-footer-text">
+            Already have an account? <a href="#!" className="link">Sign in</a>
+          </p>
+        </div>
+      </div>
+      <footer className="footer">
+        <p className="footer-text"> &copy; Panagiotis Kontoeidis & Stelios Dimitriadis </p>
+      </footer>
     </div>
   );
 };

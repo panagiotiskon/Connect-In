@@ -1,13 +1,9 @@
-import React, { useCallback, useState } from "react";
+import React, { useState } from "react";
 import { useDropzone } from "react-dropzone";
 import Popup from "reactjs-popup";
 import { MDBIcon } from "mdb-react-ui-kit";
-import AuthService from "../api/AuthenticationAPI"; // Adjust the path
 import "reactjs-popup/dist/index.css";
 
-// PhotoUpload.jsx
-
-import PropTypes from "prop-types";
 
 const PhotoUpload = ({ onFileUpload }) => {
   const [previewUrl, setPreviewUrl] = useState(null);
