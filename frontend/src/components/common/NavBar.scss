@@ -1,0 +1,61 @@
+.navbar-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 20px; 
+    width: 100%; 
+  }
+  
+  .navbar-logo {
+    max-width: 150px;
+    height: auto;
+  }
+  
+  .navbar-nav {
+    display: flex ;
+    column-gap: 50px; 
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif !important; 
+  }
+  
+  .navbar-item {
+    padding: 0 10px; /* Adjust the padding to fine-tune the spacing */
+  }
+  
+  .navbar-collapse {
+    display: flex !important;
+    justify-content: flex-end; 
+    padding-right: 20px; 
+  }
+  
+
+  @media (max-width: 768px) {
+    .navbar-container {
+      flex-direction: column;
+      justify-content: space-between;
+      align-items: center;
+    }
+  
+    .navbar-logo {
+      margin-bottom: 10px;
+      text-align: center;
+    }
+  
+    .navbar-toggler {
+      display: block;
+      margin-bottom: 10px;
+      text-align: right;
+    }
+  
+    .navbar-nav {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 15px;
+      width: 100%;
+    }
+    .navbar-item {
+      width: 100%; /* Makes each item take full width */
+      text-align: center; /* Centers the text within each item */
+    }
+      
+  }

@@ -1,17 +1,20 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import "./NavBar.scss";
+
 import {
-  MDBContainer,
   MDBNavbar,
-  MDBNavbarToggler,
   MDBNavbarNav,
+  MDBNavbarItem,
   MDBNavbarLink,
   MDBIcon,
   MDBCollapse,
-  MDBNavbarItem,
+  MDBContainer,
+  MDBNavbarToggler
 } from "mdb-react-ui-kit";
 import ConnectInLogo from "../../assets/ConnectIn.png"; // Adjust the path if needed
 import AuthService from "../../api/AuthenticationAPI";
+
 
 const NavbarComponent = () => {
   const navigate = useNavigate();
@@ -31,42 +34,24 @@ const NavbarComponent = () => {
 
   return (
     <MDBNavbar expand="lg" light bgColor="light">
-      <MDBContainer
-        fluid
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-        }}
-      >
-        <div style={{ flex: "0 1 auto" }}>
+      <MDBContainer fluid className="navbar-container">
+        <div>
           <img
             src={ConnectInLogo}
             alt="ConnectIn Logo"
-            style={{ width: "200px", height: "auto", marginLeft: "60px" }}
+            className="navbar-logo"
           />
         </div>
         <MDBNavbarToggler
-          aria-expanded="false"
+          aria-expanded={openNavSecond}
           aria-label="Toggle navigation"
           onClick={() => setOpenNavSecond(!openNavSecond)}
-          style={{ flex: "0 1 auto", marginLeft: "20px" }}
+          className="navbar-toggler"
         >
-          <MDBIcon icon="bars" fas />
         </MDBNavbarToggler>
         <MDBCollapse navbar open={openNavSecond}>
-          <MDBNavbarNav
-            style={{
-              display: "flex",
-              justifyContent: "flex-end",
-              gap: "100px",
-              alignItems: "center",
-            }}
-          >
-            <MDBNavbarItem
-              className="d-flex flex-column align-items-center me-3 me-lg-0"
-              style={{ margin: "0 325px" }}
-            >
+          <MDBNavbarNav className="navbar-nav">
+            <MDBNavbarItem className="d-flex flex-column align-items-center navbar-nav-item">
               <MDBNavbarLink
                 active
                 aria-current="page"
@@ -76,37 +61,37 @@ const NavbarComponent = () => {
               </MDBNavbarLink>
               <span>Home</span>
             </MDBNavbarItem>
-            <MDBNavbarItem className="d-flex flex-column align-items-center">
+            <MDBNavbarItem className="d-flex flex-column align-items-center navbar-nav-item">
               <MDBNavbarLink onClick={handleNetworkClick}>
                 <MDBIcon fas icon="users" size="2x" />
               </MDBNavbarLink>
               <span>Network</span>
             </MDBNavbarItem>
-            <MDBNavbarItem className="d-flex flex-column align-items-center">
+            <MDBNavbarItem className="d-flex flex-column align-items-center navbar-nav-item">
               <MDBNavbarLink onClick={handleJobsClick}>
                 <MDBIcon fas icon="suitcase" size="2x" />
               </MDBNavbarLink>
               <span>Jobs</span>
             </MDBNavbarItem>
-            <MDBNavbarItem className="d-flex flex-column align-items-center">
+            <MDBNavbarItem className="d-flex flex-column align-items-center navbar-nav-item">
               <MDBNavbarLink onClick={handleMessagingClick}>
                 <MDBIcon fas icon="message" size="2x" />
               </MDBNavbarLink>
               <span>Messaging</span>
             </MDBNavbarItem>
-            <MDBNavbarItem className="d-flex flex-column align-items-center">
+            <MDBNavbarItem className="d-flex flex-column align-items-center navbar-nav-item">
               <MDBNavbarLink onClick={handleNotificationsClick}>
                 <MDBIcon fas icon="exclamation" size="2x" />
               </MDBNavbarLink>
               <span>Notifications</span>
             </MDBNavbarItem>
-            <MDBNavbarItem className="d-flex flex-column align-items-center">
+            <MDBNavbarItem className="d-flex flex-column align-items-center navbar-nav-item">
               <MDBNavbarLink onClick={handleProfilePageClick}>
                 <MDBIcon fas icon="user-circle" size="2x" />
               </MDBNavbarLink>
               <span>Profile</span>
             </MDBNavbarItem>
-            <MDBNavbarItem className="d-flex flex-column align-items-center">
+            <MDBNavbarItem className="d-flex flex-column align-items-center navbar-nav-item">
               <MDBNavbarLink onClick={handleSettingsClick}>
                 <MDBIcon fas icon="cog" size="2x" />
               </MDBNavbarLink>
