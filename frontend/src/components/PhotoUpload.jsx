@@ -84,7 +84,6 @@ const PhotoUpload = ({ onFileUpload }) => {
           background: popupType === "success" ? "#d4edda" : "#f8d7da",
           borderRadius: "8px",
           textAlign: "center",
-          position: "absolute",
           top: "20px",
           right: "20px",
           border: "none",

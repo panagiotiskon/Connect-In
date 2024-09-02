@@ -1,5 +1,7 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import NavbarComponent from "./common/NavBar";
+import AuthService from "../api/AuthenticationAPI";
+import axios from 'axios'
 import {
   MDBContainer,
   MDBRow,
@@ -13,8 +15,34 @@ import {
 } from "mdb-react-ui-kit";
 import { useForm } from "react-hook-form";
 import "./SettingsComponent.scss";
+import { useNavigate } from "react-router-dom";
 
 export default function SettingsComponent() {
+
+
+  const navigate = useNavigate();
+  const[isAuthenticated,setIsAuthenticated] = useState(false);
+
+  useEffect(() => {
+    const checkAuthStatus = async () => {
+      try {
+        // Call the getCurrentUser function to check user authentication
+        await AuthService.getCurrentUser();
+        setIsAuthenticated(true);
+      } catch (error) {
+        // Check if the error response status is 401
+        if (error.response && error.response.status === 401) {
+          setIsAuthenticated(false);
+          navigate("/");
+        } else {
+          console.error('Error checking authentication status:', error);
+        }
+      }
+    };
+
+    checkAuthStatus();
+  }, [navigate]);
+
   const {
     register: registerEmail,
     handleSubmit: handleSubmitEmail,
@@ -28,7 +56,6 @@ export default function SettingsComponent() {
     formState: { errors: passwordErrors },
     watch: watchPassword,
   } = useForm();
-
   const [activeCard, setActiveCard] = useState(null);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
@@ -42,29 +69,45 @@ export default function SettingsComponent() {
 
   const newPassword = watchPassword("newPassword");
 
-  const onSubmitEmail = (data) => {
+  const onSubmitEmail = async (data) => {
     setMessage("");
     setLoading(true);
-    console.log("Email Change Data:", data);
 
-    // Simulate a request
-    setTimeout(() => {
+    try {
+      const response = await axios.post("/change-email", {
+        newEmail: data.newEmail,
+      });
       setLoading(false);
       setMessage("Email changed successfully.");
-    }, 2000);
+    } catch (error) {
+      setLoading(false);
+      setMessage("Failed to change email. Please try again.");
+      console.error("Email Change Error:", error);
+    }
   };
 
-  const onSubmitPassword = (data) => {
+  const onSubmitPassword = async (data) => {
     setMessage("");
     setLoading(true);
-    console.log("Password Change Data:", data);
 
-    // Simulate a request
-    setTimeout(() => {
+    try {
+      const response = await axios.post("/change-password", {
+        newPassword: data.newPassword,
+        oldPassword: data.oldPassword,
+      });
       setLoading(false);
       setMessage("Password changed successfully.");
-    }, 2000);
+    } catch (error) {
+      setLoading(false);
+      setMessage("Failed to change password. Please try again.");
+      console.error("Password Change Error:", error);
+    }
   };
+
+  if (!isAuthenticated) {
+    // Prevent rendering if user is not authenticated
+    return null;
+  }
 
   return (
     <div>
