@@ -122,6 +122,7 @@ const register = (email, name, surname, password, phoneNumber, photo) => {
   });
 };
 
+
 const getCurrentUser = async () => {
   try {
     const response = await axios.get(`${API_URL}/current-user`);
