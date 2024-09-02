@@ -1,10 +1,5 @@
 import React, { useState } from "react";
-import {
-  MDBContainer,
-  MDBInput,
-  MDBBtn,
-  MDBSpinner,
-} from "mdb-react-ui-kit";
+import { MDBContainer, MDBInput, MDBBtn, MDBSpinner } from "mdb-react-ui-kit";
 import { useNavigate } from "react-router-dom";
 import "./LoginComponent.scss";
 import AuthService from "../api/AuthenticationAPI";
@@ -38,12 +33,19 @@ const LoginComponent = () => {
       },
       (error) => {
         setLoading(false);
-        const resMessage =
-          (error.response &&
-            error.response.data &&
-            error.response.data.message) ||
-          error.message ||
-          error.toString();
+        let resMessage = "";
+
+        if (error.response && error.response.status === 401) {
+          // Customize the message for a 401 error
+          resMessage = "Invalid email or password. Please try again.";
+        } else {
+          resMessage =
+            (error.response &&
+              error.response.data &&
+              error.response.data.message) ||
+            error.message ||
+            error.toString();
+        }
 
         setMessage(resMessage);
       }
@@ -74,7 +76,9 @@ const LoginComponent = () => {
               label="Password"
               id="form2"
               type="password"
-              placeholder={errors.password ? errors.password.message : "Password"}
+              placeholder={
+                errors.password ? errors.password.message : "Password"
+              }
               {...register("password", { required: "Password is required" })}
               className={errors.password ? "is-invalid" : ""}
             />
@@ -105,20 +109,26 @@ const LoginComponent = () => {
             )}
           </MDBContainer>
         </form>
-        <div className="text-center"
+        <div
+          className="text-center"
           onClick={() => {
             navigate("/register");
             window.location.reload();
           }}
         >
           <p className="inner-footer-text">
-            New to ConnectIn? <a href="#!" className="link">Join now</a>
+            New to ConnectIn?{" "}
+            <a href="#!" className="link">
+              Join now
+            </a>
           </p>
         </div>
-
       </div>
       <footer className="footer">
-        <p className="footer-text"> &copy; Panagiotis Kontoeidis & Stelios Dimitriadis </p>
+        <p className="footer-text">
+          {" "}
+          &copy; Panagiotis Kontoeidis & Stelios Dimitriadis{" "}
+        </p>
       </footer>
     </div>
   );

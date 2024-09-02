@@ -1,10 +1,5 @@
 import React, { useState } from "react";
-import {
-  MDBContainer,
-  MDBInput,
-  MDBBtn,
-  MDBSpinner,
-} from "mdb-react-ui-kit";
+import { MDBContainer, MDBInput, MDBBtn, MDBSpinner } from "mdb-react-ui-kit";
 import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import AuthService from "../api/AuthenticationAPI";
@@ -21,11 +16,13 @@ const RegisterComponent = () => {
   } = useForm();
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
+  const [photoError, setPhotoError] = useState("");
   const navigate = useNavigate();
   const [photo, setPhoto] = useState(null);
 
   const onSubmit = (data) => {
     setMessage("");
+    setPhotoError("");
     setLoading(true);
 
     if (data.password !== data.repeatPassword) {
@@ -34,7 +31,13 @@ const RegisterComponent = () => {
       return;
     }
 
-      AuthService.register(
+    if (!photo) {
+      setPhotoError("Photo is required.");
+      setLoading(false);
+      return;
+    }
+
+    AuthService.register(
       data.email,
       data.name,
       data.surname,
@@ -70,8 +73,7 @@ const RegisterComponent = () => {
         <h2 className="subheading">Make the most of your professional life</h2>
         <form onSubmit={handleSubmit(onSubmit)}>
           <MDBContainer>
-
-            <div className="form-group mb-4">
+            <div className="form-group mb-5">
               <MDBInput
                 size="lg"
                 label="Email address"
@@ -88,7 +90,7 @@ const RegisterComponent = () => {
               )}
             </div>
 
-            <div className="form-group mb-4">
+            <div className="form-group mb-5">
               <MDBInput
                 size="lg"
                 label="First Name"
@@ -115,13 +117,15 @@ const RegisterComponent = () => {
               )}
             </div>
 
-            <div className="form-group mb-4">
+            <div className="form-group mb-5">
               <MDBInput
                 size="lg"
                 label="Last Name"
                 id="form1"
                 type="text"
-                placeholder={errors.surname ? errors.surname.message : "Last Name"}
+                placeholder={
+                  errors.surname ? errors.surname.message : "Last Name"
+                }
                 {...formRegister("surname", {
                   required: "Last name is required",
                   minLength: {
@@ -142,13 +146,15 @@ const RegisterComponent = () => {
               )}
             </div>
 
-            <div className="form-group mb-4">
+            <div className="form-group mb-5">
               <MDBInput
                 size="lg"
                 label="Password"
                 id="form3"
                 type="password"
-                placeholder={errors.password ? errors.password.message : "Password"}
+                placeholder={
+                  errors.password ? errors.password.message : "Password"
+                }
                 {...formRegister("password", {
                   required: "Password is required",
                   minLength: {
@@ -169,7 +175,7 @@ const RegisterComponent = () => {
               )}
             </div>
 
-            <div className="form-group mb-4">
+            <div className="form-group mb-5">
               <MDBInput
                 size="lg"
                 label="Repeat Password"
@@ -180,7 +186,9 @@ const RegisterComponent = () => {
                   required: "Please confirm your password",
                 })}
                 className={
-                  watch("password") !== watch("repeatPassword") ? "is-invalid" : ""
+                  watch("password") !== watch("repeatPassword")
+                    ? "is-invalid"
+                    : ""
                 }
               />
               {watch("password") !== watch("repeatPassword") && (
@@ -190,13 +198,17 @@ const RegisterComponent = () => {
               )}
             </div>
 
-            <div className="form-group mb-4">
+            <div className="form-group mb-5">
               <MDBInput
                 size="lg"
                 label="Phone Number"
                 id="form1"
                 type="tel"
-                placeholder={errors.phoneNumber ? errors.phoneNumber.message : "Phone Number"}
+                placeholder={
+                  errors.phoneNumber
+                    ? errors.phoneNumber.message
+                    : "Phone Number"
+                }
                 {...formRegister("phoneNumber", {
                   required: "Phone number is required",
                   pattern: {
@@ -213,7 +225,17 @@ const RegisterComponent = () => {
               )}
             </div>
 
-            <PhotoUpload onFileUpload={handleFileUpload} />
+            <div className="form-group mb-5">
+              <PhotoUpload onFileUpload={handleFileUpload} />
+              {photoError && (
+                <div
+                  style={{ marginTop: "8px" }}
+                  className="invalid-feedback d-block"
+                >
+                  {photoError}
+                </div>
+              )}
+            </div>
 
             <div className="text-center">
               <MDBBtn
@@ -241,19 +263,26 @@ const RegisterComponent = () => {
           </MDBContainer>
         </form>
 
-        <div className="text-center"
+        <div
+          className="text-center"
           onClick={() => {
             navigate("/");
             window.location.reload();
           }}
         >
           <p className="inner-footer-text">
-            Already have an account? <a href="#!" className="link">Sign in</a>
+            Already have an account?{" "}
+            <a href="#!" className="link">
+              Sign in
+            </a>
           </p>
         </div>
       </div>
       <footer className="footer">
-        <p className="footer-text"> &copy; Panagiotis Kontoeidis & Stelios Dimitriadis </p>
+        <p className="footer-text">
+          {" "}
+          &copy; Panagiotis Kontoeidis & Stelios Dimitriadis{" "}
+        </p>
       </footer>
     </div>
   );
