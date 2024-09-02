@@ -20,7 +20,7 @@ const uploadPhoto = async (file) => {
       },
     });
     console.log("Upload Response:", response.data);
-    return response.data; // Assuming it contains the photo URL or success message
+    return response.data; 
   } catch (error) {
     console.error("Upload Error:", error.message);
     throw error;
@@ -32,18 +32,9 @@ const login = (email, password) => {
   return axios
     .post(API_URL + "/login", { email, password })
     .then((response) => {
-      // Log the full response object
+
       console.log("Login Response:", response);
-
-      // Log specific parts of the response data
       console.log("Response Data:", response.data);
-
-      // Check and log access token if available
-      if (response.data.accessToken) {
-        console.log("Access Token:", response.data.accessToken);
-        // Save user data to localStorage
-        localStorage.setItem("user", JSON.stringify(response.data));
-      }
 
       return response.data;
     })
@@ -71,9 +62,14 @@ const login = (email, password) => {
     });
 };
 
-// Logout Function
 const logout = () => {
-  localStorage.removeItem("user");
+  return axios.post(API_URL + "/logout")
+    .then(() => {
+      console.log("User logged out");
+    })
+    .catch((error) => {
+      console.error("Logout Error:", error.message);
+    });
 };
 
 // Register Function
@@ -86,25 +82,19 @@ const register = (email, name, surname, password, phoneNumber, photo) => {
   formData.append("password", password);
   formData.append("phoneNumber", phoneNumber);
 
-  // Append the photo file if it exists
   if (photo) {
-    formData.append("profilePicture", photo); // Ensure this matches your backend field name
+    formData.append("profilePicture", photo); 
   }
 
-  // Send the form data using axios
   return axios.post(API_URL + "/register", formData, {
     headers: {
       "Content-Type": "multipart/form-data",
     },
+    withCredentials:true,
   })
   .then((response) => {
     // Log the full response object
     console.log("Register Response:", response);
-
-    // Save user data to localStorage if accessToken is available
-    if (response.data.accessToken) {
-      localStorage.setItem("user", JSON.stringify(response.data));
-    }
 
     return response.data;
   })
@@ -132,11 +122,14 @@ const register = (email, name, surname, password, phoneNumber, photo) => {
   });
 };
 
-// Get Current User Function
-const getCurrentUser = () => {
-  const user = JSON.parse(localStorage.getItem("user"));
-  console.log("Current User:", user); // Log the current user
-  return user;
+const getCurrentUser = async () => {
+  try {
+    const response = await axios.get(`${API_URL}/current-user`);
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching current user:", error);
+    return null;
+  }
 };
 
 // AuthService Object
