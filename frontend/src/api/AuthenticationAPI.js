@@ -133,6 +133,9 @@ const getCurrentUser = async () => {
   }
 };
 
+
+
+
 // AuthService Object
 const AuthService = {
   register,
