@@ -4,7 +4,9 @@ import backend.connectin.domain.User;
 import backend.connectin.security.JWTGenerator;
 import backend.connectin.service.FileService;
 import backend.connectin.service.UserService;
+import backend.connectin.web.dto.UserDTO;
 import backend.connectin.web.mappers.AuthResourceMapper;
+import backend.connectin.web.mappers.UserMapper;
 import backend.connectin.web.requests.UserChangeEmailRequest;
 import backend.connectin.web.requests.UserChangePasswordRequest;
 import backend.connectin.web.requests.UserLoginRequest;
@@ -34,12 +36,14 @@ public class AuthController {
     private final AuthenticationManager authenticationManager;
     private final JWTGenerator jwtGenerator;
     private final AuthResourceMapper authResourceMapper;
+    private final UserMapper userMapper;
 
-    public AuthController(UserService userService, AuthenticationManager authenticationManager, JWTGenerator jwtGenerator, AuthResourceMapper authResourceMapper, FileService fileService) {
+    public AuthController(UserService userService, AuthenticationManager authenticationManager, JWTGenerator jwtGenerator, AuthResourceMapper authResourceMapper, FileService fileService, UserMapper userMapper) {
         this.userService = userService;
         this.authenticationManager = authenticationManager;
         this.jwtGenerator = jwtGenerator;
         this.authResourceMapper = authResourceMapper;
+        this.userMapper = userMapper;
     }
 
 
@@ -141,19 +145,24 @@ public class AuthController {
     }
 
     @GetMapping("/current-user")
-    public ResponseEntity<User> getCurrentUser(@CookieValue(value = "accessToken", required = false) String token) {
+    public ResponseEntity<UserDTO> getCurrentUser(@CookieValue(value = "accessToken", required = false) String token) {
         if (token == null || token.isEmpty()) {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
         try {
-            String email = jwtGenerator.getUsernameFromJWT(token);  // Extract email or username from token
+            String email = jwtGenerator.getUsernameFromJWT(token);
             User user = userService.findUserByEmail(email)
                     .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
-            return new ResponseEntity<>(user, HttpStatus.OK);  // Return user details
+
+            UserDTO userDTO = userMapper.mapToUserDTO(user);
+
+            return new ResponseEntity<>(userDTO, HttpStatus.OK);
 
         } catch (Exception e) {
-            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);  // If token is invalid or any other error occurs
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
     }
+
+
 
 }
