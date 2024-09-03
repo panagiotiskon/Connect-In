@@ -3,6 +3,7 @@ package backend.connectin.web.mappers;
 import backend.connectin.domain.Role;
 import backend.connectin.domain.User;
 import backend.connectin.domain.repository.RoleRepository;
+import backend.connectin.web.dto.UserDTO;
 import backend.connectin.web.requests.UserRegisterRequest;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
@@ -35,5 +36,17 @@ public class UserMapper {
         user.setCreatedAt(Instant.now());
         user.setUpdatedAt(Instant.now());
         return user;
+    }
+    public UserDTO mapToUserDTO(User user){
+        UserDTO userDTO = new UserDTO(
+                user.getId(),
+                user.getEmail(),
+                user.getFirstName(),
+                user.getLastName(),
+                user.getRoles().getFirst().getName(),
+                user.getProfilePicture() != null && user.getProfilePicture().getProfilePicture() != null && user.getProfilePicture().getProfilePicture()
+                        ? user.getProfilePicture().getData()
+                        : null        );
+        return userDTO;
     }
 }

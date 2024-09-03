@@ -9,7 +9,7 @@ axios.defaults.withCredentials = true;
 // Upload Photo Function
 const uploadPhoto = async (file) => {
   const formData = new FormData();
-  if(file){
+  if (file) {
     formData.append("file", file);
   }
 
@@ -20,7 +20,7 @@ const uploadPhoto = async (file) => {
       },
     });
     console.log("Upload Response:", response.data);
-    return response.data; 
+    return response.data;
   } catch (error) {
     console.error("Upload Error:", error.message);
     throw error;
@@ -32,7 +32,6 @@ const login = (email, password) => {
   return axios
     .post(API_URL + "/login", { email, password })
     .then((response) => {
-
       console.log("Login Response:", response);
       console.log("Response Data:", response.data);
 
@@ -63,7 +62,8 @@ const login = (email, password) => {
 };
 
 const logout = () => {
-  return axios.post(API_URL + "/logout")
+  return axios
+    .post(API_URL + "/logout")
     .then(() => {
       console.log("User logged out");
     })
@@ -83,52 +83,54 @@ const register = (email, name, surname, password, phoneNumber, photo) => {
   formData.append("phoneNumber", phoneNumber);
 
   if (photo) {
-    formData.append("profilePicture", photo); 
+    formData.append("profilePicture", photo);
   }
 
-  return axios.post(API_URL + "/register", formData, {
-    headers: {
-      "Content-Type": "multipart/form-data",
-    },
-    withCredentials:true,
-  })
-  .then((response) => {
-    // Log the full response object
-    console.log("Register Response:", response);
+  return axios
+    .post(API_URL + "/register", formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+      withCredentials: true,
+    })
+    .then((response) => {
+      // Log the full response object
+      console.log("Register Response:", response);
 
-    return response.data;
-  })
-  .catch((error) => {
-    // Enhanced error logging
-    console.error("Registration Error:", error.message, error.config);
+      return response.data;
+    })
+    .catch((error) => {
+      // Enhanced error logging
+      console.error("Registration Error:", error.message, error.config);
 
-    if (error.response) {
-      // The request was made and the server responded with a status code
-      console.error("Error Response Data:", error.response.data); // Log response data
-      console.error("Error Response Status:", error.response.status); // Log response status
-      console.error("Error Response Headers:", error.response.headers); // Log response headers
-    } else if (error.request) {
-      // The request was made but no response was received
-      console.error("Error Request:", error.request); // Log request data
-    } else {
-      // Something happened in setting up the request that triggered an Error
-      console.error("Error Message:", error.message); // Log error message
-    }
+      if (error.response) {
+        // The request was made and the server responded with a status code
+        console.error("Error Response Data:", error.response.data); // Log response data
+        console.error("Error Response Status:", error.response.status); // Log response status
+        console.error("Error Response Headers:", error.response.headers); // Log response headers
+      } else if (error.request) {
+        // The request was made but no response was received
+        console.error("Error Request:", error.request); // Log request data
+      } else {
+        // Something happened in setting up the request that triggered an Error
+        console.error("Error Message:", error.message); // Log error message
+      }
 
-    // Log the config used for the request
-    console.error("Error Config:", error.config); // Log error config
+      // Log the config used for the request
+      console.error("Error Config:", error.config); // Log error config
 
-    throw error; // Re-throw error after logging
-  });
+      throw error; // Re-throw error after logging
+    });
 };
-
 
 const getCurrentUser = async () => {
   try {
-    const response = await axios.get(`${API_URL}/current-user`);
+    const response = await axios.get(`${API_URL}/current-user`, {
+      withCredentials: true,
+    });
+    console.log(response);
     return response.data;
   } catch (error) {
-    console.error("Error fetching current user:", error);
     return null;
   }
 };

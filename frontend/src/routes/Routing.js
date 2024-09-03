@@ -7,6 +7,9 @@ import Settings from "../pages/Settings";
 import Notifications from "../pages/Notifications";
 import Messaging from "../pages/Messaging";
 import Admin from "../pages/Admin";
+import Unauthorized from "../pages/Unauthorized";
+import ProtectedRoute from "./ProtectedRoute";
+
 export const router = createBrowserRouter([
   {
     path: "/",
@@ -18,26 +21,34 @@ export const router = createBrowserRouter([
   },
   {
     path: "/home",
-    element: <Home />,
+    element: <ProtectedRoute element={Home} allowedRoles={["ROLE_USER"]} />,
   },
   {
     path: "/profile",
-    element: <Profile />,
+    element: <ProtectedRoute element={Profile} allowedRoles={["ROLE_USER"]} />,
   },
   {
     path: "/settings",
-    element: <Settings />,
+    element: <ProtectedRoute element={Settings} allowedRoles={["ROLE_USER"]} />,
   },
   {
     path: "/notifications",
-    element: <Notifications />,
+    element: (
+      <ProtectedRoute element={Notifications} allowedRoles={["ROLE_USER"]} />
+    ),
   },
   {
     path: "/messaging",
-    element: <Messaging />,
+    element: (
+      <ProtectedRoute element={Messaging} allowedRoles={["ROLE_USER"]} />
+    ),
   },
   {
     path: "/admin",
-    element: <Admin />,
+    element: <ProtectedRoute element={Admin} allowedRoles={["ROLE_ADMIN"]} />,
+  },
+  {
+    path: "/unauthorized",
+    element: <Unauthorized />,
   },
 ]);
