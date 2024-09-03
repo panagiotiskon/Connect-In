@@ -50,12 +50,19 @@ const RegisterComponent = () => {
         window.location.reload();
       })
       .catch((error) => {
-        const resMessage =
-          (error.response &&
-            error.response.data &&
-            error.response.data.message) ||
-          error.message ||
-          error.toString();
+        let resMessage;
+
+        if (error.response && error.response.status === 401) {
+          resMessage =
+            "A user with this email already exists, try logging instead.";
+        } else {
+          resMessage =
+            (error.response &&
+              error.response.data &&
+              error.response.data.message) ||
+            error.message ||
+            error.toString();
+        }
 
         setLoading(false);
         setMessage(resMessage);

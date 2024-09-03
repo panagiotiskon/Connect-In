@@ -1,6 +1,5 @@
 package backend.connectin.domain;
 
-
 import jakarta.persistence.*;
 import org.hibernate.annotations.GenericGenerator;
 
@@ -14,8 +13,10 @@ public class FileDB {
     private String id;
     private String name;
     private String type;
+
     @Lob
     private byte[] data;
+
     private Boolean isProfilePicture;
 
     @Column(name = "user_email", nullable = false)

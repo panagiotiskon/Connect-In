@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import NavbarComponent from "./common/NavBar";
 import AuthService from "../api/AuthenticationAPI";
-import axios from 'axios'
+import axios from "axios";
 import {
   MDBContainer,
   MDBRow,
@@ -15,34 +15,8 @@ import {
 } from "mdb-react-ui-kit";
 import { useForm } from "react-hook-form";
 import "./SettingsComponent.scss";
-import { useNavigate } from "react-router-dom";
 
 export default function SettingsComponent() {
-
-
-  const navigate = useNavigate();
-  const[isAuthenticated,setIsAuthenticated] = useState(false);
-
-  useEffect(() => {
-    const checkAuthStatus = async () => {
-      try {
-        // Call the getCurrentUser function to check user authentication
-        await AuthService.getCurrentUser();
-        setIsAuthenticated(true);
-      } catch (error) {
-        // Check if the error response status is 401
-        if (error.response && error.response.status === 401) {
-          setIsAuthenticated(false);
-          navigate("/");
-        } else {
-          console.error('Error checking authentication status:', error);
-        }
-      }
-    };
-
-    checkAuthStatus();
-  }, [navigate]);
-
   const {
     register: registerEmail,
     handleSubmit: handleSubmitEmail,
@@ -56,12 +30,13 @@ export default function SettingsComponent() {
     formState: { errors: passwordErrors },
     watch: watchPassword,
   } = useForm();
+
   const [activeCard, setActiveCard] = useState(null);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
 
   const newEmail = watchEmail("newEmail");
-  const confirmNewEmail = watchEmail("confirmNewEmail");
+  const oldEmail = watchEmail("oldEmail");
 
   const validateEmailsMatch = (value) => {
     return value === newEmail || "Emails do not match";
@@ -69,20 +44,42 @@ export default function SettingsComponent() {
 
   const newPassword = watchPassword("newPassword");
 
+  // Modified onSubmitEmail to include both old and new email
   const onSubmitEmail = async (data) => {
     setMessage("");
     setLoading(true);
 
     try {
-      const response = await axios.post("/change-email", {
-        newEmail: data.newEmail,
-      });
+      const response = await AuthService.changeEmail(
+        data.oldEmail,
+        data.newEmail
+      );
+
+      // Log the response details
+      console.log("Email Change Response:", response);
+      console.log("Response Data:", response.data);
+      console.log("Response Status:", response.status);
+      console.log("Response Headers:", response.headers);
+
       setLoading(false);
       setMessage("Email changed successfully.");
     } catch (error) {
       setLoading(false);
+
+      // Log the error details
+      console.error("Email Change Error:", error.message);
+
+      if (error.response) {
+        console.error("Error Response Data:", error.response.data);
+        console.error("Error Response Status:", error.response.status);
+        console.error("Error Response Headers:", error.response.headers);
+      } else if (error.request) {
+        console.error("Error Request:", error.request);
+      } else {
+        console.error("Error Message:", error.message);
+      }
+
       setMessage("Failed to change email. Please try again.");
-      console.error("Email Change Error:", error);
     }
   };
 
@@ -104,30 +101,64 @@ export default function SettingsComponent() {
     }
   };
 
-  if (!isAuthenticated) {
-    // Prevent rendering if user is not authenticated
-    return null;
-  }
-
   return (
     <div>
       <NavbarComponent />
       <MDBContainer fluid className="mt-5">
         <MDBRow className="justify-content-center">
-          <MDBCol md="4" className="mb-5 pe-3"> {/* Add right padding */}
+          <MDBCol md="4" className="mb-5 pe-3">
+            {" "}
+            {/* Add right padding */}
             <MDBCard>
               <MDBCardBody className="card-body-flex">
-                <MDBCardTitle className="fs-4 fw-bold card-title">Change Email</MDBCardTitle>
+                <MDBCardTitle className="fs-4 fw-bold card-title">
+                  Change Email
+                </MDBCardTitle>
                 <form onSubmit={handleSubmitEmail(onSubmitEmail)}>
+                  {/* Old Email Field */}
+                  <div className="form-group mb-4">
+                    <MDBInput
+                      label="Old Email"
+                      type="email"
+                      placeholder={
+                        emailErrors.oldEmail
+                          ? emailErrors.oldEmail.message
+                          : "Old Email"
+                      }
+                      {...registerEmail("oldEmail", {
+                        required: "Old email is required",
+                      })}
+                      className={
+                        emailErrors.oldEmail
+                          ? "form-control is-invalid"
+                          : "form-control"
+                      }
+                    />
+                    {emailErrors.oldEmail && (
+                      <div className="invalid-feedback d-block">
+                        {emailErrors.oldEmail.message}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* New Email Field */}
                   <div className="form-group mb-4">
                     <MDBInput
                       label="New Email"
                       type="email"
-                      placeholder={emailErrors.newEmail ? emailErrors.newEmail.message : "New Email"}
+                      placeholder={
+                        emailErrors.newEmail
+                          ? emailErrors.newEmail.message
+                          : "New Email"
+                      }
                       {...registerEmail("newEmail", {
                         required: "New email is required",
                       })}
-                      className={emailErrors.newEmail ? "form-control is-invalid" : "form-control"}
+                      className={
+                        emailErrors.newEmail
+                          ? "form-control is-invalid"
+                          : "form-control"
+                      }
                     />
                     {emailErrors.newEmail && (
                       <div className="invalid-feedback d-block">
@@ -136,16 +167,25 @@ export default function SettingsComponent() {
                     )}
                   </div>
 
+                  {/* Confirm New Email Field */}
                   <div className="form-group mb-4">
                     <MDBInput
                       label="Confirm New Email"
                       type="email"
-                      placeholder={emailErrors.confirmNewEmail ? emailErrors.confirmNewEmail.message : "Confirm New Email"}
+                      placeholder={
+                        emailErrors.confirmNewEmail
+                          ? emailErrors.confirmNewEmail.message
+                          : "Confirm New Email"
+                      }
                       {...registerEmail("confirmNewEmail", {
                         required: "Confirm New Email is required",
                         validate: validateEmailsMatch,
                       })}
-                      className={emailErrors.confirmNewEmail ? "form-control is-invalid" : "form-control"}
+                      className={
+                        emailErrors.confirmNewEmail
+                          ? "form-control is-invalid"
+                          : "form-control"
+                      }
                     />
                     {emailErrors.confirmNewEmail && (
                       <div className="invalid-feedback d-block">
@@ -163,7 +203,11 @@ export default function SettingsComponent() {
                       disabled={loading}
                     >
                       {loading && (
-                        <MDBSpinner className="mx-2" size="sm" color="secondary">
+                        <MDBSpinner
+                          className="mx-2"
+                          size="sm"
+                          color="secondary"
+                        >
                           <span className="visually-hidden">Loading...</span>
                         </MDBSpinner>
                       )}
@@ -175,16 +219,27 @@ export default function SettingsComponent() {
             </MDBCard>
           </MDBCol>
 
-          <MDBCol md="4" className="mb-5 ps-3"> {/* Add left padding */}
-            <MDBCard className={`card-custom ${activeCard === "password" ? "card-active" : ""}`}>
+          {/* The password change form remains unchanged */}
+          <MDBCol md="4" className="mb-5 ps-3">
+            <MDBCard
+              className={`card-custom ${
+                activeCard === "password" ? "card-active" : ""
+              }`}
+            >
               <MDBCardBody className="card-body-flex">
-                <MDBCardTitle className="fs-4 fw-bold card-title">Change Password</MDBCardTitle>
+                <MDBCardTitle className="fs-4 fw-bold card-title">
+                  Change Password
+                </MDBCardTitle>
                 <form onSubmit={handleSubmitPassword(onSubmitPassword)}>
                   <div className="form-group mb-4">
                     <MDBInput
                       label="New Password"
                       type="password"
-                      placeholder={passwordErrors.newPassword ? passwordErrors.newPassword.message : "New Password"}
+                      placeholder={
+                        passwordErrors.newPassword
+                          ? passwordErrors.newPassword.message
+                          : "New Password"
+                      }
                       {...registerPassword("newPassword", {
                         required: "New password is required",
                         minLength: {
@@ -192,7 +247,11 @@ export default function SettingsComponent() {
                           message: "Password must be at least 6 characters",
                         },
                       })}
-                      className={passwordErrors.newPassword ? "form-control is-invalid" : "form-control"}
+                      className={
+                        passwordErrors.newPassword
+                          ? "form-control is-invalid"
+                          : "form-control"
+                      }
                     />
                     {passwordErrors.newPassword && (
                       <div className="invalid-feedback d-block">
@@ -205,7 +264,11 @@ export default function SettingsComponent() {
                     <MDBInput
                       label="Old Password"
                       type="password"
-                      placeholder={passwordErrors.oldPassword ? passwordErrors.oldPassword.message : "Old Password"}
+                      placeholder={
+                        passwordErrors.oldPassword
+                          ? passwordErrors.oldPassword.message
+                          : "Old Password"
+                      }
                       {...registerPassword("oldPassword", {
                         required: "Old password is required",
                         minLength: {
@@ -213,7 +276,11 @@ export default function SettingsComponent() {
                           message: "Password must be at least 6 characters",
                         },
                       })}
-                      className={passwordErrors.oldPassword ? "form-control is-invalid" : "form-control"}
+                      className={
+                        passwordErrors.oldPassword
+                          ? "form-control is-invalid"
+                          : "form-control"
+                      }
                     />
                     {passwordErrors.oldPassword && (
                       <div className="invalid-feedback d-block">
@@ -226,13 +293,21 @@ export default function SettingsComponent() {
                     <MDBInput
                       label="Confirm New Password"
                       type="password"
-                      placeholder={passwordErrors.confirmNewPassword ? passwordErrors.confirmNewPassword.message : "Confirm New Password"}
+                      placeholder={
+                        passwordErrors.confirmNewPassword
+                          ? passwordErrors.confirmNewPassword.message
+                          : "Confirm New Password"
+                      }
                       {...registerPassword("confirmNewPassword", {
                         required: "Please confirm your new password",
                         validate: (value) =>
                           value === newPassword || "Passwords do not match",
                       })}
-                      className={passwordErrors.confirmNewPassword ? "form-control is-invalid" : "form-control"}
+                      className={
+                        passwordErrors.confirmNewPassword
+                          ? "form-control is-invalid"
+                          : "form-control"
+                      }
                     />
                     {passwordErrors.confirmNewPassword && (
                       <div className="invalid-feedback d-block">
@@ -250,7 +325,11 @@ export default function SettingsComponent() {
                       disabled={loading}
                     >
                       {loading && (
-                        <MDBSpinner className="mx-2" size="sm" color="secondary">
+                        <MDBSpinner
+                          className="mx-2"
+                          size="sm"
+                          color="secondary"
+                        >
                           <span className="visually-hidden">Loading...</span>
                         </MDBSpinner>
                       )}
@@ -266,14 +345,27 @@ export default function SettingsComponent() {
 
       {message && (
         <div className="text-center mt-3">
-          <div className="alert alert-info" role="alert">
+          <div
+            role="alert"
+            style={{
+              padding: "10px",
+              border: "2px #f3f2ef", // Black border
+              borderRadius: "5px",
+              backgroundColor: "#f3f2ef", // White background
+              color: message.includes("Failed") ? "red" : "green",
+              fontWeight: "bold",
+            }}
+          >
             {message}
           </div>
         </div>
       )}
 
       <footer className="footer">
-        <p className="footer-text"> &copy; Panagiotis Kontoeidis & Stelios Dimitriadis </p>
+        <p className="footer-text">
+          {" "}
+          &copy; Panagiotis Kontoeidis & Stelios Dimitriadis{" "}
+        </p>
       </footer>
     </div>
   );
