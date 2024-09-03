@@ -53,6 +53,32 @@ const changeEmail = async (oldEmail, newEmail) => {
   }
 };
 
+const changePassword = async (oldPassword, newPassword) => {
+  try {
+    // Create the request body object
+    const UserChangePasswordRequest = {
+      oldPassword,
+      newPassword,
+    };
+
+    // Make the API call
+    const response = await axios.post(
+      `${API_URL}/change-password`,
+      UserChangePasswordRequest
+    );
+
+    // Log the response details
+    console.log("Change Password Response:", response.data);
+
+    // Return the response data
+    return response.data;
+  } catch (error) {
+    // Log the error details
+    console.error("Change Password Error:", error.message);
+    throw error;
+  }
+};
+
 // Login Function
 const login = (email, password) => {
   return axios
@@ -167,6 +193,7 @@ const AuthService = {
   logout,
   getCurrentUser,
   changeEmail,
+  changePassword,
 };
 
 export default AuthService;
