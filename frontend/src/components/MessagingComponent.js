@@ -1,5 +1,6 @@
 import React from "react";
 import NavbarComponent from "./common/NavBar";
+import FooterComponent from "./common/FooterComponent";
 import {
   MDBContainer,
   MDBRow,
@@ -238,6 +239,7 @@ export default function ChatComponent() {
           </MDBCol>
         </MDBRow>
       </MDBContainer>
+      <FooterComponent />
     </div>
   );
 }

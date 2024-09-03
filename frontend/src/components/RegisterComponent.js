@@ -5,6 +5,7 @@ import { useForm } from "react-hook-form";
 import AuthService from "../api/AuthenticationAPI";
 import ConnectInLogo from "../assets/ConnectIn.png";
 import PhotoUpload from "./PhotoUpload";
+import FooterComponent from "./common/FooterComponent";
 import "./RegisterComponent.scss";
 
 const RegisterComponent = () => {
@@ -285,12 +286,7 @@ const RegisterComponent = () => {
           </p>
         </div>
       </div>
-      <footer className="footer">
-        <p className="footer-text">
-          {" "}
-          &copy; Panagiotis Kontoeidis & Stelios Dimitriadis{" "}
-        </p>
-      </footer>
+      <FooterComponent />
     </div>
   );
 };

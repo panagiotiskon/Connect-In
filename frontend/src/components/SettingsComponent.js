@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import NavbarComponent from "./common/NavBar";
 import AuthService from "../api/AuthenticationAPI";
+import FooterComponent from "./common/FooterComponent";
 import axios from "axios";
 import {
   MDBContainer,
@@ -42,9 +43,15 @@ export default function SettingsComponent() {
     return value === newEmail || "Emails do not match";
   };
 
+  const oldPassword = watchPassword("oldPassword");
   const newPassword = watchPassword("newPassword");
 
-  // Modified onSubmitEmail to include both old and new email
+  const validatePasswordsMatch = (value) => {
+    return (
+      value !== oldPassword || "New password cannot be the same as old password"
+    );
+  };
+
   const onSubmitEmail = async (data) => {
     setMessage("");
     setLoading(true);
@@ -55,7 +62,6 @@ export default function SettingsComponent() {
         data.newEmail
       );
 
-      // Log the response details
       console.log("Email Change Response:", response);
       console.log("Response Data:", response.data);
       console.log("Response Status:", response.status);
@@ -66,7 +72,6 @@ export default function SettingsComponent() {
     } catch (error) {
       setLoading(false);
 
-      // Log the error details
       console.error("Email Change Error:", error.message);
 
       if (error.response) {
@@ -88,16 +93,34 @@ export default function SettingsComponent() {
     setLoading(true);
 
     try {
-      const response = await axios.post("/change-password", {
-        newPassword: data.newPassword,
-        oldPassword: data.oldPassword,
-      });
+      const response = await AuthService.changePassword(
+        data.oldPassword,
+        data.newPassword
+      );
+
+      console.log("Password Change Response:", response);
+      console.log("Response Data:", response.data);
+      console.log("Response Status:", response.status);
+      console.log("Response Headers:", response.headers);
+
       setLoading(false);
       setMessage("Password changed successfully.");
     } catch (error) {
       setLoading(false);
+
+      console.error("Password Change Error:", error.message);
+
+      if (error.response) {
+        console.error("Error Response Data:", error.response.data);
+        console.error("Error Response Status:", error.response.status);
+        console.error("Error Response Headers:", error.response.headers);
+      } else if (error.request) {
+        console.error("Error Request:", error.request);
+      } else {
+        console.error("Error Message:", error.message);
+      }
+
       setMessage("Failed to change password. Please try again.");
-      console.error("Password Change Error:", error);
     }
   };
 
@@ -219,7 +242,7 @@ export default function SettingsComponent() {
             </MDBCard>
           </MDBCol>
 
-          {/* The password change form remains unchanged */}
+          {/* The password change form with reordered fields */}
           <MDBCol md="4" className="mb-5 ps-3">
             <MDBCard
               className={`card-custom ${
@@ -231,35 +254,7 @@ export default function SettingsComponent() {
                   Change Password
                 </MDBCardTitle>
                 <form onSubmit={handleSubmitPassword(onSubmitPassword)}>
-                  <div className="form-group mb-4">
-                    <MDBInput
-                      label="New Password"
-                      type="password"
-                      placeholder={
-                        passwordErrors.newPassword
-                          ? passwordErrors.newPassword.message
-                          : "New Password"
-                      }
-                      {...registerPassword("newPassword", {
-                        required: "New password is required",
-                        minLength: {
-                          value: 6,
-                          message: "Password must be at least 6 characters",
-                        },
-                      })}
-                      className={
-                        passwordErrors.newPassword
-                          ? "form-control is-invalid"
-                          : "form-control"
-                      }
-                    />
-                    {passwordErrors.newPassword && (
-                      <div className="invalid-feedback d-block">
-                        {passwordErrors.newPassword.message}
-                      </div>
-                    )}
-                  </div>
-
+                  {/* Old Password Field */}
                   <div className="form-group mb-4">
                     <MDBInput
                       label="Old Password"
@@ -289,6 +284,38 @@ export default function SettingsComponent() {
                     )}
                   </div>
 
+                  {/* New Password Field */}
+                  <div className="form-group mb-4">
+                    <MDBInput
+                      label="New Password"
+                      type="password"
+                      placeholder={
+                        passwordErrors.newPassword
+                          ? passwordErrors.newPassword.message
+                          : "New Password"
+                      }
+                      {...registerPassword("newPassword", {
+                        required: "New password is required",
+                        minLength: {
+                          value: 6,
+                          message: "Password must be at least 6 characters",
+                        },
+                        validate: validatePasswordsMatch,
+                      })}
+                      className={
+                        passwordErrors.newPassword
+                          ? "form-control is-invalid"
+                          : "form-control"
+                      }
+                    />
+                    {passwordErrors.newPassword && (
+                      <div className="invalid-feedback d-block">
+                        {passwordErrors.newPassword.message}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Confirm New Password Field */}
                   <div className="form-group mb-4">
                     <MDBInput
                       label="Confirm New Password"
@@ -360,13 +387,6 @@ export default function SettingsComponent() {
           </div>
         </div>
       )}
-
-      <footer className="footer">
-        <p className="footer-text">
-          {" "}
-          &copy; Panagiotis Kontoeidis & Stelios Dimitriadis{" "}
-        </p>
-      </footer>
     </div>
   );
 }
