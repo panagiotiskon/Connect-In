@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import NavbarComponent from "./common/NavBar";
 import AuthService from "../api/AuthenticationAPI"; // Adjust the import path as needed
+import FooterComponent from "./common/FooterComponent";
 import {
   MDBContainer,
   MDBRow,

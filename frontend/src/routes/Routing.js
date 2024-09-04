@@ -7,8 +7,10 @@ import Settings from "../pages/Settings";
 import Notifications from "../pages/Notifications";
 import Messaging from "../pages/Messaging";
 import Admin from "../pages/Admin";
+import Network from "../pages/Network";
 import Unauthorized from "../pages/Unauthorized";
 import ProtectedRoute from "./ProtectedRoute";
+import Jobs from "../pages/Jobs";
 
 export const router = createBrowserRouter([
   {
@@ -22,6 +24,14 @@ export const router = createBrowserRouter([
   {
     path: "/home",
     element: <ProtectedRoute element={Home} allowedRoles={["ROLE_USER"]} />,
+  },
+  {
+    path: "/network",
+    element: <ProtectedRoute element={Network} allowedRoles={["ROLE_USER"]} />,
+  },
+  {
+    path: "/jobs",
+    element: <ProtectedRoute element={Jobs} allowedRoles={["ROLE_USER"]} />,
   },
   {
     path: "/profile",

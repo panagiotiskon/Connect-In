@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import NavBarAdminComponent from "./NavBarAdminComponent";
+import FooterComponent from "./common/FooterComponent";
 import {
   MDBContainer,
   MDBCard,

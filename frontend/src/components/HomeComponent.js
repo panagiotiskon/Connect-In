@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import axios from "axios";
 import {
   MDBContainer,
   MDBCardBody,
@@ -11,11 +12,20 @@ import {
 } from "mdb-react-ui-kit";
 import NavbarComponent from "./common/NavBar";
 import AuthService from "../api/AuthenticationAPI";
-import ProfileCard from "../components/common/ProfileCard"; // Import the new ProfileCard component
+import ProfileCard from "../components/common/ProfileCard";
+import FooterComponent from "./common/FooterComponent";
 
 const HomeComponent = () => {
-  const currentUser = AuthService.getCurrentUser();
-  const [comments, setComments] = useState({}); // To manage comments
+  const [currentUser, setCurrentUser] = useState(null);
+  const [comments, setComments] = useState({});
+
+  useEffect(() => {
+    const fetchCurrentUser = async () => {
+      const user = await AuthService.getCurrentUser();
+      setCurrentUser(user);
+    };
+    fetchCurrentUser();
+  }, []);
 
   const posts = [
     {
@@ -23,7 +33,7 @@ const HomeComponent = () => {
       username: "@mileycyrus",
       time: "2h",
       content: "Lorem ipsum dolor, sit amet #consectetur adipisicing elit.",
-      imageUrl: currentUser.photo, // Use current user's image
+      imageUrl: currentUser?.photo, // Use current user's image
       mediaUrl: "https://www.youtube.com/embed/vlDzYIIOYmM",
       cardImage: "https://via.placeholder.com/150",
       cardText: "Card Title",
@@ -35,7 +45,7 @@ const HomeComponent = () => {
   ];
 
   if (!currentUser) {
-    return null;
+    return <p>Loading...</p>;
   }
 
   const handleCommentChange = (postId, value) => {
@@ -47,21 +57,17 @@ const HomeComponent = () => {
 
   const handleCommentSubmit = (postId) => {
     alert(`Comment submitted for post ${postId}: ${comments[postId]}`);
-    // Reset comment input
     handleCommentChange(postId, "");
   };
 
   return (
     <>
       <NavbarComponent />
-
       <MDBContainer fluid className="mt-5" style={{ padding: 0 }}>
         <MDBRow>
           <MDBCol md="4" className="ps-12">
             <ProfileCard currentUser={currentUser} />
-            {/* Use ProfileCard component here */}
           </MDBCol>
-
           <MDBCol md="6">
             <MDBCard className="shadow-0">
               <MDBCardBody className="border-bottom pb-2">
@@ -126,7 +132,6 @@ const HomeComponent = () => {
                 </div>
               </MDBCardBody>
             </MDBCard>
-
             <div style={{ marginTop: "2rem" }}>
               {posts.map((post, index) => (
                 <MDBCard className="mb-4" key={index}>
@@ -236,7 +241,7 @@ const HomeComponent = () => {
                               onChange={(e) =>
                                 handleCommentChange(index, e.target.value)
                               }
-                              style={{ flex: 1 }} // Ensure input field takes available space
+                              style={{ flex: 1 }}
                             />
                             <MDBBtn
                               color="primary"
