@@ -1,6 +1,8 @@
 package backend.connectin.service;
 
+import backend.connectin.domain.FileDB;
 import backend.connectin.domain.User;
+import backend.connectin.domain.repository.FileRepository;
 import backend.connectin.domain.repository.UserRepository;
 import backend.connectin.web.mappers.UserMapper;
 import backend.connectin.web.requests.UserChangeEmailRequest;
@@ -15,7 +17,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
@@ -30,13 +31,14 @@ public class UserService {
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
     private final FileService fileService;
+    private final FileRepository fileRepository;
 
-
-    public UserService(UserRepository userRepository, UserMapper userMapper, PasswordEncoder passwordEncoder, FileService fileService) {
+    public UserService(UserRepository userRepository, UserMapper userMapper, PasswordEncoder passwordEncoder, FileService fileService, FileRepository fileRepository) {
         this.userRepository = userRepository;
         this.userMapper = userMapper;
         this.passwordEncoder = passwordEncoder;
         this.fileService = fileService;
+        this.fileRepository = fileRepository;
     }
 
     // Check if user with the given email already exists
@@ -97,17 +99,46 @@ public class UserService {
         return ResponseEntity.ok("Password updated successfully.");
     }
 
+    @Transactional
     public ResponseEntity<String> updateUserEmail(UserChangeEmailRequest userChangeEmailRequest) {
         String oldEmail = userChangeEmailRequest.getOldEmail();
         String newEmail = userChangeEmailRequest.getNewEmail();
-        User user = findUserByEmail(oldEmail).orElseThrow(()-> new ResponseStatusException(HttpStatus.NOT_FOUND, "User with email '" + oldEmail + "' not found."));
+        // Step 1: Check if the old email exists
+        User oldUser = userRepository.findUserByEmail(oldEmail)
+                .orElseThrow(() -> new RuntimeException("User with old email not found."));
 
+        // Step 2: Check if the new email already exists
         if (userRepository.findUserByEmail(newEmail).isPresent()) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Email already exists");
+            throw new RuntimeException("New email already exists.");
         }
-        user.setEmail(newEmail);
-        userRepository.save(user);
-        return ResponseEntity.ok("Email updated successfully.");
-    }
 
+        // Step 3: Retrieve associated files for the old user
+        List<FileDB> files = fileRepository.findByUserEmail(oldEmail);
+
+        // Step 4: Delete the old user and their associated files
+        fileRepository.deleteByUserEmail(oldEmail);
+        userRepository.delete(oldUser);
+
+        // Step 5: Create a new user with the new email
+        User newUser = new User();
+        newUser.setEmail(newEmail);
+        newUser.setFirstName(oldUser.getFirstName());
+        newUser.setLastName(oldUser.getLastName());
+        newUser.setPassword(oldUser.getPassword()); // Ensure to handle password securely
+        newUser.setPhoneNumber(oldUser.getPhoneNumber());
+        newUser.setPhotoPath(oldUser.getPhotoPath());
+        newUser.setCreatedAt(oldUser.getCreatedAt());
+        newUser.setUpdatedAt(oldUser.getUpdatedAt());
+        newUser.setRoles(oldUser.getRoles());
+        newUser.setPosts(oldUser.getPosts());
+
+        userRepository.save(newUser);
+
+
+        fileRepository.saveAll(files);
+        // Step 6: Associate the files with the new user
+
+        return ResponseEntity.ok(newEmail);
+    }
 }
+
