@@ -1,5 +1,4 @@
 import axios from "axios";
-import test from "../assets/test-photo-profile.png";
 
 const API_URL = "https://localhost:8443/auth";
 const UPLOAD_URL = "https://localhost:8443/auth/upload"; // Add your upload URL here
@@ -23,6 +22,58 @@ const uploadPhoto = async (file) => {
     return response.data;
   } catch (error) {
     console.error("Upload Error:", error.message);
+    throw error;
+  }
+};
+
+const changeEmail = async (oldEmail, newEmail) => {
+  try {
+    // Create the request body object
+    const userChangeEmailRequest = {
+      oldEmail,
+      newEmail,
+    };
+
+    // Make the API call
+    const response = await axios.post(
+      `${API_URL}/change-email`,
+      userChangeEmailRequest
+    );
+
+    // Log the response details
+    console.log("Change Email Response:", response.data);
+
+    // Return the response data
+    return response.data;
+  } catch (error) {
+    // Log the error details
+    console.error("Change Email Error:", error.message);
+    throw error;
+  }
+};
+
+const changePassword = async (oldPassword, newPassword) => {
+  try {
+    // Create the request body object
+    const UserChangePasswordRequest = {
+      oldPassword,
+      newPassword,
+    };
+
+    // Make the API call
+    const response = await axios.post(
+      `${API_URL}/change-password`,
+      UserChangePasswordRequest
+    );
+
+    // Log the response details
+    console.log("Change Password Response:", response.data);
+
+    // Return the response data
+    return response.data;
+  } catch (error) {
+    // Log the error details
+    console.error("Change Password Error:", error.message);
     throw error;
   }
 };
@@ -116,10 +167,9 @@ const register = (email, name, surname, password, phoneNumber, photo) => {
         console.error("Error Message:", error.message); // Log error message
       }
 
-      // Log the config used for the request
-      console.error("Error Config:", error.config); // Log error config
+      console.error("Error Config:", error.config);
 
-      throw error; // Re-throw error after logging
+      throw error;
     });
 };
 
@@ -135,69 +185,14 @@ const getCurrentUser = async () => {
   }
 };
 
-
-
-
-// AuthService Object
 const AuthService = {
   register,
   uploadPhoto,
   login,
   logout,
   getCurrentUser,
+  changeEmail,
+  changePassword,
 };
 
-// Export AuthService as default
 export default AuthService;
-
-// const mockUser = {
-//   email: "john.doe@example.com",
-//   name: "Stelios",
-//   surname: "Dimitriadis",
-//   photo: test, // Replace with an actual image URL
-//   accessToken: "mock-access-token",
-//   phoneNumber: "123-456-7890",
-// };
-
-// // Set the mock user in localStorage for testing purposes
-// localStorage.setItem("user", JSON.stringify(mockUser));
-
-// const login = (email, password) => {
-//   return new Promise((resolve) => {
-//     resolve({
-//       data: mockUser,
-//     });
-//   });
-// };
-
-// const logout = () => {
-//   localStorage.removeItem("user");
-// };
-
-// const register = (email, name, surname, password, phoneNumber, photo) => {
-//   return new Promise((resolve) => {
-//     const newUser = {
-//       email,
-//       name,
-//       surname,
-//       photo,
-//       phoneNumber,
-//       accessToken: "new-mock-access-token",
-//     };
-//     localStorage.setItem("user", JSON.stringify(newUser));
-//     resolve({ data: newUser });
-//   });
-// };
-
-// const getCurrentUser = () => {
-//   return JSON.parse(localStorage.getItem("user"));
-// };
-
-// const AuthService = {
-//   register,
-//   login,
-//   logout,
-//   getCurrentUser,
-// };
-
-// export default AuthService;

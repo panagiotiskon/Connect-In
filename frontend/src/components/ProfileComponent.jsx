@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   MDBContainer,
   MDBRow,
@@ -14,8 +14,7 @@ import ProfileCard from "./common/ProfileCard";
 import AuthService from "../api/AuthenticationAPI";
 
 const ProfileComponent = () => {
-  const currentUser = AuthService.getCurrentUser();
-
+  const [currentUser, setCurrentUser] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [selectedCard, setSelectedCard] = useState("");
   const [modalContent, setModalContent] = useState("");
@@ -25,9 +24,13 @@ const ProfileComponent = () => {
     Skills: [],
   });
 
-  if (!currentUser) {
-    return <div>Loading...</div>;
-  }
+  useEffect(() => {
+    const fetchCurrentUser = async () => {
+      const user = await AuthService.getCurrentUser();
+      setCurrentUser(user);
+    };
+    fetchCurrentUser();
+  }, []);
 
   const handleAddClick = (card) => {
     setSelectedCard(card);
@@ -52,6 +55,10 @@ const ProfileComponent = () => {
     });
     handleModalClose();
   };
+
+  if (!currentUser) {
+    return <div>Loading...</div>; // You could also use a spinner or redirect to login here
+  }
 
   return (
     <div>

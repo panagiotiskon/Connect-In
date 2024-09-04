@@ -1,5 +1,7 @@
 import React from "react";
 import NavbarComponent from "./common/NavBar";
+import FooterComponent from "./common/FooterComponent";
+import AuthService from "../api/AuthenticationAPI";
 import {
   MDBContainer,
   MDBRow,
@@ -13,7 +15,7 @@ import {
 
 // Mocking AuthService
 const getCurrentUser = () => {
-  return JSON.parse(localStorage.getItem("user"));
+  return AuthService.getCurrentUser();
 };
 
 export default function ChatComponent() {
