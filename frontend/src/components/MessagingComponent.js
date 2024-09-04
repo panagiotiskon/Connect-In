@@ -240,7 +240,6 @@ export default function ChatComponent() {
           </MDBCol>
         </MDBRow>
       </MDBContainer>
-      <FooterComponent />
     </div>
   );
 }

@@ -1,5 +1,4 @@
 import axios from "axios";
-import test from "../assets/test-photo-profile.png";
 
 const API_URL = "https://localhost:8443/auth";
 const UPLOAD_URL = "https://localhost:8443/auth/upload"; // Add your upload URL here

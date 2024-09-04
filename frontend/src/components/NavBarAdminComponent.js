@@ -33,7 +33,7 @@ const NavBarAdminComponent = () => {
         <img
           src={ConnectInLogo}
           alt="ConnectIn Logo"
-          style={{ width: "200px", height: "auto", marginLeft: "60px" }}
+          style={{ width: "200px", height: "auto" }}
         />
 
         {/* Toggler for small screens */}
@@ -52,7 +52,6 @@ const NavBarAdminComponent = () => {
             <MDBBtn
               color="danger"
               className="d-flex align-items-center"
-              style={{ marginLeft: "1500px" }}
               onClick={handleLogoutClick} // Handle logout click
             >
               <MDBIcon fas icon="sign-out-alt" className="me-2" />
