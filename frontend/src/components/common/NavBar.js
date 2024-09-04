@@ -108,19 +108,14 @@ const NavbarComponent = () => {
               <span style={{ fontSize: "0.9rem" }}>Settings</span>
             </MDBNavbarItem>
             <MDBNavbarItem className="d-flex flex-column align-items-center navbar-nav-item">
-              <MDBNavbarLink
-                onClick={handleLogout}
-                style={{ color: "red" }} // Apply red color to the text
-              >
+              <MDBNavbarLink onClick={handleLogout}>
                 <MDBIcon
                   fas
                   icon="sign-out-alt"
                   style={{ fontSize: "1.4rem", color: "red" }}
-                />{" "}
-                {/* Apply red color to the icon */}
+                />
               </MDBNavbarLink>
-              <span style={{ fontSize: "0.9rem", color: "red" }}>Logout</span>{" "}
-              {/* Apply red color to the text */}
+              <span style={{ fontSize: "0.9rem", color: "red" }}>Logout</span>
             </MDBNavbarItem>
           </MDBNavbarNav>
         </MDBCollapse>
