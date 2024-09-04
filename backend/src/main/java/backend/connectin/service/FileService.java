@@ -1,20 +1,21 @@
 package backend.connectin.service;
 
 import backend.connectin.domain.FileDB;
-import backend.connectin.domain.repository.FileDBRepository;
+import backend.connectin.domain.repository.FileRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 @Service
 public class FileService {
 
-    private final FileDBRepository fileDBRepository;
+    private final FileRepository fileDBRepository;
 
-    public FileService(FileDBRepository fileDBRepository) {
+    public FileService(FileRepository fileDBRepository) {
         this.fileDBRepository = fileDBRepository;
     }
 
@@ -33,9 +34,9 @@ public class FileService {
     }
 
     public Stream<FileDB> getAllFiles() {
-        return fileDBRepository.findAll().stream();
+        // Convert Iterable to Stream
+        return StreamSupport.stream(fileDBRepository.findAll().spliterator(), false);
     }
-
     public String deleteFileById(String id) {
         if (fileDBRepository.existsById(id)) {
             fileDBRepository.deleteById(id);

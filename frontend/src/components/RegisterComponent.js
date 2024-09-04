@@ -5,6 +5,7 @@ import { useForm } from "react-hook-form";
 import AuthService from "../api/AuthenticationAPI";
 import ConnectInLogo from "../assets/ConnectIn.png";
 import PhotoUpload from "./PhotoUpload";
+import FooterComponent from "./common/FooterComponent";
 import "./RegisterComponent.scss";
 
 const RegisterComponent = () => {
@@ -50,12 +51,19 @@ const RegisterComponent = () => {
         window.location.reload();
       })
       .catch((error) => {
-        const resMessage =
-          (error.response &&
-            error.response.data &&
-            error.response.data.message) ||
-          error.message ||
-          error.toString();
+        let resMessage;
+
+        if (error.response && error.response.status === 401) {
+          resMessage =
+            "A user with this email already exists, try logging instead.";
+        } else {
+          resMessage =
+            (error.response &&
+              error.response.data &&
+              error.response.data.message) ||
+            error.message ||
+            error.toString();
+        }
 
         setLoading(false);
         setMessage(resMessage);
@@ -278,12 +286,7 @@ const RegisterComponent = () => {
           </p>
         </div>
       </div>
-      <footer className="footer">
-        <p className="footer-text">
-          {" "}
-          &copy; Panagiotis Kontoeidis & Stelios Dimitriadis{" "}
-        </p>
-      </footer>
+      <FooterComponent />
     </div>
   );
 };

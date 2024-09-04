@@ -5,6 +5,7 @@ import "./LoginComponent.scss";
 import AuthService from "../api/AuthenticationAPI";
 import { useForm } from "react-hook-form";
 import ConnectInLogo from "../assets/ConnectIn.png";
+import FooterComponent from "./common/FooterComponent";
 
 const LoginComponent = () => {
   const {
@@ -124,12 +125,7 @@ const LoginComponent = () => {
           </p>
         </div>
       </div>
-      <footer className="footer">
-        <p className="footer-text">
-          {" "}
-          &copy; Panagiotis Kontoeidis & Stelios Dimitriadis{" "}
-        </p>
-      </footer>
+      <FooterComponent />
     </div>
   );
 };

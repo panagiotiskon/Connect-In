@@ -11,6 +11,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @CrossOrigin(origins = "http://localhost:3000", allowCredentials = "true")
 @RestController
@@ -116,6 +117,16 @@ public class FileController {
         } catch (NoSuchElementException e) {
             return ResponseEntity.status(HttpStatus.EXPECTATION_FAILED).body(e.getMessage());
         }
+    }
+
+    @GetMapping("/files/user/{userId}/images")
+    public ResponseEntity<List<String>> getUserImages(@PathVariable Long userId) {
+        List<String> encodedImages = fileService.getAllFiles()
+                .filter(file -> file.getUser().getId().equals(userId) && "image/png".equals(file.getType()))
+                .map(file -> Base64.getEncoder().encodeToString(file.getData()))
+                .collect(Collectors.toList());
+
+        return ResponseEntity.ok(encodedImages);
     }
 
     @DeleteMapping("/files/{id}")
