@@ -1,8 +1,8 @@
 package backend.connectin.service;
 
-import backend.connectin.domain.FileDB;
-import backend.connectin.domain.User;
+import backend.connectin.domain.*;
 import backend.connectin.domain.repository.FileRepository;
+import backend.connectin.domain.repository.PersonalInfoRepository;
 import backend.connectin.domain.repository.UserRepository;
 import backend.connectin.web.mappers.UserMapper;
 import backend.connectin.web.requests.UserChangeEmailRequest;
@@ -32,13 +32,15 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
     private final FileService fileService;
     private final FileRepository fileRepository;
+    private final PersonalInfoRepository personalInfoRepository;
 
-    public UserService(UserRepository userRepository, UserMapper userMapper, PasswordEncoder passwordEncoder, FileService fileService, FileRepository fileRepository) {
+    public UserService(UserRepository userRepository, UserMapper userMapper, PasswordEncoder passwordEncoder, FileService fileService, FileRepository fileRepository, PersonalInfoRepository personalInfoRepository) {
         this.userRepository = userRepository;
         this.userMapper = userMapper;
         this.passwordEncoder = passwordEncoder;
         this.fileService = fileService;
         this.fileRepository = fileRepository;
+        this.personalInfoRepository = personalInfoRepository;
     }
 
     // Check if user with the given email already exists
@@ -119,6 +121,41 @@ public class UserService {
 
         user.setEmail(newEmail);
         userRepository.save(user);
+    }
+
+    public List<Experience> getExperience(long userId){
+        if (userRepository.findById(userId).isPresent()) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "User not found");
+        }
+        PersonalInfo personalInfo = personalInfoRepository.findByUserId(userId);
+        if(personalInfo==null){
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Personal Info not found");
+        }
+        return personalInfo.getExperiences();
+    }
+
+    @Transactional
+    public List<Skill> getSkills(long userId){
+        if (userRepository.findById(userId).isPresent()) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "User not found");
+        }
+        PersonalInfo personalInfo = personalInfoRepository.findByUserId(userId);
+        if(personalInfo==null){
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Personal Info not found");
+        }
+        return personalInfo.getSkills();
+    }
+
+    @Transactional
+    public List<Education> getEducation(long userId){
+        if (userRepository.findById(userId).isPresent()) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "User not found");
+        }
+        PersonalInfo personalInfo = personalInfoRepository.findByUserId(userId);
+        if(personalInfo==null){
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Personal Info not found");
+        }
+        return personalInfo.getEducations();
     }
 }
 
