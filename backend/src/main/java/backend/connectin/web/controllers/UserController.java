@@ -3,6 +3,10 @@ package backend.connectin.web.controllers;
 import backend.connectin.domain.User;
 import backend.connectin.service.JWTService;
 import backend.connectin.service.UserService;
+import backend.connectin.web.dto.EducationDTO;
+import backend.connectin.web.dto.ExperienceDTO;
+import backend.connectin.web.dto.SkillDTO;
+import backend.connectin.web.mappers.PersonalInfoMapper;
 import backend.connectin.web.requests.UserChangeEmailRequest;
 import backend.connectin.web.requests.UserChangePasswordRequest;
 import jakarta.servlet.http.Cookie;
@@ -12,17 +16,21 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.List;
+
+@CrossOrigin(origins = "http://localhost:3000", allowCredentials = "true")
 @RestController
-@RequestMapping("auth")
-@CrossOrigin(origins = "https://localhost:3000", allowCredentials = "true")
+@RequestMapping("/auth/users")
 public class UserController {
+    UserService userService;
+    PersonalInfoMapper personalInfoMapper;
+    public UserController(UserService userService,PersonalInfoMapper personalInfoMapper) {
 
     private final UserService userService;
     private final JWTService jwtService;
 
     public UserController(UserService userService, JWTService jwtService) {
         this.userService = userService;
-        this.jwtService = jwtService;
     }
 
     @PostMapping("/{userId}/change-password")
@@ -38,6 +46,18 @@ public class UserController {
         } catch (RuntimeException e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
         }
+    //need to create personal info endpoints too
+
+    @GetMapping("/{userId}/personal-info/experience")
+    public ResponseEntity<List<ExperienceDTO>> getExperience(@PathVariable long userId) {
+        List<ExperienceDTO> experiences = userService.getExperience(userId).stream().map(experience -> personalInfoMapper.mapToExperienceDTO(experience)).toList();
+        return ResponseEntity.ok(experiences);
+    }
+
+    @GetMapping("/{userId}/personal-info/skills")
+    public ResponseEntity<List<SkillDTO>> getSkills(@PathVariable long userId) {
+        List<SkillDTO> skills = userService.getSkills(userId).stream().map(skill -> personalInfoMapper.mapToSkillDTO(skill)).toList();
+        return ResponseEntity.ok(skills);
     }
 
     @PostMapping("/{userId}/change-email")
@@ -53,6 +73,10 @@ public class UserController {
         } catch (RuntimeException e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
         }
+    @GetMapping("/{userId}/personal-info/education")
+    public ResponseEntity<List<EducationDTO>> getEducation(@PathVariable long userId) {
+        List<EducationDTO> educations = userService.getEducation(userId).stream().map(education -> personalInfoMapper.mapToEducationDTO(education)).toList();
+        return ResponseEntity.ok(educations);
     }
 
 }
