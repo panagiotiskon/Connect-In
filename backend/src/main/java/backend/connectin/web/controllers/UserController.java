@@ -23,7 +23,7 @@ import java.util.List;
 
 @CrossOrigin(origins = "http://localhost:3000", allowCredentials = "true")
 @RestController
-@RequestMapping("/auth/users")
+@RequestMapping("/auth")
 public class UserController {
     private final UserService userService;
     private final JWTService jwtService;
