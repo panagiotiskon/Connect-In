@@ -5,6 +5,9 @@ const UPLOAD_URL = "https://localhost:8443/auth/upload"; // Add your upload URL 
 
 axios.defaults.withCredentials = true;
 
+
+
+
 // Upload Photo Function
 const uploadPhoto = async (file) => {
   const formData = new FormData();
@@ -28,25 +31,26 @@ const uploadPhoto = async (file) => {
 
 const changeEmail = async (oldEmail, newEmail) => {
   try {
-    // Create the request body object
+    
+    const currentUser = await getCurrentUser();
+  
     const userChangeEmailRequest = {
       oldEmail,
       newEmail,
     };
 
-    // Make the API call
+    const userId = currentUser.id; 
+
     const response = await axios.post(
-      `${API_URL}/change-email`,
+      `${API_URL}/${userId}/change-email`,
       userChangeEmailRequest
     );
 
-    // Log the response details
     console.log("Change Email Response:", response.data);
 
-    // Return the response data
     return response.data;
   } catch (error) {
-    // Log the error details
+
     console.error("Change Email Error:", error.message);
     throw error;
   }
@@ -54,25 +58,25 @@ const changeEmail = async (oldEmail, newEmail) => {
 
 const changePassword = async (oldPassword, newPassword) => {
   try {
-    // Create the request body object
+
+    const currentUser = await getCurrentUser();
+
     const UserChangePasswordRequest = {
       oldPassword,
       newPassword,
     };
-
-    // Make the API call
+    const userId = currentUser.id; 
+    console.log(oldPassword, newPassword);
     const response = await axios.post(
-      `${API_URL}/change-password`,
+      `${API_URL}/${userId}/change-password`,
       UserChangePasswordRequest
     );
 
-    // Log the response details
     console.log("Change Password Response:", response.data);
 
-    // Return the response data
     return response.data;
   } catch (error) {
-    // Log the error details
+
     console.error("Change Password Error:", error.message);
     throw error;
   }

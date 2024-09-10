@@ -48,19 +48,24 @@ public class UserService {
         }
     }
 
+    public User findUserOrThrow(Long id){
+        return userRepository.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+    }
+
     @Transactional
     public void registerUser(UserRegisterRequest userRegisterRequest){
         String email = userRegisterRequest.getEmail();
+        User user;
         try{
             validateEmail(email);
-            User user = userMapper.mapToUser(userRegisterRequest);
+            user = userMapper.mapToUser(userRegisterRequest);
             userRepository.save(user);
         }
         catch(ResponseStatusException e){
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Email already exists");
         }
         try{
-            fileService.store(userRegisterRequest.getProfilePicture(), true, email); // Adjusted to directly use the MultipartFile
+            fileService.store(userRegisterRequest.getProfilePicture(), true, user.getId()); // Adjusted to directly use the MultipartFile
         }
         catch(IOException e){
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Profile picture cannot be saved");
@@ -89,56 +94,31 @@ public class UserService {
         return userRepository.findUserByEmail(email);
     }
 
-    public ResponseEntity<String> updatePassword(User user, UserChangePasswordRequest userChangePasswordRequest) {
+    @Transactional
+    public void updatePassword(User user, UserChangePasswordRequest userChangePasswordRequest) {
         if (!passwordEncoder.matches(userChangePasswordRequest.getOldPassword(), user.getPassword())) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Old password is incorrect.");
+            throw new RuntimeException("Old password does not match");
         }
         // Encode the new password
         user.setPassword(passwordEncoder.encode(userChangePasswordRequest.getNewPassword()));
         userRepository.save(user);
-        return ResponseEntity.ok("Password updated successfully.");
     }
 
     @Transactional
-    public ResponseEntity<String> updateUserEmail(UserChangeEmailRequest userChangeEmailRequest) {
+    public void updateUserEmail(UserChangeEmailRequest userChangeEmailRequest) {
+
         String oldEmail = userChangeEmailRequest.getOldEmail();
         String newEmail = userChangeEmailRequest.getNewEmail();
-        // Step 1: Check if the old email exists
-        User oldUser = userRepository.findUserByEmail(oldEmail)
+
+        User user = userRepository.findUserByEmail(oldEmail)
                 .orElseThrow(() -> new RuntimeException("User with old email not found."));
 
-        // Step 2: Check if the new email already exists
         if (userRepository.findUserByEmail(newEmail).isPresent()) {
             throw new RuntimeException("New email already exists.");
         }
 
-        // Step 3: Retrieve associated files for the old user
-        List<FileDB> files = fileRepository.findByUserEmail(oldEmail);
-
-        // Step 4: Delete the old user and their associated files
-        fileRepository.deleteByUserEmail(oldEmail);
-        userRepository.delete(oldUser);
-
-        // Step 5: Create a new user with the new email
-        User newUser = new User();
-        newUser.setEmail(newEmail);
-        newUser.setFirstName(oldUser.getFirstName());
-        newUser.setLastName(oldUser.getLastName());
-        newUser.setPassword(oldUser.getPassword()); // Ensure to handle password securely
-        newUser.setPhoneNumber(oldUser.getPhoneNumber());
-        newUser.setPhotoPath(oldUser.getPhotoPath());
-        newUser.setCreatedAt(oldUser.getCreatedAt());
-        newUser.setUpdatedAt(oldUser.getUpdatedAt());
-        newUser.setRoles(oldUser.getRoles());
-        newUser.setPosts(oldUser.getPosts());
-
-        userRepository.save(newUser);
-
-
-        fileRepository.saveAll(files);
-        // Step 6: Associate the files with the new user
-
-        return ResponseEntity.ok(newEmail);
+        user.setEmail(newEmail);
+        userRepository.save(user);
     }
 }
 

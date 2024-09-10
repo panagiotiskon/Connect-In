@@ -23,9 +23,9 @@ public class FileService {
         fileDBRepository.save(fileDB);
     }
 
-    public void store(MultipartFile file, Boolean isProfilePicture, String userEmail) throws IOException {
+    public void store(MultipartFile file, Boolean isProfilePicture, Long userId) throws IOException {
         String fileName = StringUtils.cleanPath(file.getOriginalFilename());
-        FileDB FileDB = new FileDB(fileName, file.getContentType(), file.getBytes(), isProfilePicture, userEmail);
+        FileDB FileDB = new FileDB(fileName, file.getContentType(), file.getBytes(), isProfilePicture, userId);
         fileDBRepository.save(FileDB);
     }
 

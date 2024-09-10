@@ -13,9 +13,9 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import java.util.*;
 import java.util.stream.Collectors;
 
-@CrossOrigin(origins = "http://localhost:3000", allowCredentials = "true")
 @RestController
 @RequestMapping("/auth")
+@CrossOrigin(origins = "http://localhost:3000", allowCredentials = "true")
 public class FileController {
 
     private final FileService fileService;
@@ -79,11 +79,11 @@ public class FileController {
     @PostMapping("/upload")
     public ResponseEntity<?> uploadFile(@RequestParam("file") MultipartFile file,
                                         @RequestParam("isProfilePicture") String isProfilePicture,
-                                        @RequestParam("userEmail") String userEmail) {
+                                        @RequestParam("userId") Long userId) {
         String message = "";
         try {
             Boolean flag = Boolean.parseBoolean(isProfilePicture);
-            fileService.store(file, flag, userEmail);
+            fileService.store(file, flag, userId);
             message = "Uploaded the file successfully: " + file.getOriginalFilename();
             return new ResponseEntity<>(message, HttpStatus.OK);
         } catch (Exception e) {

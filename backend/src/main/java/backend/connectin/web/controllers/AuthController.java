@@ -3,12 +3,11 @@ package backend.connectin.web.controllers;
 import backend.connectin.domain.User;
 import backend.connectin.security.JWTGenerator;
 import backend.connectin.service.FileService;
+import backend.connectin.service.JWTService;
 import backend.connectin.service.UserService;
 import backend.connectin.web.dto.UserDTO;
 import backend.connectin.web.mappers.AuthResourceMapper;
 import backend.connectin.web.mappers.UserMapper;
-import backend.connectin.web.requests.UserChangeEmailRequest;
-import backend.connectin.web.requests.UserChangePasswordRequest;
 import backend.connectin.web.requests.UserLoginRequest;
 import backend.connectin.web.requests.UserRegisterRequest;
 import backend.connectin.web.resources.AuthResource;
@@ -34,48 +33,33 @@ public class AuthController {
 
     private final UserService userService;
     private final AuthenticationManager authenticationManager;
+    private final JWTService jwtService;
     private final JWTGenerator jwtGenerator;
     private final AuthResourceMapper authResourceMapper;
     private final UserMapper userMapper;
 
-    public AuthController(UserService userService, AuthenticationManager authenticationManager, JWTGenerator jwtGenerator, AuthResourceMapper authResourceMapper, FileService fileService, UserMapper userMapper) {
+    public AuthController(UserService userService, AuthenticationManager authenticationManager, JWTService jwtService, JWTGenerator jwtGenerator, AuthResourceMapper authResourceMapper, FileService fileService, UserMapper userMapper) {
         this.userService = userService;
         this.authenticationManager = authenticationManager;
+        this.jwtService = jwtService;
         this.jwtGenerator = jwtGenerator;
         this.authResourceMapper = authResourceMapper;
         this.userMapper = userMapper;
     }
 
-
     @PostMapping("/login")
     public ResponseEntity<AuthResource> login(@RequestBody UserLoginRequest userLoginRequest, HttpServletResponse response) {
         String token = authenticateUser(userLoginRequest.getEmail(), userLoginRequest.getPassword());
-
-        Cookie jwtCookie = new Cookie("accessToken", token);
-
-        jwtCookie.setHttpOnly(true);
-        jwtCookie.setSecure(true);
-        jwtCookie.setMaxAge(3600);
-        jwtCookie.setPath("/");
-
+        String type = "accessToken";
+        Cookie jwtCookie = jwtService.createCookie(type, token);
         response.addCookie(jwtCookie);
-
         AuthResource authResource = authResourceMapper.mapToAuthResource(token, userLoginRequest.getEmail());
         return new ResponseEntity<>(authResource, HttpStatus.OK);
     }
 
-
     @PostMapping("/logout")
     public ResponseEntity<String> logout(HttpServletResponse response) {
-        // Create a cookie with the same name and set its Max-Age to 0
-        Cookie jwtCookie = new Cookie("accessToken", null);
-        jwtCookie.setHttpOnly(true);
-        jwtCookie.setSecure(true);  // Keep it consistent with how you set it
-        jwtCookie.setPath("/");
-        jwtCookie.setMaxAge(0);  // 0 means delete the cookie
-
-        response.addCookie(jwtCookie);
-
+        response.addCookie(jwtService.returnEmptyCookie());
         return new ResponseEntity<>("Logged out successfully", HttpStatus.OK);
     }
 
@@ -94,16 +78,11 @@ public class AuthController {
                     firstName, profilePicture, phoneNumber);
             userService.registerUser(userRegisterRequest);
             String token = authenticateUser(email, password);
-            Cookie jwtCookie = new Cookie("accessToken", token);
-            jwtCookie.setHttpOnly(true);  // Prevents JavaScript access
-            jwtCookie.setSecure(true);  // Use true in production (ensures the cookie is sent over HTTPS)
-            jwtCookie.setPath("/");  // Cookie is available to the entire application
-            jwtCookie.setMaxAge(3600);  // Sets the expiry time to 1 hour (match your JWT expiration)
-
+            String type = "accessToken";
+            Cookie jwtCookie = jwtService.createCookie(type, token);
             response.addCookie(jwtCookie);
             AuthResource authResource = authResourceMapper.mapToAuthResource(token, email);
             return new ResponseEntity<>(authResource, HttpStatus.OK);
-
         } catch (ResponseStatusException e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
         }
@@ -121,27 +100,6 @@ public class AuthController {
             response.put("isValid", false);
             return ResponseEntity.status(HttpStatus.CONFLICT).body(response); // Send a JSON response with isValid: false
         }
-    }
-
-    @PostMapping("/change-password")
-    @ResponseBody
-    public ResponseEntity<String> changePassword(@RequestBody UserChangePasswordRequest userChangePasswordRequest) {
-        String email = SecurityContextHolder.getContext().getAuthentication().getName();
-        User user = userService.findUserByEmail(email).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
-        return userService.updatePassword(user, userChangePasswordRequest);
-    }
-
-    @PostMapping("/change-email")
-    public ResponseEntity<String> changeEmail(@RequestBody UserChangeEmailRequest userChangeEmailRequest) {
-        String email = SecurityContextHolder.getContext().getAuthentication().getName();
-        return userService.updateUserEmail(userChangeEmailRequest);
-    }
-
-    private String authenticateUser(String email, String password) {
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(email, password));
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-        return jwtGenerator.generateToken(authentication);
     }
 
     @GetMapping("/current-user")
@@ -163,6 +121,12 @@ public class AuthController {
         }
     }
 
+    private String authenticateUser(String email, String password) {
+        Authentication authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(email, password));
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+        return jwtGenerator.generateToken(authentication);
+    }
 
 
 }
