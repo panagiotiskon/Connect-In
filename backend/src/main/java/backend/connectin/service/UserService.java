@@ -1,8 +1,8 @@
 package backend.connectin.service;
 
-import backend.connectin.domain.FileDB;
-import backend.connectin.domain.User;
+import backend.connectin.domain.*;
 import backend.connectin.domain.repository.FileRepository;
+import backend.connectin.domain.repository.PersonalInfoRepository;
 import backend.connectin.domain.repository.UserRepository;
 import backend.connectin.web.mappers.UserMapper;
 import backend.connectin.web.requests.UserChangeEmailRequest;
@@ -10,6 +10,7 @@ import backend.connectin.web.requests.UserChangePasswordRequest;
 import backend.connectin.web.requests.UserRegisterRequest;
 import backend.connectin.web.resources.UserResource;
 import jakarta.transaction.Transactional;
+import jdk.jfr.Registered;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -32,13 +33,15 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
     private final FileService fileService;
     private final FileRepository fileRepository;
+    private final PersonalInfoRepository personalInfoRepository;
 
-    public UserService(UserRepository userRepository, UserMapper userMapper, PasswordEncoder passwordEncoder, FileService fileService, FileRepository fileRepository) {
+    public UserService(UserRepository userRepository, UserMapper userMapper, PasswordEncoder passwordEncoder, FileService fileService, FileRepository fileRepository, PersonalInfoRepository personalInfoRepository) {
         this.userRepository = userRepository;
         this.userMapper = userMapper;
         this.passwordEncoder = passwordEncoder;
         this.fileService = fileService;
         this.fileRepository = fileRepository;
+        this.personalInfoRepository = personalInfoRepository;
     }
 
     // Check if user with the given email already exists
@@ -120,5 +123,67 @@ public class UserService {
         user.setEmail(newEmail);
         userRepository.save(user);
     }
+
+    public List<Experience> getExperience(long userId){
+        if (userRepository.findById(userId).isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "User not found");
+        }
+        PersonalInfo personalInfo = personalInfoRepository.findByUserId(userId);
+        if(personalInfo==null){
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Personal Info not found");
+        }
+        return personalInfo.getExperiences();
+    }
+
+    public List<Skill> getSkills(long userId){
+        if (userRepository.findById(userId).isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "User not found");
+        }
+        PersonalInfo personalInfo = personalInfoRepository.findByUserId(userId);
+        if(personalInfo==null){
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Personal Info not found");
+        }
+        return personalInfo.getSkills();
+    }
+
+    public List<Education> getEducation(long userId){
+        if (userRepository.findById(userId).isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "User not found");
+        }
+        PersonalInfo personalInfo = personalInfoRepository.findByUserId(userId);
+        if(personalInfo==null){
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Personal Info not found");
+        }
+        return personalInfo.getEducations();
+    }
+
+    @Transactional
+    public List<Education> addEducation(long userId,Education education){
+        if(userRepository.findById(userId).isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "User not found");
+        }
+        PersonalInfo personalInfo;
+        if(personalInfoRepository.findByUserId(userId)==null){
+            User user = userRepository.findById(userId).get();
+            personalInfo = new PersonalInfo();
+            personalInfo.setUser(user);
+            personalInfo.setEducations(List.of(education));
+            education.setPersonalInfo(personalInfo);
+            personalInfoRepository.save(personalInfo);
+        }
+       else {
+        personalInfo = personalInfoRepository.findByUserId(userId);
+
+        // Ensure the personalInfo reference in education is set
+        education.setPersonalInfo(personalInfo);
+
+        personalInfo.addToEducations(education);
+
+        personalInfoRepository.save(personalInfo);
+    }
+        return personalInfo.getEducations();
+    }
+
+
 }
 
