@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import NavbarComponent from "./common/NavBar";
 import AuthService from "../api/AuthenticationAPI";
-import FooterComponent from "./common/FooterComponent";
-import axios from "axios";
+import { useNavigate } from "react-router-dom";
+
 import {
   MDBContainer,
   MDBRow,
@@ -16,8 +16,11 @@ import {
 } from "mdb-react-ui-kit";
 import { useForm } from "react-hook-form";
 import "./SettingsComponent.scss";
+import SettingsPopup from "./SettingsPopup"; 
 
 export default function SettingsComponent() {
+  const navigate = useNavigate();
+
   const {
     register: registerEmail,
     handleSubmit: handleSubmitEmail,
@@ -35,6 +38,9 @@ export default function SettingsComponent() {
   const [activeCard, setActiveCard] = useState(null);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
+  const [popupOpen, setPopupOpen] = useState(false);
+  const [popupContent, setPopupContent] = useState("");
+  const [popupType, setPopupType] = useState("success");
 
   const newEmail = watchEmail("newEmail");
   const oldEmail = watchEmail("oldEmail");
@@ -46,6 +52,12 @@ export default function SettingsComponent() {
   const oldPassword = watchPassword("oldPassword");
   const newPassword = watchPassword("newPassword");
 
+  const handlePopupClose = async () => {
+    setPopupOpen(false);
+    await AuthService.logout();
+    navigate("/");
+  };
+
   const validatePasswordsMatch = (value) => {
     return (
       value !== oldPassword || "New password cannot be the same as old password"
@@ -53,74 +65,32 @@ export default function SettingsComponent() {
   };
 
   const onSubmitEmail = async (data) => {
-    setMessage("");
     setLoading(true);
-
+    setMessage("");
     try {
-      const response = await AuthService.changeEmail(
-        data.oldEmail,
-        data.newEmail
-      );
-
-      console.log("Email Change Response:", response);
-      console.log("Response Data:", response.data);
-      console.log("Response Status:", response.status);
-      console.log("Response Headers:", response.headers);
-
+      await AuthService.changeEmail(data.oldEmail, data.newEmail);
+      setPopupContent("Email changed successfully!");
+      setPopupType("success");
+      setPopupOpen(true);
       setLoading(false);
-      setMessage("Email changed successfully.");
     } catch (error) {
-      setLoading(false);
-
-      console.error("Email Change Error:", error.message);
-
-      if (error.response) {
-        console.error("Error Response Data:", error.response.data);
-        console.error("Error Response Status:", error.response.status);
-        console.error("Error Response Headers:", error.response.headers);
-      } else if (error.request) {
-        console.error("Error Request:", error.request);
-      } else {
-        console.error("Error Message:", error.message);
-      }
-
       setMessage("Failed to change email. Please try again.");
+      setLoading(false);
     }
   };
 
   const onSubmitPassword = async (data) => {
-    setMessage("");
     setLoading(true);
-
+    setMessage("");
     try {
-      const response = await AuthService.changePassword(
-        data.oldPassword,
-        data.newPassword
-      );
-
-      console.log("Password Change Response:", response);
-      console.log("Response Data:", response.data);
-      console.log("Response Status:", response.status);
-      console.log("Response Headers:", response.headers);
-
+      await AuthService.changePassword(data.oldPassword, data.newPassword);
+      setPopupContent("Password changed successfully!");
+      setPopupType("success");
+      setPopupOpen(true);
       setLoading(false);
-      setMessage("Password changed successfully.");
     } catch (error) {
-      setLoading(false);
-
-      console.error("Password Change Error:", error.message);
-
-      if (error.response) {
-        console.error("Error Response Data:", error.response.data);
-        console.error("Error Response Status:", error.response.status);
-        console.error("Error Response Headers:", error.response.headers);
-      } else if (error.request) {
-        console.error("Error Request:", error.request);
-      } else {
-        console.error("Error Message:", error.message);
-      }
-
       setMessage("Failed to change password. Please try again.");
+      setLoading(false);
     }
   };
 
@@ -129,9 +99,8 @@ export default function SettingsComponent() {
       <NavbarComponent />
       <MDBContainer fluid className="mt-5">
         <MDBRow className="justify-content-center">
-          <MDBCol md="4" className="mb-5 pe-3">
-            {" "}
-            {/* Add right padding */}
+          {/* Email Change Form */}
+          <MDBCol md="3" className="mb-5 pe-3">
             <MDBCard>
               <MDBCardBody className="card-body-flex">
                 <MDBCardTitle className="fs-4 fw-bold card-title">
@@ -139,7 +108,7 @@ export default function SettingsComponent() {
                 </MDBCardTitle>
                 <form onSubmit={handleSubmitEmail(onSubmitEmail)}>
                   {/* Old Email Field */}
-                  <div className="form-group mb-4">
+                  <div className="form-group mb-5">
                     <MDBInput
                       label="Old Email"
                       type="email"
@@ -165,7 +134,7 @@ export default function SettingsComponent() {
                   </div>
 
                   {/* New Email Field */}
-                  <div className="form-group mb-4">
+                  <div className="form-group mb-5">
                     <MDBInput
                       label="New Email"
                       type="email"
@@ -191,7 +160,7 @@ export default function SettingsComponent() {
                   </div>
 
                   {/* Confirm New Email Field */}
-                  <div className="form-group mb-4">
+                  <div className="form-group mb-5">
                     <MDBInput
                       label="Confirm New Email"
                       type="email"
@@ -242,8 +211,7 @@ export default function SettingsComponent() {
             </MDBCard>
           </MDBCol>
 
-          {/* The password change form with reordered fields */}
-          <MDBCol md="4" className="mb-5 ps-3">
+          <MDBCol md="3" className="mb-5 ps-3">
             <MDBCard
               className={`card-custom ${
                 activeCard === "password" ? "card-active" : ""
@@ -255,7 +223,7 @@ export default function SettingsComponent() {
                 </MDBCardTitle>
                 <form onSubmit={handleSubmitPassword(onSubmitPassword)}>
                   {/* Old Password Field */}
-                  <div className="form-group mb-4">
+                  <div className="form-group mb-5">
                     <MDBInput
                       label="Old Password"
                       type="password"
@@ -285,7 +253,7 @@ export default function SettingsComponent() {
                   </div>
 
                   {/* New Password Field */}
-                  <div className="form-group mb-4">
+                  <div className="form-group mb-5">
                     <MDBInput
                       label="New Password"
                       type="password"
@@ -316,7 +284,7 @@ export default function SettingsComponent() {
                   </div>
 
                   {/* Confirm New Password Field */}
-                  <div className="form-group mb-4">
+                  <div className="form-group mb-5">
                     <MDBInput
                       label="Confirm New Password"
                       type="password"
@@ -370,13 +338,21 @@ export default function SettingsComponent() {
         </MDBRow>
       </MDBContainer>
 
+      {/* Render Popup */}
+      <SettingsPopup
+        popupOpen={popupOpen}
+        popupContent={popupContent}
+        popupType={popupType}
+        handlePopupClose={handlePopupClose}
+      />
+
       {message && (
         <div className="text-center mt-3">
           <div
             role="alert"
             style={{
               padding: "10px",
-              border: "2px #f3f2ef", // Black border
+              border: "2px solid #f3f2ef", 
               borderRadius: "5px",
               backgroundColor: "#f3f2ef", // White background
               color: message.includes("Failed") ? "red" : "green",

@@ -19,11 +19,11 @@ public class FileDB {
 
     private Boolean isProfilePicture;
 
-    @Column(name = "user_email", nullable = false)
-    private String userEmail;
+    @Column(name = "user_id", nullable = false)
+    private Long userId;
 
     @OneToOne
-    @JoinColumn(name = "user_email", referencedColumnName = "email", insertable = false, updatable = false)
+    @JoinColumn(name = "user_id", referencedColumnName = "id", insertable = false, updatable = false)
     private User user;
 
     @Column(name = "post_id")
@@ -32,17 +32,17 @@ public class FileDB {
     public FileDB() {
     }
 
-    public FileDB(String userEmail, byte[] data, String type, String name) {
-        this.userEmail = userEmail;
+    public FileDB(Long userId, byte[] data, String type, String name) {
+        this.userId = userId;
         this.data = data;
         this.type = type;
         this.name = name;
     }
 
-    public FileDB(String name, String type, byte[] data, Boolean isProfilePicture, String userEmail) {
+    public FileDB(String name, String type, byte[] data, Boolean isProfilePicture, Long userId) {
         this.name = name;
         this.isProfilePicture = isProfilePicture;
-        this.userEmail = userEmail;
+        this.userId = userId;
         this.type = type;
         this.data = data;
     }
@@ -83,12 +83,12 @@ public class FileDB {
         isProfilePicture = profilePicture;
     }
 
-    public String getUserEmail() {
-        return userEmail;
+    public Long getUserId() {
+        return userId;
     }
 
-    public void setUserEmail(String userEmail) {
-        this.userEmail = userEmail;
+    public void setUserId(Long userEmail) {
+        this.userId = userEmail;
     }
 
     public User getUser() {
@@ -97,7 +97,7 @@ public class FileDB {
 
     public void setUser(User user) {
         this.user = user;
-        this.userEmail = user.getEmail();
+        this.userId = user.getId();
     }
 
     public Long getPostId() {

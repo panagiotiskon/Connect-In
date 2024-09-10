@@ -1,0 +1,56 @@
+/* SettingsPopup.scss */
+
+.popup-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5); 
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+  }
+  
+  .popup-container {
+    background-color: #d4edda; 
+    padding: 20px 30px;
+    border-radius: 8px;
+    max-width: 400px; 
+    width: 90%; 
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    text-align: center;
+  }
+  
+  .popup-content  {
+    margin-top: 0;
+    margin-bottom: 0;
+    background-color: #d4edda;
+    width: 100%;
+    font-size: 1rem;
+    border:none;
+    color: #333; /* Darker text color */
+  }
+  
+  .popup-container.success {
+    border: 2px solid #d4edda; 
+  }
+    
+  .MDBBtn {
+    font-size: 0.875rem; 
+    padding: 5px 10px;
+  }
+
+  .btn-custom {
+    background-color: #35677e !important;
+    color: #fff;
+    margin: 16px;
+    border: none;
+    transition: background-color 0.3s;
+
+    &:hover {
+        background-color: #0056b3;
+    }
+}
+  

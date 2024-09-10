@@ -15,6 +15,6 @@ public interface FileRepository extends CrudRepository<FileDB, String> {
     List<FileDB> findByUserEmail(String userEmail);
 
     @Modifying
-    @Query("DELETE FROM FileDB f WHERE f.userEmail = :userEmail")
+    @Query("DELETE FROM FileDB f WHERE f.userId = :userEmail")
     void deleteByUserEmail(@Param("userEmail") String userEmail);
 }
