@@ -1,5 +1,7 @@
 package backend.connectin.web.controllers;
 
+import backend.connectin.domain.Education;
+import backend.connectin.domain.PersonalInfo;
 import backend.connectin.domain.User;
 import backend.connectin.service.JWTService;
 import backend.connectin.service.UserService;
@@ -7,6 +9,7 @@ import backend.connectin.web.dto.EducationDTO;
 import backend.connectin.web.dto.ExperienceDTO;
 import backend.connectin.web.dto.SkillDTO;
 import backend.connectin.web.mappers.PersonalInfoMapper;
+import org.springframework.http.HttpStatus;
 import backend.connectin.web.requests.UserChangeEmailRequest;
 import backend.connectin.web.requests.UserChangePasswordRequest;
 import jakarta.servlet.http.Cookie;
@@ -75,8 +78,18 @@ public class UserController {
         }
     @GetMapping("/{userId}/personal-info/education")
     public ResponseEntity<List<EducationDTO>> getEducation(@PathVariable long userId) {
-        List<EducationDTO> educations = userService.getEducation(userId).stream().map(education -> personalInfoMapper.mapToEducationDTO(education)).toList();
-        return ResponseEntity.ok(educations);
+        List<Education> educations = userService.getEducation(userId);
+        List<EducationDTO> educationDTOS = educations.stream().map(edu -> personalInfoMapper.mapToEducationDTO(edu)).toList();
+        return new ResponseEntity<>(educationDTOS, HttpStatus.OK);
     }
+
+    @PostMapping("/{userId}/personal-info/education")
+    public ResponseEntity<List<EducationDTO>> addEducation(@PathVariable long userId, @RequestBody EducationDTO educationDTO) {
+        Education education = personalInfoMapper.mapToEducation(educationDTO);
+        List<Education> educations = userService.addEducation(userId, education);
+        List<EducationDTO> educationDTOS = educations.stream().map(edu -> personalInfoMapper.mapToEducationDTO(edu)).toList();
+        return new ResponseEntity<>(educationDTOS, HttpStatus.OK);
+    }
+
 
 }

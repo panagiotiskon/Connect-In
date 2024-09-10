@@ -10,6 +10,7 @@ import backend.connectin.web.requests.UserChangePasswordRequest;
 import backend.connectin.web.requests.UserRegisterRequest;
 import backend.connectin.web.resources.UserResource;
 import jakarta.transaction.Transactional;
+import jdk.jfr.Registered;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -124,7 +125,7 @@ public class UserService {
     }
 
     public List<Experience> getExperience(long userId){
-        if (userRepository.findById(userId).isPresent()) {
+        if (userRepository.findById(userId).isEmpty()) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "User not found");
         }
         PersonalInfo personalInfo = personalInfoRepository.findByUserId(userId);
@@ -134,9 +135,8 @@ public class UserService {
         return personalInfo.getExperiences();
     }
 
-    @Transactional
     public List<Skill> getSkills(long userId){
-        if (userRepository.findById(userId).isPresent()) {
+        if (userRepository.findById(userId).isEmpty()) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "User not found");
         }
         PersonalInfo personalInfo = personalInfoRepository.findByUserId(userId);
@@ -146,9 +146,8 @@ public class UserService {
         return personalInfo.getSkills();
     }
 
-    @Transactional
     public List<Education> getEducation(long userId){
-        if (userRepository.findById(userId).isPresent()) {
+        if (userRepository.findById(userId).isEmpty()) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "User not found");
         }
         PersonalInfo personalInfo = personalInfoRepository.findByUserId(userId);
@@ -157,5 +156,34 @@ public class UserService {
         }
         return personalInfo.getEducations();
     }
+
+    @Transactional
+    public List<Education> addEducation(long userId,Education education){
+        if(userRepository.findById(userId).isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "User not found");
+        }
+        PersonalInfo personalInfo;
+        if(personalInfoRepository.findByUserId(userId)==null){
+            User user = userRepository.findById(userId).get();
+            personalInfo = new PersonalInfo();
+            personalInfo.setUser(user);
+            personalInfo.setEducations(List.of(education));
+            education.setPersonalInfo(personalInfo);
+            personalInfoRepository.save(personalInfo);
+        }
+       else {
+        personalInfo = personalInfoRepository.findByUserId(userId);
+
+        // Ensure the personalInfo reference in education is set
+        education.setPersonalInfo(personalInfo);
+
+        personalInfo.addToEducations(education);
+
+        personalInfoRepository.save(personalInfo);
+    }
+        return personalInfo.getEducations();
+    }
+
+
 }
 
