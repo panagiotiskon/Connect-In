@@ -25,7 +25,7 @@ public class PersonalInfo {
     }
 
     @OneToOne
-    @JoinColumn(name = "user_id",  referencedColumnName = "id", insertable = false, updatable = false)
+    @JoinColumn(name = "user_id",  referencedColumnName = "id")
     public User getUser() {
         return user;
     }
@@ -50,6 +50,9 @@ public class PersonalInfo {
 
     public void setEducations(List<Education> educations) {
         this.educations = educations;
+    }
+    public void addToEducations(Education education) {
+        this.educations.add(education);
     }
 
     @OneToMany(mappedBy = "personalInfo", cascade = CascadeType.ALL, orphanRemoval = true)

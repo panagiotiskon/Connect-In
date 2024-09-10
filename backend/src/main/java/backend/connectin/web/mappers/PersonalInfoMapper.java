@@ -34,7 +34,18 @@ public class PersonalInfoMapper {
                 education.getFieldOfStudy(),
                 education.getStartDate(),
                 education.getEndDate(),
-                education.getPublic()
+                education.getIsPublic()
         );
+    }
+
+    public Education mapToEducation(EducationDTO educationDTO) {
+        Education education = new Education();
+        education.setUniversityName(educationDTO.universityName());
+        education.setFieldOfStudy(educationDTO.fieldOfStudy());
+        education.setStartDate(educationDTO.startDate());
+        education.setEndDate(educationDTO.endDate());
+        education.setIsPublic(educationDTO.isPublic());
+        return education;
+
     }
 }
