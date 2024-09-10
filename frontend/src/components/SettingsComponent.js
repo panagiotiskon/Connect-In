@@ -103,7 +103,7 @@ export default function SettingsComponent() {
           <MDBCol md="3" className="mb-5 pe-3">
             <MDBCard>
               <MDBCardBody className="card-body-flex">
-                <MDBCardTitle className="fs-4 fw-bold card-title">
+                <MDBCardTitle className="fs-4 fw-bold card-title mb-4">
                   Change Email
                 </MDBCardTitle>
                 <form onSubmit={handleSubmitEmail(onSubmitEmail)}>
@@ -218,7 +218,7 @@ export default function SettingsComponent() {
               }`}
             >
               <MDBCardBody className="card-body-flex">
-                <MDBCardTitle className="fs-4 fw-bold card-title">
+                <MDBCardTitle className="fs-4 fw-bold card-title mb-4">
                   Change Password
                 </MDBCardTitle>
                 <form onSubmit={handleSubmitPassword(onSubmitPassword)}>
