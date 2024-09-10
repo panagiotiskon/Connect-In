@@ -25,15 +25,14 @@ import java.util.List;
 @RestController
 @RequestMapping("/auth/users")
 public class UserController {
-    UserService userService;
-    PersonalInfoMapper personalInfoMapper;
-    public UserController(UserService userService,PersonalInfoMapper personalInfoMapper) {
-
     private final UserService userService;
     private final JWTService jwtService;
+    private final PersonalInfoMapper personalInfoMapper;
 
-    public UserController(UserService userService, JWTService jwtService) {
+    public UserController(UserService userService, JWTService jwtService, PersonalInfoMapper personalInfoMapper) {
         this.userService = userService;
+        this.jwtService = jwtService;
+        this.personalInfoMapper = personalInfoMapper;
     }
 
     @PostMapping("/{userId}/change-password")
@@ -49,18 +48,6 @@ public class UserController {
         } catch (RuntimeException e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
         }
-    //need to create personal info endpoints too
-
-    @GetMapping("/{userId}/personal-info/experience")
-    public ResponseEntity<List<ExperienceDTO>> getExperience(@PathVariable long userId) {
-        List<ExperienceDTO> experiences = userService.getExperience(userId).stream().map(experience -> personalInfoMapper.mapToExperienceDTO(experience)).toList();
-        return ResponseEntity.ok(experiences);
-    }
-
-    @GetMapping("/{userId}/personal-info/skills")
-    public ResponseEntity<List<SkillDTO>> getSkills(@PathVariable long userId) {
-        List<SkillDTO> skills = userService.getSkills(userId).stream().map(skill -> personalInfoMapper.mapToSkillDTO(skill)).toList();
-        return ResponseEntity.ok(skills);
     }
 
     @PostMapping("/{userId}/change-email")
@@ -76,10 +63,11 @@ public class UserController {
         } catch (RuntimeException e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
         }
+    }
     @GetMapping("/{userId}/personal-info/education")
     public ResponseEntity<List<EducationDTO>> getEducation(@PathVariable long userId) {
         List<Education> educations = userService.getEducation(userId);
-        List<EducationDTO> educationDTOS = educations.stream().map(edu -> personalInfoMapper.mapToEducationDTO(edu)).toList();
+        List<EducationDTO> educationDTOS = educations.stream().map(personalInfoMapper::mapToEducationDTO).toList();
         return new ResponseEntity<>(educationDTOS, HttpStatus.OK);
     }
 
@@ -87,8 +75,20 @@ public class UserController {
     public ResponseEntity<List<EducationDTO>> addEducation(@PathVariable long userId, @RequestBody EducationDTO educationDTO) {
         Education education = personalInfoMapper.mapToEducation(educationDTO);
         List<Education> educations = userService.addEducation(userId, education);
-        List<EducationDTO> educationDTOS = educations.stream().map(edu -> personalInfoMapper.mapToEducationDTO(edu)).toList();
+        List<EducationDTO> educationDTOS = educations.stream().map(personalInfoMapper::mapToEducationDTO).toList();
         return new ResponseEntity<>(educationDTOS, HttpStatus.OK);
+    }
+
+    @GetMapping("/{userId}/personal-info/experience")
+    public ResponseEntity<List<ExperienceDTO>> getExperience(@PathVariable long userId) {
+        List<ExperienceDTO> experiences = userService.getExperience(userId).stream().map(personalInfoMapper::mapToExperienceDTO).toList();
+        return ResponseEntity.ok(experiences);
+    }
+
+    @GetMapping("/{userId}/personal-info/skills")
+    public ResponseEntity<List<SkillDTO>> getSkills(@PathVariable long userId) {
+        List<SkillDTO> skills = userService.getSkills(userId).stream().map(personalInfoMapper::mapToSkillDTO).toList();
+        return ResponseEntity.ok(skills);
     }
 
 
