@@ -174,7 +174,6 @@ public class UserService {
        else {
         personalInfo = personalInfoRepository.findByUserId(userId);
 
-        // Ensure the personalInfo reference in education is set
         education.setPersonalInfo(personalInfo);
 
         personalInfo.addToEducations(education);
@@ -182,6 +181,58 @@ public class UserService {
         personalInfoRepository.save(personalInfo);
     }
         return personalInfo.getEducations();
+    }
+
+    @Transactional
+    public List<Experience> addExperience(long userId,Experience experience){
+        if(userRepository.findById(userId).isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "User not found");
+        }
+        PersonalInfo personalInfo;
+        if(personalInfoRepository.findByUserId(userId)==null){
+            User user = userRepository.findById(userId).get();
+            personalInfo = new PersonalInfo();
+            personalInfo.setUser(user);
+            personalInfo.setExperiences(List.of(experience));
+            experience.setPersonalInfo(personalInfo);
+            personalInfoRepository.save(personalInfo);
+        }
+        else {
+            personalInfo = personalInfoRepository.findByUserId(userId);
+
+            experience.setPersonalInfo(personalInfo);
+
+            personalInfo.addToExperiences(experience);
+
+            personalInfoRepository.save(personalInfo);
+        }
+        return personalInfo.getExperiences();
+    }
+
+    @Transactional
+    public List<Skill> addSkill(long userId,Skill skill){
+        if(userRepository.findById(userId).isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "User not found");
+        }
+        PersonalInfo personalInfo;
+        if(personalInfoRepository.findByUserId(userId)==null){
+            User user = userRepository.findById(userId).get();
+            personalInfo = new PersonalInfo();
+            personalInfo.setUser(user);
+            personalInfo.setSkills(List.of(skill));
+            skill.setPersonalInfo(personalInfo);
+            personalInfoRepository.save(personalInfo);
+        }
+        else {
+            personalInfo = personalInfoRepository.findByUserId(userId);
+
+            skill.setPersonalInfo(personalInfo);
+
+            personalInfo.addToSkills(skill);
+
+            personalInfoRepository.save(personalInfo);
+        }
+        return personalInfo.getSkills();
     }
 
 

@@ -15,6 +15,7 @@ public class Experience {
     private String companyName;
     private LocalDate startDate;
     private LocalDate endDate;
+    @Column(name = "is_public")
     private Boolean isPublic;
 
 
@@ -71,11 +72,11 @@ public class Experience {
         this.endDate = endDate;
     }
 
-    public Boolean getPublic() {
+    public Boolean getIsPublic() {
         return isPublic;
     }
 
-    public void setPublic(Boolean aPublic) {
+    public void setIsPublic(Boolean aPublic) {
         isPublic = aPublic;
     }
 
