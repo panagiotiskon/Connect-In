@@ -16,7 +16,7 @@ public class PersonalInfoMapper {
                 experience.getCompanyName(),
                 experience.getStartDate(),
                 experience.getEndDate(),
-                experience.getPublic()
+                experience.getIsPublic()
         );
     }
 
@@ -24,7 +24,7 @@ public class PersonalInfoMapper {
         return new SkillDTO(
                 skill.getSkillTitle(),
                 skill.getSkillDescription(),
-                skill.getPublic()
+                skill.getIsPublic()
         );
     }
 
@@ -46,6 +46,23 @@ public class PersonalInfoMapper {
         education.setEndDate(educationDTO.endDate());
         education.setIsPublic(educationDTO.isPublic());
         return education;
+    }
 
+    public Experience mapToExperience(ExperienceDTO experienceDTO) {
+        Experience experience = new Experience();
+        experience.setCompanyName(experienceDTO.companyName());
+        experience.setJobTitle(experienceDTO.jobTitle());
+        experience.setStartDate(experienceDTO.startDate());
+        experience.setEndDate(experienceDTO.endDate());
+        experience.setIsPublic(experienceDTO.isPublic());
+        return experience;
+    }
+
+    public Skill mapToSkill(SkillDTO skillDTO) {
+        Skill skill = new Skill();
+        skill.setSkillTitle(skillDTO.skillTitle());
+        skill.setSkillDescription(skillDTO.skillDescription());
+        skill.setIsPublic(skill.getIsPublic());
+        return skill;
     }
 }

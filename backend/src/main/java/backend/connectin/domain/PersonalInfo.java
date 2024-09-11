@@ -54,6 +54,12 @@ public class PersonalInfo {
     public void addToEducations(Education education) {
         this.educations.add(education);
     }
+    public void addToExperiences(Experience experience) {
+        this.experiences.add(experience);
+    }
+    public void addToSkills(Skill skill) {
+        this.skills.add(skill);
+    }
 
     @OneToMany(mappedBy = "personalInfo", cascade = CascadeType.ALL, orphanRemoval = true)
     public List<Skill> getSkills() {

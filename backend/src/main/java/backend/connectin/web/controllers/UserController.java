@@ -1,8 +1,6 @@
 package backend.connectin.web.controllers;
 
-import backend.connectin.domain.Education;
-import backend.connectin.domain.PersonalInfo;
-import backend.connectin.domain.User;
+import backend.connectin.domain.*;
 import backend.connectin.service.JWTService;
 import backend.connectin.service.UserService;
 import backend.connectin.web.dto.EducationDTO;
@@ -81,14 +79,31 @@ public class UserController {
 
     @GetMapping("/{userId}/personal-info/experience")
     public ResponseEntity<List<ExperienceDTO>> getExperience(@PathVariable long userId) {
-        List<ExperienceDTO> experiences = userService.getExperience(userId).stream().map(personalInfoMapper::mapToExperienceDTO).toList();
-        return ResponseEntity.ok(experiences);
+        List<Experience> experiences = userService.getExperience(userId);
+        List<ExperienceDTO> experienceDTOS = experiences.stream().map(personalInfoMapper::mapToExperienceDTO).toList();
+        return new ResponseEntity<>(experienceDTOS, HttpStatus.OK);
+    }
+
+    @PostMapping("/{userId}/personal-info/experience")
+    public ResponseEntity<List<ExperienceDTO>> addExperience(@PathVariable long userId, @RequestBody ExperienceDTO experienceDTO) {
+        Experience experience = personalInfoMapper.mapToExperience(experienceDTO);
+        List<Experience> experiences = userService.addExperience(userId, experience);
+        List<ExperienceDTO> experienceDTOS = experiences.stream().map(personalInfoMapper::mapToExperienceDTO).toList();
+        return new ResponseEntity<>(experienceDTOS, HttpStatus.OK);
     }
 
     @GetMapping("/{userId}/personal-info/skills")
     public ResponseEntity<List<SkillDTO>> getSkills(@PathVariable long userId) {
         List<SkillDTO> skills = userService.getSkills(userId).stream().map(personalInfoMapper::mapToSkillDTO).toList();
         return ResponseEntity.ok(skills);
+    }
+
+    @PostMapping("/{userId}/personal-info/skills")
+    public ResponseEntity<List<SkillDTO>> addSkills(@PathVariable long userId, @RequestBody SkillDTO skillDTO) {
+        Skill skill = personalInfoMapper.mapToSkill(skillDTO);
+        List<Skill> skills = userService.addSkill(userId, skill);
+        List<SkillDTO> skillDTOS = skills.stream().map(personalInfoMapper::mapToSkillDTO).toList();
+        return new ResponseEntity<>(skillDTOS, HttpStatus.OK);
     }
 
 
