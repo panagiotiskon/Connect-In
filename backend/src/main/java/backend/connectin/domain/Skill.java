@@ -11,6 +11,7 @@ public class Skill {
     private PersonalInfo personalInfo;
     private String skillTitle;
     private String skillDescription;
+    @Column(name = "is_public")
     private Boolean isPublic;
 
     @Id
@@ -49,11 +50,11 @@ public class Skill {
     public void setSkillTitle(String skillTitle) {
         this.skillTitle = skillTitle;
     }
-    public Boolean getPublic() {
+    public Boolean getIsPublic() {
         return isPublic;
     }
 
-    public void setPublic(Boolean aPublic) {
-        isPublic = aPublic;
+    public void setIsPublic(Boolean isPublic) {
+        this.isPublic = isPublic;
     }
 }
