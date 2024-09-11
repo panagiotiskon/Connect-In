@@ -27,7 +27,11 @@ const ProfileCard = ({ currentUser }) => {
   return (
     <MDBCard
       className="mb-4"
-      style={{ width: "400px", height: "400px", marginLeft: "20px" }}
+      style={{ width: "70%", 
+               height: "100%",
+               margin: "5%", 
+               display: "flex"
+                }}
     >
       <MDBCardBody>
         <MDBCardImage
@@ -35,11 +39,13 @@ const ProfileCard = ({ currentUser }) => {
           alt="avatar"
           className="rounded-circle"
           style={{
-            width: "200px", // Increase width to make the circle larger
-            height: "200px", // Set height to match width for a perfect circle
+            width: 150, // Increase width to make the circle larger
+            height: 150, // Set height to match width for a perfect circle
             objectFit: "cover", // Ensure the image covers the circle
             display: "block",
+            alignSelf: "center",
             margin: "0 auto", // Center the image horizontally
+            marginTop: "3rem",
             marginBottom: "3rem", // Adjust bottom margin as needed
           }}
           fluid
@@ -52,6 +58,8 @@ const ProfileCard = ({ currentUser }) => {
             cursor: "pointer",
             textAlign: "center", // Center the text horizontally
             marginBottom: "0.6rem", // Adjust margin if needed
+            font: "Segoe UI" 
+
           }}
         >
           {`${currentUser.firstName} ${currentUser.lastName}`}

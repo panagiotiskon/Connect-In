@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
 import {
   MDBContainer,
   MDBCardBody,
@@ -13,12 +12,15 @@ import {
 import NavbarComponent from "./common/NavBar";
 import AuthService from "../api/AuthenticationAPI";
 import ProfileCard from "../components/common/ProfileCard";
-import FooterComponent from "./common/FooterComponent";
+import FileService from "../api/UserFilesApi"; // Adjust import path
+import "./HomeComponent.scss";
 
 const HomeComponent = () => {
   const [currentUser, setCurrentUser] = useState(null);
+  const [profileImage, setProfileImage] = useState(null);
   const [comments, setComments] = useState({});
 
+  // Fetch current user
   useEffect(() => {
     const fetchCurrentUser = async () => {
       const user = await AuthService.getCurrentUser();
@@ -27,13 +29,29 @@ const HomeComponent = () => {
     fetchCurrentUser();
   }, []);
 
+  // Fetch user's profile image
+  useEffect(() => {
+    const fetchProfileImage = async () => {
+      if (currentUser) {
+        const images = await FileService.getUserImages(currentUser.id);
+        if (images.length > 0) {
+          setProfileImage(`data:image/png;base64,${images[0]}`);
+        }
+      }
+    };
+
+    if (currentUser) {
+      fetchProfileImage();
+    }
+  }, [currentUser]);
+
   const posts = [
     {
-      name: "Miley Cyrus",
-      username: "@mileycyrus",
+      name: currentUser ? currentUser.firstName : "Loading...",
+      username: currentUser ? `@${currentUser.username}` : "@username",
       time: "2h",
-      content: "Lorem ipsum dolor, sit amet #consectetur adipisicing elit.",
-      imageUrl: currentUser?.photo, // Use current user's image
+      content: "Lorem ipsum dolor sit amet #consectetur adipisicing elit.",
+      imageUrl: profileImage || "https://via.placeholder.com/150", // Use profile image or fallback
       mediaUrl: "https://www.youtube.com/embed/vlDzYIIOYmM",
       cardImage: "https://via.placeholder.com/150",
       cardText: "Card Title",
@@ -60,81 +78,83 @@ const HomeComponent = () => {
     handleCommentChange(postId, "");
   };
 
+  const handleImageClick = () => {
+    // Add functionality for the Image button
+    console.log('Image button clicked');
+  };
+
+  const handleVideoClick = () => {
+    // Add functionality for the Video button
+    console.log('Video button clicked');
+  };
+
+  const handleAudioClick = () => {
+    // Add functionality for the Audio button
+    console.log('Audio button clicked');
+  };
+
   return (
     <>
       <NavbarComponent />
-      <MDBContainer fluid className="mt-5" style={{ padding: 0 }}>
+      <MDBContainer fluid className="home-container">
         <MDBRow>
-          <MDBCol md="4" className="ps-12">
-            <ProfileCard currentUser={currentUser} />
+          <MDBCol md="4" className="left-column">
+            <ProfileCard currentUser={currentUser} profileImage={profileImage} />
           </MDBCol>
-          <MDBCol md="6">
-            <MDBCard className="shadow-0">
-              <MDBCardBody className="border-bottom pb-2">
-                <div className="d-flex">
+          <MDBCol md="6" className="center-column">
+            <MDBCard className="new-post-container shadow-0">
+              <MDBCardBody className="border-bottom pb-2 w-100">
+                <div className="d-flex new-post-input-container">
                   <img
-                    src={currentUser.photo}
+                    src={profileImage || "https://via.placeholder.com/150"}
                     className="rounded-circle"
-                    height="50"
+                    height="60"
+                    width={60}
                     alt="Avatar"
                     loading="lazy"
                   />
-                  <div className="d-flex align-items-center w-100 ps-3">
-                    <div className="w-100">
-                      <input
-                        type="text"
-                        id="form1"
-                        className="form-control form-status border-0 py-1 px-0"
-                        placeholder="Start a post"
-                      />
-                    </div>
+                  <div className="w-100 ps-3 ">
+                    <input
+                      type="text"
+                      id="form1"
+                      className="form-control form-status"
+                      placeholder="Create a Post"
+                      style={{
+                        fontFamily: '"Segoe UI", Tahoma, Geneva, Verdana, sans-serif',
+                        height: "90%", // Ensures full height
+                        display: "flex", // Flex display for better alignment
+                        alignItems: "center", // Vertical centering
+                      }}
+                    />
                   </div>
                 </div>
-                <div className="d-flex justify-content-between">
+                <div className="media-options  d-flex flex-column">
                   <MDBTypography
                     listUnStyled
-                    className="d-flex flex-row ps-3 pt-3"
+                    className="d-flex flex-row ps-5 pt-3 mb-3 media-upload-btn"
                   >
-                    <li className="d-flex align-items-center me-5">
-                      <MDBIcon
-                        far
-                        icon="image"
-                        className="pe-2"
-                        style={{ fontSize: "2rem" }}
-                      />
-                      <span style={{ marginLeft: "0.5rem" }}>Image</span>
-                    </li>
-                    <li
-                      className="d-flex align-items-center me-5"
-                      style={{ marginRight: "2rem" }}
-                    >
-                      <MDBIcon
-                        fas
-                        icon="video"
-                        className="px-2"
-                        style={{ fontSize: "2rem" }}
-                      />
-                      <span style={{ marginLeft: "0.5rem" }}>Video</span>
-                    </li>
-                    <li className="d-flex align-items-center">
-                      <MDBIcon
-                        fas
-                        icon="microphone"
-                        className="px-2"
-                        style={{ fontSize: "2rem" }}
-                      />
-                      <span style={{ marginLeft: "0.5rem" }}>Audio</span>
-                    </li>
+                    <MDBBtn className="d-flex align-items-center me-4 image-btn" onClick={handleImageClick}>
+                      <MDBIcon far icon="image" className="me-2" />
+                      <span>Image</span>
+                    </MDBBtn>
+                    <MDBBtn className="d-flex align-items-center me-4 video-btn" onClick={handleVideoClick}>
+                      <MDBIcon fas icon="video" className="me-2" />
+                      <span>Video</span>
+                    </MDBBtn>
+                    <MDBBtn className="d-flex align-items-center audio-btn" onClick={handleAudioClick}>
+                      <MDBIcon fas icon="microphone" className="me-2" />
+                      <span>Audio</span>
+                    </MDBBtn>
                   </MDBTypography>
-                  <div className="d-flex align-items-center">
-                    <MDBBtn rounded>POST</MDBBtn>
-                  </div>
+                  <MDBBtn className="submit-post-btn">POST</MDBBtn>
                 </div>
               </MDBCardBody>
             </MDBCard>
-            <div style={{ marginTop: "2rem" }}>
+
+            {/* Render posts */}
+            <div className="post-section">
               {posts.map((post, index) => (
-                <MDBCard className="mb-4" key={index}>
+                <MDBCard className="post-card mb-4" key={index}>
                   <MDBCardBody>
                     <div className="d-flex">
                       <img
@@ -144,115 +164,48 @@ const HomeComponent = () => {
                         alt="Avatar"
                         loading="lazy"
                       />
-                      <div className="d-flex w-100 ps-3">
-                        <div className="w-100">
-                          <a href="#">
-                            <h6 className="text-body">
-                              {post.name}
-                              <span className="small text-muted font-weight-normal mx-1">
-                                {post.username}
-                              </span>
-                              <span className="small text-muted font-weight-normal me-1">
-                                •
-                              </span>
-                              <span className="small text-muted font-weight-normal me-1">
-                                {post.time}
-                              </span>
-                            </h6>
-                          </a>
-                          <p style={{ lineHeight: "1.2" }}>{post.content}</p>
-                          {post.mediaUrl && (
-                            <div className="ratio ratio-16x9 mb-3">
-                              <iframe
-                                src={post.mediaUrl}
-                                title="YouTube video"
-                                allowFullScreen
-                              ></iframe>
-                            </div>
-                          )}
-                          {post.cardImage && (
-                            <MDBCard
-                              className="border mb-3 shadow-0"
-                              style={{ maxWidth: "540px" }}
-                            ></MDBCard>
-                          )}
-                          <MDBTypography
-                            listUnStyled
-                            className="d-flex justify-content-between mb-0 pe-xl-5"
-                          >
-                            <MDBRow className="w-100">
-                              <MDBCol>
-                                <MDBBtn
-                                  color="primary"
-                                  size="sm"
-                                  rounded
-                                  onClick={() =>
-                                    alert("Interested in this post!")
-                                  }
-                                >
-                                  <MDBIcon
-                                    fas
-                                    icon="thumbs-up"
-                                    className="me-1"
-                                  />
-                                  Interested
-                                </MDBBtn>
-                              </MDBCol>
-                              <MDBCol className="text-end">
-                                <MDBTypography
-                                  listUnStyled
-                                  className="d-flex justify-content-end mb-0"
-                                >
-                                  <li className="d-flex align-items-center me-4">
-                                    <MDBIcon
-                                      far
-                                      icon="thumbs-up"
-                                      className="me-2"
-                                      style={{ fontSize: "1.5rem" }}
-                                    />
-                                    {post.stats.likes}
-                                  </li>
-                                  <li className="d-flex align-items-center me-4">
-                                    <MDBIcon
-                                      far
-                                      icon="comment"
-                                      className="me-2"
-                                      style={{ fontSize: "1.5rem" }}
-                                    />
-                                    {post.stats.comments}
-                                  </li>
-                                </MDBTypography>
-                              </MDBCol>
-                            </MDBRow>
-                          </MDBTypography>
-                          <div className="mt-4 d-flex align-items-center">
-                            <img
-                              src={currentUser.photo}
-                              className="rounded-circle"
-                              height="50"
-                              alt="Avatar"
-                              loading="lazy"
-                            />
-                            <input
-                              type="text"
-                              placeholder="Add a comment..."
-                              className="form-control"
-                              value={comments[index] || ""}
-                              onChange={(e) =>
-                                handleCommentChange(index, e.target.value)
-                              }
-                              style={{ flex: 1 }}
-                            />
-                            <MDBBtn
-                              color="primary"
-                              size="sm"
-                              className="mt-0 ms-2"
-                              rounded
-                              onClick={() => handleCommentSubmit(index)}
-                            >
-                              Submit
+                      <div className="w-100 ps-3">
+                        <h6>
+                          {post.name} <span>{post.username}</span>
+                          <span> • {post.time}</span>
+                        </h6>
+                        <p>{post.content}</p>
+                        {post.mediaUrl && (
+                          <div className="ratio ratio-16x9">
+                            <iframe
+                              src={post.mediaUrl}
+                              title="YouTube video"
+                              allowFullScreen
+                            ></iframe>
+                          </div>
+                        )}
+
+                        <MDBTypography listUnStyled className="reactions">
+                          <div className="reaction-buttons">
+                            <MDBBtn size="sm">
+                              <MDBIcon fas icon="thumbs-up" className="me-1" />
+                              Interested
                             </MDBBtn>
                           </div>
+                        </MDBTypography>
+
+                        <div className="comment-section">
+                          <img
+                            src={profileImage || "https://via.placeholder.com/150"}
+                            className="rounded-circle"
+                            height="50"
+                            alt="Avatar"
+                            loading="lazy"
+                          />
+                          <input
+                            type="text"
+                            placeholder="Add a comment..."
+                            value={comments[index] || ""}
+                            onChange={(e) => handleCommentChange(index, e.target.value)}
+                          />
+                          <MDBBtn size="sm" onClick={() => handleCommentSubmit(index)}>
+                            Submit
+                          </MDBBtn>
                         </div>
                       </div>
                     </div>
