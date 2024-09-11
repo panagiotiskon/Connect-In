@@ -80,14 +80,20 @@ const PhotoUpload = ({ onFileUpload }) => {
         onClose={handlePopupClose}
         closeOnDocumentClick
         contentStyle={{
+          left: 0,
+          width: "100%",
+          maxWidth: "500px",
           padding: "20px",
           background: popupType === "success" ? "#d4edda" : "#f8d7da",
           borderRadius: "8px",
           textAlign: "center",
-          top: "20px",
-          right: "20px",
+          top: "30%",
+          right: 0,
           border: "none",
-          position: "relative",
+          position: "fixed",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
           boxShadow: "0 4px 8px rgba(0,0,0,0.2)",
         }}
       >
