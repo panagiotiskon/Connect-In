@@ -11,6 +11,7 @@ import Network from "../pages/Network";
 import Unauthorized from "../pages/Unauthorized";
 import ProtectedRoute from "./ProtectedRoute";
 import Jobs from "../pages/Jobs";
+import ViewProfile from "../pages/ViewProfile";
 
 export const router = createBrowserRouter([
   {
@@ -45,6 +46,15 @@ export const router = createBrowserRouter([
     path: "/notifications",
     element: (
       <ProtectedRoute element={Notifications} allowedRoles={["ROLE_USER"]} />
+    ),
+  },
+  {
+    path: "/profile/:userId",
+    element: (
+      <ProtectedRoute
+        element={ViewProfile}
+        allowedRoles={["ROLE_USER", "ROLE_ADMIN"]}
+      />
     ),
   },
   {
