@@ -1,0 +1,147 @@
+.body{
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+
+}
+
+
+/* Main container for posts and the new post input */
+.MDBContainer {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1rem;
+}
+
+/* New post input section */
+.new-post-container {
+    display: flex;
+    margin-top: 5%;
+    margin-bottom: 5%;
+    flex-direction: column;
+    padding: 1rem;
+    background-color: white;
+    border-radius: 10px;
+    box-shadow: 0px 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.new-post-input {
+    flex-grow: 1;
+    padding: 0.75rem;
+    margin-bottom: 1rem;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+}
+
+.media-upload-btn{
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.image-btn{
+    background-color: #455ABA !important;
+}
+.video-btn{
+    background-color: #BAA545 !important;
+}
+.audio-btn{
+    background-color: #BA4595 !important;
+}
+.submit-post-btn {
+    position:relative;
+    color: white;
+    align-self: flex-end;
+    margin-right: 1%;
+    margin-bottom: 1%;
+    background-color: #35677e !important;
+}
+
+.media-options{
+    display: flex;
+    justify-content: center; /* Center the items horizontally */
+    align-items: center;
+
+}
+
+.post-buttons .icon {
+    font-size: 1.5rem;
+    margin-right: 1rem;
+    cursor: pointer;
+}
+
+.post-buttons .btn {
+    padding: 0.5rem 1rem;
+    font-size: 1rem;
+}
+
+.post-container {
+    display: flex;
+    flex-direction: column;
+    margin-top: 2rem;
+}
+
+.post-card {
+    padding: 1rem;
+    border-radius: 10px;
+    background-color: white;
+    margin-bottom: 1rem;
+    box-shadow: 0px 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.post-card img {
+    border-radius: 50%;
+    height: 50px;
+}
+
+.post-card .post-content {
+    flex-grow: 1;
+    margin-left: 1rem;
+}
+
+.post-card .actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* Ensure the layout is responsive */
+@media (min-width: 768px) {
+    .new-post-container {
+        flex-direction: row;
+        align-items: center;
+    }
+
+    .new-post-input {
+        flex: 1;
+        margin-right: 1rem;
+    }
+
+    .post-card {
+        flex-direction: row;
+        align-items: flex-start;
+    }
+}
+
+@media (max-width: 767px) {
+    .post-card {
+        flex-direction: column;
+    }
+
+    .post-buttons {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}
+
+/* Adjust icon size and post button on smaller screens */
+@media (max-width: 576px) {
+    .post-buttons .icon {
+        font-size: 1.2rem;
+        margin-right: 0.5rem;
+    }
+
+    .post-buttons .btn {
+        font-size: 0.9rem;
+        padding: 0.4rem 0.8rem;
+    }
+}
