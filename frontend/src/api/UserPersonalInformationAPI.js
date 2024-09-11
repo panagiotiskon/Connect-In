@@ -5,6 +5,21 @@ const API_URL = "https://localhost:8443/auth";
 
 axios.defaults.withCredentials = true;
 
+// Fetch user's details (GET request)
+const getUser = async (userId) => {
+  try {
+    const response = await axios.get(`${API_URL}/${userId}`, {
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+    return response.data; // UserDTO object
+  } catch (error) {
+    console.error("Error fetching user data:", error);
+    throw error;
+  }
+};
+
 // Fetch user's education details (GET request)
 const getEducation = async (userId) => {
   try {
@@ -183,6 +198,7 @@ const addSkill = async (userId, skillDTO) => {
 };
 
 const PersonalInfoService = {
+  getUser,
   getEducation,
   addEducation,
   getExperience,
