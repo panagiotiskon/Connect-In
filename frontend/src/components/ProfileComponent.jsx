@@ -12,7 +12,7 @@ import { Modal, Button, Form, Alert, Toast } from "react-bootstrap";
 import NavbarComponent from "./common/NavBar";
 import ProfileCard from "./common/ProfileCard";
 import AuthService from "../api/AuthenticationAPI";
-import EducationService from "../api/UserPersonalInformationAPI";
+import PersonalInfoService from "../api/UserPersonalInformationAPI";
 
 const ProfileComponent = () => {
   const [currentUser, setCurrentUser] = useState(null);
@@ -24,6 +24,10 @@ const ProfileComponent = () => {
     Education: [],
     Skills: [],
   });
+  const [skillTitle, setSkillTittle] = useState("");
+  const [skillDescription, setSkillDescription] = useState("");
+  const [jobTitle, setJobTitle] = useState("");
+  const [companyName, setCompanyName] = useState("");
   const [universityName, setUniversityName] = useState("");
   const [fieldOfStudy, setFieldOfStudy] = useState("");
   const [startDate, setStartDate] = useState("");
@@ -44,7 +48,7 @@ const ProfileComponent = () => {
 
         if (user) {
           console.log("Fetching education data for user ID:", user.id);
-          const educationData = await EducationService.getEducation(user.id);
+          const educationData = await PersonalInfoService.getEducation(user.id);
           console.log("Education data fetched:", educationData);
 
           const formattedEducationData = educationData.map((edu) => ({
@@ -59,9 +63,39 @@ const ProfileComponent = () => {
             ...prev,
             Education: formattedEducationData,
           }));
+
+          const workExperienceData = await PersonalInfoService.getExperience(
+            user.id
+          );
+          const formattedExperienceData = workExperienceData.map((exp) => ({
+            jobTitle: exp.jobTitle,
+            companyName: exp.companyName,
+            startDate: exp.startDate,
+            endDate: exp.endDate,
+            isPublic: exp.isPublic,
+          }));
+          setCardsContent((prev) => ({
+            ...prev,
+            "Work Experience": formattedExperienceData,
+          }));
+
+          const SkillData = await PersonalInfoService.getSkills(user.id);
+          const formattedSkillData = SkillData.map((skill) => ({
+            skillTitle: skill.skillTitle,
+            skillDescription: skill.skillDescription,
+            isPublic: skill.isPublic,
+          }));
+
+          setCardsContent((prev) => ({
+            ...prev,
+            Skills: formattedSkillData,
+          }));
         }
       } catch (error) {
-        console.error("Error fetching user or education data", error);
+        console.error(
+          "Error fetching user, education, or experience data",
+          error
+        );
       }
     };
 
@@ -118,21 +152,14 @@ const ProfileComponent = () => {
       };
 
       try {
-        console.log("Attempting to add education for user:", currentUser.id);
-        console.log("Education Details:", educationDTO);
-
-        const response = await EducationService.addEducation(
+        const response = await PersonalInfoService.addEducation(
           currentUser.id,
           educationDTO
         );
 
-        console.log("Received response from addEducation:", response);
         if (response.status === 200) {
-          console.log("Education successfully saved to the backend.");
-
           setCardsContent((prev) => {
             const updatedContent = [...prev[selectedCard]];
-
             const educationEntry = {
               universityName,
               fieldOfStudy,
@@ -140,8 +167,6 @@ const ProfileComponent = () => {
               endDate,
               isPublic,
             };
-
-            console.log("New education entry to add:", educationEntry);
 
             if (updatedContent.length < 5) {
               updatedContent.push(educationEntry);
@@ -156,33 +181,126 @@ const ProfileComponent = () => {
           setToastMessage("Successfully added Education!");
           setShowToast(true);
 
-          console.log("Education card content updated successfully.");
-
           setUniversityName("");
           setFieldOfStudy("");
           setStartDate("");
           setEndDate("");
           setIsPublic(true);
           handleModalClose();
-
-          console.log("Education form fields cleared.");
         } else {
-          console.error(
-            "Failed to save education. Response status:",
-            response.status
-          );
           setErrorMessage("Failed to save education.");
         }
       } catch (error) {
-        console.error("Error occurred while adding education:", error);
         setErrorMessage("Failed to save education.");
       }
+    } else if (selectedCard === "Work Experience") {
+      // Handle Work Experience saving
+      if (!jobTitle || !companyName || !startDate) {
+        setErrorMessage("Please fill out all required fields.");
+        return;
+      }
 
-      setModalContent("");
-      handleModalClose();
+      if (!validateDates()) return;
+
+      const experienceDTO = {
+        jobTitle,
+        companyName,
+        startDate,
+        endDate,
+        isPublic,
+      };
+
+      try {
+        const response = await PersonalInfoService.addExperience(
+          currentUser.id,
+          experienceDTO
+        );
+
+        if (response.status === 200) {
+          setCardsContent((prev) => {
+            const updatedContent = [...prev[selectedCard]];
+            const experienceEntry = {
+              jobTitle,
+              companyName,
+              startDate,
+              endDate,
+              isPublic,
+            };
+
+            if (updatedContent.length < 5) {
+              updatedContent.push(experienceEntry);
+            }
+
+            return {
+              ...prev,
+              [selectedCard]: updatedContent,
+            };
+          });
+
+          setToastMessage("Successfully added Work Experience!");
+          setShowToast(true);
+
+          setJobTitle("");
+          setCompanyName("");
+          setStartDate("");
+          setEndDate("");
+          setIsPublic(true);
+          handleModalClose();
+        } else {
+          setErrorMessage("Failed to save work experience.");
+        }
+      } catch (error) {
+        setErrorMessage("Failed to save work experience.");
+      }
+    } else if (selectedCard === "Skills") {
+      if (!skillTitle || !skillDescription) {
+        setErrorMessage("Please fill out all required fields.");
+        return;
+      }
+
+      const skillDTO = {
+        skillTitle,
+        skillDescription,
+        isPublic,
+      };
+
+      try {
+        const response = await PersonalInfoService.addSkill(
+          currentUser.id,
+          skillDTO
+        );
+
+        if (response.status === 200) {
+          setCardsContent((prev) => {
+            const updatedContent = [...prev[selectedCard]];
+            const skillEntry = {
+              skillTitle,
+              skillDescription,
+              isPublic,
+            };
+
+            if (updatedContent.length < 5) {
+              updatedContent.push(skillEntry);
+            }
+
+            return {
+              ...prev,
+              [selectedCard]: updatedContent,
+            };
+          });
+
+          setToastMessage("Successfully added Skill!");
+          setShowToast(true);
+
+          handleModalClose();
+        } else {
+          setErrorMessage("Failed to save skill.");
+        }
+      } catch (error) {
+        setErrorMessage("Failed to save skill.");
+      }
     }
   };
-
   if (!currentUser) {
     return <div>Loading...</div>;
   }
@@ -207,13 +325,32 @@ const ProfileComponent = () => {
                     <MDBCardTitle className="fs-4 fw-bold">
                       Work Experience
                     </MDBCardTitle>
-                    <div className="mt-2">
-                      {cardsContent["Work Experience"].map((content, index) => (
-                        <div key={index} className="mb-2">
-                          {content}
+                    <div
+                      style={{
+                        overflowY: "auto",
+                        maxHeight: "200px", // Adjust the height to fit your design
+                        padding: "10px 0",
+                      }}
+                    >
+                      {cardsContent["Work Experience"].map((exp, index) => (
+                        <div key={index} style={{ padding: "10px 0" }}>
+                          <div style={{ fontSize: "20px", fontWeight: "bold" }}>
+                            {exp.jobTitle}
+                          </div>
+                          <div style={{ fontSize: "14px", fontWeight: "500" }}>
+                            {exp.companyName}
+                          </div>
+                          <div style={{ fontSize: "12px", color: "#666" }}>
+                            {exp.startDate}{" "}
+                            {exp.endDate ? ` - ${exp.endDate}` : " - Present"}
+                          </div>
+                          <div style={{ fontSize: "12px", color: "#999" }}>
+                            {exp.isPublic ? "Public" : "Private"}
+                          </div>
                         </div>
                       ))}
                     </div>
+
                     <div className="d-flex justify-content-end mt-auto">
                       <MDBBtn
                         color="primary"
@@ -277,10 +414,24 @@ const ProfileComponent = () => {
                 <MDBCard style={{ height: "330px" }}>
                   <MDBCardBody className="d-flex flex-column">
                     <MDBCardTitle className="fs-4 fw-bold">Skills</MDBCardTitle>
-                    <div className="mt-2">
-                      {cardsContent.Skills.map((content, index) => (
-                        <div key={index} className="mb-2">
-                          {content}
+                    <div
+                      style={{
+                        overflowY: "auto",
+                        maxHeight: "200px",
+                        padding: "10px 0",
+                      }}
+                    >
+                      {cardsContent.Skills.map((skill, index) => (
+                        <div key={index} style={{ padding: "10px 0" }}>
+                          <div style={{ fontSize: "20px", fontWeight: "bold" }}>
+                            {skill.skillTitle}
+                          </div>
+                          <div style={{ fontSize: "14px", fontWeight: "500" }}>
+                            {skill.skillDescription}
+                          </div>
+                          <div style={{ fontSize: "12px", color: "#999" }}>
+                            {skill.isPublic ? "Public" : "Private"}
+                          </div>
                         </div>
                       ))}
                     </div>
@@ -298,7 +449,6 @@ const ProfileComponent = () => {
               </MDBCol>
             </MDBRow>
 
-            {/* Modal */}
             <Modal show={showModal} onHide={handleModalClose}>
               <Modal.Header closeButton>
                 <Modal.Title>{selectedCard}</Modal.Title>
@@ -345,6 +495,94 @@ const ProfileComponent = () => {
                         type="date"
                         value={endDate}
                         onChange={(e) => setEndDate(e.target.value)}
+                      />
+                    </Form.Group>
+
+                    <Form.Group controlId="formIsPublic" className="mt-3">
+                      <Form.Check
+                        type="checkbox"
+                        label="Public"
+                        checked={isPublic}
+                        onChange={(e) => setIsPublic(e.target.checked)}
+                      />
+                    </Form.Group>
+                  </>
+                ) : selectedCard === "Work Experience" ? (
+                  <>
+                    <Form.Group controlId="formJobTitle">
+                      <Form.Label>Job Title</Form.Label>
+                      <Form.Control
+                        type="text"
+                        value={jobTitle}
+                        onChange={(e) => setJobTitle(e.target.value)}
+                        placeholder="Enter job title"
+                        isInvalid={!jobTitle && errorMessage}
+                      />
+                    </Form.Group>
+
+                    <Form.Group controlId="formCompanyName" className="mt-3">
+                      <Form.Label>Company Name</Form.Label>
+                      <Form.Control
+                        type="text"
+                        value={companyName}
+                        onChange={(e) => setCompanyName(e.target.value)}
+                        placeholder="Enter company name"
+                        isInvalid={!companyName && errorMessage}
+                      />
+                    </Form.Group>
+
+                    <Form.Group controlId="formStartDate" className="mt-3">
+                      <Form.Label>Start Date</Form.Label>
+                      <Form.Control
+                        type="date"
+                        value={startDate}
+                        onChange={(e) => setStartDate(e.target.value)}
+                        isInvalid={!startDate && errorMessage}
+                      />
+                    </Form.Group>
+
+                    <Form.Group controlId="formEndDate" className="mt-3">
+                      <Form.Label>End Date (optional)</Form.Label>
+                      <Form.Control
+                        type="date"
+                        value={endDate}
+                        onChange={(e) => setEndDate(e.target.value)}
+                      />
+                    </Form.Group>
+
+                    <Form.Group controlId="formIsPublic" className="mt-3">
+                      <Form.Check
+                        type="checkbox"
+                        label="Public"
+                        checked={isPublic}
+                        onChange={(e) => setIsPublic(e.target.checked)}
+                      />
+                    </Form.Group>
+                  </>
+                ) : selectedCard === "Skills" ? (
+                  <>
+                    <Form.Group controlId="formSkillTitle">
+                      <Form.Label>Skill Title</Form.Label>
+                      <Form.Control
+                        type="text"
+                        value={skillTitle}
+                        onChange={(e) => setSkillTittle(e.target.value)}
+                        placeholder="Enter skill title"
+                        isInvalid={!skillTitle && errorMessage}
+                      />
+                    </Form.Group>
+
+                    <Form.Group
+                      controlId="formSkillDescription"
+                      className="mt-3"
+                    >
+                      <Form.Label>Skill Description</Form.Label>
+                      <Form.Control
+                        type="text"
+                        value={skillDescription}
+                        onChange={(e) => setSkillDescription(e.target.value)}
+                        placeholder="Enter skill description"
+                        isInvalid={!skillDescription && errorMessage}
                       />
                     </Form.Group>
 
