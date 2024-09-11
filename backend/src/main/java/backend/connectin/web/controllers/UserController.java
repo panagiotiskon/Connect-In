@@ -2,6 +2,7 @@ package backend.connectin.web.controllers;
 
 import backend.connectin.domain.*;
 import backend.connectin.service.JWTService;
+import backend.connectin.service.PostService;
 import backend.connectin.service.UserService;
 import backend.connectin.web.dto.EducationDTO;
 import backend.connectin.web.dto.ExperienceDTO;
@@ -9,6 +10,7 @@ import backend.connectin.web.dto.SkillDTO;
 import backend.connectin.web.dto.UserDTO;
 import backend.connectin.web.mappers.PersonalInfoMapper;
 import backend.connectin.web.mappers.UserMapper;
+import backend.connectin.web.requests.PostRequest;
 import org.springframework.http.HttpStatus;
 import backend.connectin.web.requests.UserChangeEmailRequest;
 import backend.connectin.web.requests.UserChangePasswordRequest;
@@ -29,12 +31,14 @@ public class UserController {
     private final JWTService jwtService;
     private final PersonalInfoMapper personalInfoMapper;
     private final UserMapper userMapper;
+    private final PostService postService;
 
-    public UserController(UserService userService, JWTService jwtService, PersonalInfoMapper personalInfoMapper, UserMapper userMapper) {
+    public UserController(UserService userService, JWTService jwtService, PersonalInfoMapper personalInfoMapper, UserMapper userMapper, PostService postService) {
         this.userService = userService;
         this.jwtService = jwtService;
         this.personalInfoMapper = personalInfoMapper;
         this.userMapper = userMapper;
+        this.postService = postService;
     }
 
     @PostMapping("/{userId}/change-password")
@@ -110,6 +114,11 @@ public class UserController {
         return new ResponseEntity<>(skillDTOS, HttpStatus.OK);
     }
 
+    @PostMapping("/{userId}/create-post")
+    public ResponseEntity<String> createPost(@PathVariable long userId, @RequestBody PostRequest postRequest){
+        postService.createPost(userId, postRequest);
+        return ResponseEntity.ok("Post Created");
+    }
     @GetMapping("/{userId}")
     public ResponseEntity<UserDTO> getUser(@PathVariable long userId) {
         User user = userService.findUserOrThrow(userId);
