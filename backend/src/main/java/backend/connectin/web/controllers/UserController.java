@@ -6,7 +6,9 @@ import backend.connectin.service.UserService;
 import backend.connectin.web.dto.EducationDTO;
 import backend.connectin.web.dto.ExperienceDTO;
 import backend.connectin.web.dto.SkillDTO;
+import backend.connectin.web.dto.UserDTO;
 import backend.connectin.web.mappers.PersonalInfoMapper;
+import backend.connectin.web.mappers.UserMapper;
 import org.springframework.http.HttpStatus;
 import backend.connectin.web.requests.UserChangeEmailRequest;
 import backend.connectin.web.requests.UserChangePasswordRequest;
@@ -26,11 +28,13 @@ public class UserController {
     private final UserService userService;
     private final JWTService jwtService;
     private final PersonalInfoMapper personalInfoMapper;
+    private final UserMapper userMapper;
 
-    public UserController(UserService userService, JWTService jwtService, PersonalInfoMapper personalInfoMapper) {
+    public UserController(UserService userService, JWTService jwtService, PersonalInfoMapper personalInfoMapper, UserMapper userMapper) {
         this.userService = userService;
         this.jwtService = jwtService;
         this.personalInfoMapper = personalInfoMapper;
+        this.userMapper = userMapper;
     }
 
     @PostMapping("/{userId}/change-password")
@@ -104,6 +108,12 @@ public class UserController {
         List<Skill> skills = userService.addSkill(userId, skill);
         List<SkillDTO> skillDTOS = skills.stream().map(personalInfoMapper::mapToSkillDTO).toList();
         return new ResponseEntity<>(skillDTOS, HttpStatus.OK);
+    }
+
+    @GetMapping("/{userId}")
+    public ResponseEntity<UserDTO> getUser(@PathVariable long userId) {
+        User user = userService.findUserOrThrow(userId);
+        return new ResponseEntity<>(userMapper.mapToUserDTO(user), HttpStatus.OK);
     }
 
 

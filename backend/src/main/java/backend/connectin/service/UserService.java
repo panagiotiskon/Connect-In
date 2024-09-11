@@ -4,6 +4,11 @@ import backend.connectin.domain.*;
 import backend.connectin.domain.repository.FileRepository;
 import backend.connectin.domain.repository.PersonalInfoRepository;
 import backend.connectin.domain.repository.UserRepository;
+import backend.connectin.web.dto.EducationDTO;
+import backend.connectin.web.dto.ExperienceDTO;
+import backend.connectin.web.dto.SkillDTO;
+import backend.connectin.web.dto.UserDetailDTO;
+import backend.connectin.web.mappers.PersonalInfoMapper;
 import backend.connectin.web.mappers.UserMapper;
 import backend.connectin.web.requests.UserChangeEmailRequest;
 import backend.connectin.web.requests.UserChangePasswordRequest;
@@ -23,7 +28,9 @@ import org.springframework.web.server.ResponseStatusException;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class UserService {
@@ -34,14 +41,16 @@ public class UserService {
     private final FileService fileService;
     private final FileRepository fileRepository;
     private final PersonalInfoRepository personalInfoRepository;
+    private final PersonalInfoMapper personalInfoMapper;
 
-    public UserService(UserRepository userRepository, UserMapper userMapper, PasswordEncoder passwordEncoder, FileService fileService, FileRepository fileRepository, PersonalInfoRepository personalInfoRepository) {
+    public UserService(UserRepository userRepository, UserMapper userMapper, PasswordEncoder passwordEncoder, FileService fileService, FileRepository fileRepository, PersonalInfoRepository personalInfoRepository, PersonalInfoMapper personalInfoMapper) {
         this.userRepository = userRepository;
         this.userMapper = userMapper;
         this.passwordEncoder = passwordEncoder;
         this.fileService = fileService;
         this.fileRepository = fileRepository;
         this.personalInfoRepository = personalInfoRepository;
+        this.personalInfoMapper = personalInfoMapper;
     }
 
     // Check if user with the given email already exists
@@ -76,22 +85,10 @@ public class UserService {
 
     }
 
-    public Page<UserResource> fetchAll(String roleName, Pageable pageable) {
-        List<User> users = userRepository.findUsersByRoleName(roleName);
-        // Implement pagination manually
-        int start = (int) pageable.getOffset();
-
-        if (start >= users.size()) {
-            // Return an empty PageImpl if the start index is out of bounds
-            return new PageImpl<>(Collections.emptyList(), pageable, users.size())
-                    .map(UserResource::new);
-        }
-        int end = Math.min((start + pageable.getPageSize()), users.size());
-        List<User> pagedUsers = users.subList(start, end);
-
-        return new PageImpl<>(pagedUsers, pageable, users.size())
-                .map(UserResource::new);
+    public List<User> fetchAll() {
+        return userRepository.findAll(); // Fetch all users
     }
+
 
     public Optional<User> findUserByEmail(String email) {
         return userRepository.findUserByEmail(email);
@@ -233,6 +230,33 @@ public class UserService {
             personalInfoRepository.save(personalInfo);
         }
         return personalInfo.getSkills();
+    }
+
+    public UserDetailDTO getUserDetails(long userId) {
+        if (userRepository.findById(userId).isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "User not found");
+        }
+        PersonalInfo personalInfo = personalInfoRepository.findByUserId(userId);
+        if (personalInfo == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Personal Info not found");
+        }
+
+        UserDetailDTO userDetailDTO = new UserDetailDTO();
+        List<SkillDTO> skillDTOS = personalInfo.getSkills().stream().map(personalInfoMapper::mapToSkillDTO).toList();
+        List<ExperienceDTO> experienceDTOS = personalInfo.getExperiences().stream().map(personalInfoMapper::mapToExperienceDTO).toList();
+        List<EducationDTO> educationDTOS = personalInfo.getEducations().stream().map(personalInfoMapper::mapToEducationDTO).toList();
+        userDetailDTO.setSkills(skillDTOS);
+        userDetailDTO.setExperiences(experienceDTOS);
+        userDetailDTO.setEducation(educationDTOS);
+        return userDetailDTO;
+    }
+
+    public Map<Long, UserDetailDTO> getUsersDetails(List<Long> userIds) {
+        return userIds.stream()
+                .collect(Collectors.toMap(
+                        userId -> userId,
+                        this::getUserDetails
+                ));
     }
 
 
