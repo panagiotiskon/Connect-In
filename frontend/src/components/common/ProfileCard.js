@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { MDBCard, MDBCardBody, MDBCardImage } from "mdb-react-ui-kit";
 import { useNavigate } from "react-router-dom";
 import FileService from "../../api/UserFilesApi"; // Adjust the import path as needed
+import { Card } from "react-bootstrap";
 
 const ProfileCard = ({ currentUser }) => {
   const navigate = useNavigate();
@@ -47,12 +48,13 @@ const ProfileCard = ({ currentUser }) => {
       className="mb-4"
       style={{
         width: "70%",
-        height: "100%",
+        height: "450px",
         margin: "5%",
         display: "flex",
       }}
     >
-      <MDBCardBody>
+      <MDBCardBody
+      >
         <MDBCardImage
           src={profileImage || "/path/to/default-image.png"} // Fallback image
           alt="avatar"
@@ -76,8 +78,9 @@ const ProfileCard = ({ currentUser }) => {
             fontSize: "1.8rem",
             cursor: "pointer",
             textAlign: "center", // Center the text horizontally
-            marginBottom: "0.6rem", // Adjust margin if needed
+            marginBottom: "1rem", // Adjust margin if needed
             font: "Segoe UI",
+            marginBottom:"2rem",
           }}
         >
           {`${currentUser.firstName} ${currentUser.lastName}`}
@@ -89,10 +92,11 @@ const ProfileCard = ({ currentUser }) => {
             fontSize: "1.3rem",
             cursor: "pointer",
             textAlign: "center", // Center the text horizontally
-            marginBottom: "2rem", // Adjust margin if needed
+            marginBottom: "1rem", // Adjust margin if needed
+            font: "Segoe UI",
           }}
         >
-          Connections
+          Your Connections
         </p>
       </MDBCardBody>
     </MDBCard>

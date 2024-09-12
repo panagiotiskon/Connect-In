@@ -310,27 +310,19 @@ const ProfileComponent = () => {
       <NavbarComponent />
       <MDBContainer
         fluid
-        className="mt-5"
-        style={{
-          width: "100%",
-          margin: "0 auto",
-          padding: "0 1rem",
-        }}
+        className="home-container"
       >
         <MDBRow>
-          {/* Profile Card Column */}
-          <MDBCol md="4" className="ps-0">
+          <MDBCol md="4" className="left-column">
             <ProfileCard currentUser={currentUser} />
           </MDBCol>
 
-          {/* Cards Column */}
-          <MDBCol md="7" className="ps-0">
-            <MDBRow>
+          <MDBCol md="6" className="center-column">
               {/* Card 1 - Work Experience */}
-              <MDBCol md="12" className="mb-6">
-                <MDBCard style={{ height: "330px" }}>
-                  <MDBCardBody className="d-flex flex-column">
-                    <MDBCardTitle className="fs-4 fw-bold">
+              <MDBCol md="9" className="center-column">
+                <MDBCard className= "new-post-container">
+                  <MDBCardBody className="border-bottom w-100">
+                    <MDBCardTitle className="fs-4 ps-2 fw-bold">
                       Work Experience
                     </MDBCardTitle>
                     <div
@@ -370,13 +362,10 @@ const ProfileComponent = () => {
                     </div>
                   </MDBCardBody>
                 </MDBCard>
-              </MDBCol>
 
-              {/* Card 2 - Education */}
-              <MDBCol md="12" className="mb-6">
-                <MDBCard style={{ height: "330px" }}>
-                  <MDBCardBody className="d-flex flex-column">
-                    <MDBCardTitle className="fs-4 fw-bold">
+                <MDBCard className="new-post-container mt-4">
+                  <MDBCardBody className="border-bottom  w-100">
+                    <MDBCardTitle  className="fs-4 fw-bold">
                       Education
                     </MDBCardTitle>
                     <div
@@ -415,16 +404,15 @@ const ProfileComponent = () => {
                     </div>
                   </MDBCardBody>
                 </MDBCard>
-              </MDBCol>
 
               {/* Card 3 - Skills */}
-              <MDBCol md="12" className="mb-6">
-                <MDBCard style={{ height: "330px" }}>
-                  <MDBCardBody className="d-flex flex-column">
+                <MDBCard  className="new-post-container mt-4">
+                  <MDBCardBody className="border-bottom pb-2 w-100">
                     <MDBCardTitle className="fs-4 fw-bold">Skills</MDBCardTitle>
                     <div
                       style={{
                         overflowY: "auto",
+                        height:"30%",
                         maxHeight: "200px",
                         padding: "10px 0",
                       }}
@@ -445,6 +433,7 @@ const ProfileComponent = () => {
                     </div>
                     <div className="d-flex justify-content-end mt-auto">
                       <MDBBtn
+                        className="add-button"
                         color="primary"
                         size="md"
                         onClick={() => handleAddClick("Skills")}
@@ -455,7 +444,6 @@ const ProfileComponent = () => {
                   </MDBCardBody>
                 </MDBCard>
               </MDBCol>
-            </MDBRow>
 
             <Modal show={showModal} onHide={handleModalClose}>
               <Modal.Header closeButton>
@@ -651,3 +639,4 @@ const ProfileComponent = () => {
 };
 
 export default ProfileComponent;
+

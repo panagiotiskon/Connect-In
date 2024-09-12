@@ -12,7 +12,8 @@ import {
 import NavbarComponent from "./common/NavBar";
 import AuthService from "../api/AuthenticationAPI";
 import ProfileCard from "../components/common/ProfileCard";
-import PostService from "../api/PostApi"; 
+import PostService from "../api/PostApi";
+import FileService from "../api/UserFilesApi"; // Import the service to fetch the images
 
 import "./HomeComponent.scss";
 
@@ -39,10 +40,14 @@ const HomeComponent = () => {
     const fetchPosts = async () => {
       try {
         const user = await AuthService.getCurrentUser();
-        const fetchedPosts = await PostService.getFeed(user?.id); // Fetch posts from backend
+        const response = await PostService.getFeed(user?.id); // Fetch posts from backend
+        const fetchedPosts = Array.isArray(response)
+        ? response
+        : response?.data || [];
         setPosts(fetchedPosts); // Set posts to the state
       } catch (error) {
         console.error("Error fetching posts:", error);
+        setPosts([]);
       }
     };
 
@@ -50,6 +55,26 @@ const HomeComponent = () => {
       fetchPosts();
     }
   }, [currentUser]);
+
+
+  useEffect(() => {
+    const fetchProfileImage = async () => {
+      const currentUser = await AuthService.getCurrentUser();
+      if (currentUser) {
+        try {
+          const images = await FileService.getUserImages(currentUser.id);
+          if (images.length > 0) {
+            const { type, data } = images[0]; // Assume the first image is the profile image
+            setProfileImage(`data:${type};base64,${data}`); // Dynamically set image type and data
+          }
+        } catch (error) {
+          console.error("Error fetching profile image:", error);
+        }
+
+      }
+    }
+    fetchProfileImage();
+  }, [])
 
   const handleImageClick = () => {
     fileInputRef.current.click();
@@ -171,15 +196,15 @@ const HomeComponent = () => {
             {/* Display Posts Section */}
             {posts.length > 0 ? (
               posts.map((post) => (
-                <MDBCard key={post.id} className="mt-3 shadow-0">
+                <MDBCard key={post.id} className="mt-3 shadow-0 feed-post">
                   <MDBCardBody>
                     <h5>{post.content}</h5>
-                    <p>Created at: {new Date(post.createdAt).toLocaleString()}</p>
+                    <p>Posted at: {new Date(post.createdAt).toLocaleString()}</p>
                     {post.file && (
-                      <img
-                        src={post.file}
+                      <img className = "feed-post-img"
+                        src={`data:${post.file.type};base64,${post.file.data}`}
                         alt="Post Media"
-                        style={{ width: "100%", height: "auto" }}
+                        style={{ width: "100%", height: "auto", border:"1px" }}
                       />
                     )}
                     {/* Display comments, reactions, etc */}
