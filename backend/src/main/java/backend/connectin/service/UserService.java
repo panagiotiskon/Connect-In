@@ -127,14 +127,14 @@ public class UserService {
         }
         PersonalInfo personalInfo = personalInfoRepository.findByUserId(userId);
         if(personalInfo==null){
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Personal Info not found");
+            return List.of();
         }
         return personalInfo.getExperiences();
     }
 
     public List<Skill> getSkills(long userId){
         if (userRepository.findById(userId).isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "User not found");
+            return List.of();
         }
         PersonalInfo personalInfo = personalInfoRepository.findByUserId(userId);
         if(personalInfo==null){
@@ -149,7 +149,7 @@ public class UserService {
         }
         PersonalInfo personalInfo = personalInfoRepository.findByUserId(userId);
         if(personalInfo==null){
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Personal Info not found");
+            return List.of();
         }
         return personalInfo.getEducations();
     }

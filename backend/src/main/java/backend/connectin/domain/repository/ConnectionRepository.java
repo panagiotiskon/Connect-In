@@ -15,7 +15,7 @@ public interface ConnectionRepository extends JpaRepository<Connection, Long> {
     @Query(value = """
             SELECT c
             FROM Connection c
-            WHERE (c.userId1 = :userId OR c.userId2 = :userId)
+            WHERE (c.userId1 = :userId)
                   AND c.status = 'ACCEPTED'
             """)
     List<Connection> findUserConnections(@Param("userId") Long userId);
