@@ -19,6 +19,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
@@ -70,6 +71,7 @@ public class UserController {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
         }
     }
+
     @GetMapping("/{userId}/personal-info/education")
     public ResponseEntity<List<EducationDTO>> getEducation(@PathVariable long userId) {
         List<Education> educations = userService.getEducation(userId);
@@ -115,7 +117,14 @@ public class UserController {
     }
 
     @PostMapping("/{userId}/create-post")
-    public ResponseEntity<String> createPost(@PathVariable long userId, @RequestBody PostRequest postRequest){
+    public ResponseEntity<String> createPost(@PathVariable long userId,
+                                             @RequestParam("content") String content,
+                                             @RequestParam(value = "file", required = false) MultipartFile file) {
+        PostRequest postRequest;
+        if (file!=null)
+            postRequest = new PostRequest(content, file);
+        else
+            postRequest = new PostRequest(content);
         postService.createPost(userId, postRequest);
         return ResponseEntity.ok("Post Created");
     }
