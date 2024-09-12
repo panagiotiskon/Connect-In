@@ -28,17 +28,13 @@ export default function AdminComponent() {
     const fetchUsers = async () => {
       try {
         const response = await AdminAPI.getUsers();
-
-        if (Array.isArray(response)) {
-          setUsers(response);
-        } else if (response?.data && Array.isArray(response.data)) {
-          setUsers(response.data);
-        } else {
-          console.error("Unexpected response format:", response);
-          setUsers([]);
-        }
+        const fetchedUsers = Array.isArray(response)
+          ? response
+          : response?.data || [];
+        setUsers(fetchedUsers);
       } catch (error) {
         console.error("Failed to fetch users", error);
+        setUsers([]);
       }
     };
 
@@ -48,25 +44,30 @@ export default function AdminComponent() {
   // Fetch profile images for each user
   useEffect(() => {
     const fetchProfileImages = async () => {
-      const imagePromises = users.map(async (user) => {
-        try {
-          const images = await FileService.getUserImages(user.id);
-          if (images.length > 0) {
-            return { id: user.id, image: `data:image/png;base64,${images[0]}` };
+      try {
+        const imagePromises = users.map(async (user) => {
+          try {
+            const images = await FileService.getUserImages(user.id);
+            if (images.length > 0) {
+              const { type, data } = images[0];
+              return { id: user.id, image: `data:${type};base64,${data}` };
+            }
+            return { id: user.id, image: null };
+          } catch (error) {
+            console.error(`Error fetching images for user ${user.id}:`, error);
+            return { id: user.id, image: null };
           }
-          return { id: user.id, image: null };
-        } catch (error) {
-          console.error(`Error fetching images for user ${user.id}:`, error);
-          return { id: user.id, image: null };
-        }
-      });
+        });
 
-      const results = await Promise.all(imagePromises);
-      const imagesMap = results.reduce((acc, { id, image }) => {
-        acc[id] = image;
-        return acc;
-      }, {});
-      setProfileImages(imagesMap);
+        const results = await Promise.all(imagePromises);
+        const imagesMap = results.reduce((acc, { id, image }) => {
+          acc[id] = image;
+          return acc;
+        }, {});
+        setProfileImages(imagesMap);
+      } catch (error) {
+        console.error("Error fetching profile images:", error);
+      }
     };
 
     if (users.length > 0) {
@@ -92,14 +93,15 @@ export default function AdminComponent() {
 
     try {
       const userDetails = await AdminAPI.getUserDetails(selectedUsers);
+      const fileName = `userDetails.${format}`;
+      const mimeType =
+        format === "json" ? "application/json" : "application/xml";
+      const content =
+        format === "json"
+          ? JSON.stringify(userDetails, null, 2)
+          : convertToXML(userDetails);
 
-      if (format === "json") {
-        const json = JSON.stringify(userDetails, null, 2);
-        downloadFile("userDetails.json", json, "application/json");
-      } else if (format === "xml") {
-        const xml = convertToXML(userDetails);
-        downloadFile("userDetails.xml", xml, "application/xml");
-      }
+      downloadFile(fileName, content, mimeType);
     } catch (error) {
       console.error("Error extracting users:", error);
     }
@@ -107,54 +109,73 @@ export default function AdminComponent() {
 
   // Convert user details to XML
   const convertToXML = (data) => {
-    const usersXmlData = {
-      users: Object.entries(data).map(([userId, userDetails]) => ({
-        user: {
-          _attr: { id: userId },
-          firstName: userDetails.firstName,
-          lastName: userDetails.lastName,
-          profilePic: userDetails.profilePic || "",
-          experiences: userDetails.experiences.map((exp) => ({
-            experience: {
-              title: exp.title,
-              company: exp.company,
-              startDate: exp.startDate,
-              endDate: exp.endDate || "",
-            },
-          })),
-          skills: userDetails.skills.map((skill) => ({ skill })),
-          education: userDetails.education.map((edu) => ({
-            education: {
-              universityName: edu.universityName,
-              fieldOfStudy: edu.fieldOfStudy,
-              startDate: edu.startDate,
-              endDate: edu.endDate,
-            },
-          })),
-        },
-      })),
-    };
+    try {
+      const usersXmlData = {
+        users: Object.entries(data).map(([userId, userDetails]) => ({
+          user: {
+            id: { id: userId },
+            experiences: Array.isArray(userDetails.experiences)
+              ? userDetails.experiences.map((exp) => ({
+                  experience: {
+                    jobTitle: exp.jobTitle || "",
+                    companyName: exp.companyName || "",
+                    startDate: exp.startDate || "",
+                    endDate: exp.endDate || "",
+                    isPublic: exp.isPublic,
+                  },
+                }))
+              : [], // Default to an empty array if experiences is null or undefined
+            skills: Array.isArray(userDetails.skills)
+              ? userDetails.skills.map((skill) => ({
+                  skill: {
+                    skillTitle: skill.skillTitle || "",
+                    skillDescription: skill.skillDescription || "",
+                    isPublic: skill.isPublic,
+                  },
+                }))
+              : [], // Default to an empty array if skills is null or undefined
+            education: Array.isArray(userDetails.education)
+              ? userDetails.education.map((edu) => ({
+                  education: {
+                    universityName: edu.universityName || "",
+                    fieldOfStudy: edu.fieldOfStudy || "",
+                    startDate: edu.startDate || "",
+                    endDate: edu.endDate || "",
+                    isPublic: edu.isPublic,
+                  },
+                }))
+              : [], // Default to an empty array if education is null or undefined
+          },
+        })),
+      };
 
-    // Convert the constructed object to XML using json2xml
-    return json2xml(usersXmlData, { header: true });
+      return json2xml(usersXmlData, { header: true });
+    } catch (error) {
+      console.error("Error converting to XML:", error);
+      throw error;
+    }
   };
 
   // Helper function to download the file
   const downloadFile = (filename, content, mimeType) => {
-    const blob = new Blob([content], { type: mimeType });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = filename;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url); // Clean up
+    try {
+      const blob = new Blob([content], { type: mimeType });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url); // Clean up
+    } catch (error) {
+      console.error("Error downloading file:", error);
+    }
   };
 
   // Navigate to the selected user's profile
   const handleShowProfile = (userId) => {
-    navigate(`/profile/${userId}`); // Redirect to the user's profile page
+    navigate(`/profile/${userId}`);
   };
 
   return (
@@ -174,6 +195,15 @@ export default function AdminComponent() {
               justify-content: center;
               gap: 15px;
             }
+            .card-container {
+              display: flex;
+              flex-wrap: wrap;
+              justify-content: center;
+              gap: 1rem;
+            }
+            .card {
+              flex: 1 0 18rem;
+            }
           `}
         </style>
         <div className="center-content">
@@ -188,18 +218,18 @@ export default function AdminComponent() {
           </div>
         </div>
         {/* User cards layout */}
-        <div className="d-flex flex-wrap justify-content-start">
+        <div className="card-container">
           {users
             .filter((user) => user.id !== adminId) // Skip the admin user
             .map((user) => (
-              <MDBCard key={user.id} className="m-3" style={{ width: "18rem" }}>
+              <MDBCard key={user.id} className="m-3 card">
                 <MDBCardBody>
                   <div className="text-center mb-3">
                     <MDBCardImage
                       src={
                         profileImages[user.id] ||
                         "https://via.placeholder.com/120"
-                      } // Placeholder if no image
+                      }
                       alt={`${user.firstName} ${user.lastName}`}
                       className="rounded-circle"
                       style={{

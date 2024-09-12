@@ -233,21 +233,35 @@ public class UserService {
     }
 
     public UserDetailDTO getUserDetails(long userId) {
+        // Check if the user exists
         if (userRepository.findById(userId).isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "User not found");
-        }
-        PersonalInfo personalInfo = personalInfoRepository.findByUserId(userId);
-        if (personalInfo == null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Personal Info not found");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found");
         }
 
+        // Retrieve personal info
+        PersonalInfo personalInfo = personalInfoRepository.findByUserId(userId);
         UserDetailDTO userDetailDTO = new UserDetailDTO();
-        List<SkillDTO> skillDTOS = personalInfo.getSkills().stream().map(personalInfoMapper::mapToSkillDTO).toList();
-        List<ExperienceDTO> experienceDTOS = personalInfo.getExperiences().stream().map(personalInfoMapper::mapToExperienceDTO).toList();
-        List<EducationDTO> educationDTOS = personalInfo.getEducations().stream().map(personalInfoMapper::mapToEducationDTO).toList();
-        userDetailDTO.setSkills(skillDTOS);
-        userDetailDTO.setExperiences(experienceDTOS);
-        userDetailDTO.setEducation(educationDTOS);
+
+        if (personalInfo != null) {
+            // Map personal info to DTOs if present
+            List<SkillDTO> skillDTOS = personalInfo.getSkills().stream()
+                    .map(personalInfoMapper::mapToSkillDTO)
+                    .collect(Collectors.toList());
+            List<ExperienceDTO> experienceDTOS = personalInfo.getExperiences().stream()
+                    .map(personalInfoMapper::mapToExperienceDTO)
+                    .collect(Collectors.toList());
+            List<EducationDTO> educationDTOS = personalInfo.getEducations().stream()
+                    .map(personalInfoMapper::mapToEducationDTO)
+                    .collect(Collectors.toList());
+
+            userDetailDTO.setSkills(skillDTOS);
+            userDetailDTO.setExperiences(experienceDTOS);
+            userDetailDTO.setEducation(educationDTOS);
+        } else {
+            // Optionally, log that personalInfo was not found
+            System.out.println("No personal info found for userId: " + userId);
+        }
+
         return userDetailDTO;
     }
 
@@ -258,6 +272,7 @@ public class UserService {
                         this::getUserDetails
                 ));
     }
+
 
 
 }

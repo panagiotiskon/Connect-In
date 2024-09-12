@@ -308,12 +308,15 @@ const ProfileComponent = () => {
   return (
     <div>
       <NavbarComponent />
-      <MDBContainer fluid className="mt-5"
+      <MDBContainer
+        fluid
+        className="mt-5"
         style={{
           width: "100%",
           margin: "0 auto",
           padding: "0 1rem",
-        }}>
+        }}
+      >
         <MDBRow>
           {/* Profile Card Column */}
           <MDBCol md="4" className="ps-0">

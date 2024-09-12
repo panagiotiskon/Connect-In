@@ -12,7 +12,8 @@ const ViewProfileCard = ({ viewedUser }) => {
         try {
           const images = await FileService.getUserImages(viewedUser.id); // Assuming id is available in viewedUser
           if (images.length > 0) {
-            setProfileImage(`data:image/png;base64,${images[0]}`); // Set the first image
+            const { type, data } = images[0]; // Assume the first image is the profile image
+            setProfileImage(`data:${type};base64,${data}`); // Dynamically set image type and data
           }
         } catch (error) {
           console.error("Error fetching profile image:", error);
