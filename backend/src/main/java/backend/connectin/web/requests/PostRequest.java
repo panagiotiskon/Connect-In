@@ -7,7 +7,14 @@ public class PostRequest {
     private String content;
     private MultipartFile file;
 
-    public PostRequest(String content, MultipartFile file) {}
+    public PostRequest(String content, MultipartFile file) {
+        this.file = file;
+        this.content = content;
+    }
+
+    public PostRequest(String content) {
+        this.content = content;
+    }
 
     public String getContent() {
         return content;

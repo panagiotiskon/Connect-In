@@ -26,8 +26,6 @@ public class FileDB {
     @JoinColumn(name = "user_id", referencedColumnName = "id", insertable = false, updatable = false)
     private User user;
 
-    @Column(name = "post_id")
-    private Long postId;
 
     public FileDB() {
     }
@@ -100,11 +98,4 @@ public class FileDB {
         this.userId = user.getId();
     }
 
-    public Long getPostId() {
-        return postId;
-    }
-
-    public void setPostId(Long post) {
-        this.postId = post;
-    }
 }

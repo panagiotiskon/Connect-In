@@ -170,6 +170,26 @@ const register = (email, name, surname, password, phoneNumber, photo) => {
     });
 };
 
+const createPost = async (content, photo) => {
+  const formData = new FormData();
+  
+  formData.append("content", content);
+  
+  if (photo) {
+    formData.append("file", photo);
+  }
+
+  const currentUser = await getCurrentUser();
+  const userId = currentUser.id;
+
+  return axios.post(`${API_URL}/${userId}/create-post`, formData, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
+};
+
+
 const getCurrentUser = async () => {
   try {
     const response = await axios.get(`${API_URL}/current-user`, {
@@ -190,6 +210,7 @@ const AuthService = {
   getCurrentUser,
   changeEmail,
   changePassword,
+  createPost,
 };
 
 export default AuthService;
