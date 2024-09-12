@@ -14,9 +14,10 @@ public class Post implements Serializable {
     private Long id;
     private String content;
     private Instant createdAt;
-    private FileDB file;
+    private String fileId;
     private List<Comment> comments = new ArrayList<>();
     private List<Reaction> reactions = new ArrayList<>();
+    private Long userId;
     private User user;
 
     @Id
@@ -48,16 +49,6 @@ public class Post implements Serializable {
         this.createdAt = createdAt;
     }
 
-    @OneToOne(mappedBy = "postId", cascade = CascadeType.ALL)
-    public FileDB getFiles() {
-        return file;
-    }
-
-    public void setFiles(FileDB file) {
-        this.file = file;
-    }
-
-
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL)
     public List<Comment> getComments() {
         return comments;
@@ -74,6 +65,24 @@ public class Post implements Serializable {
 
     public void setReactions(List<Reaction> reactions) {
         this.reactions = reactions;
+    }
+
+    @Column(name ="file_id")
+    public String getFileId() {
+        return fileId;
+    }
+
+    public void setFileId(String fileId) {
+        this.fileId = fileId;
+    }
+
+    @Column(name = "user_id")
+    public Long getUserId() {
+        return userId;
+    }
+
+    public void setUserId(Long userId) {
+        this.userId = userId;
     }
 
     @ManyToOne(fetch = FetchType.LAZY)

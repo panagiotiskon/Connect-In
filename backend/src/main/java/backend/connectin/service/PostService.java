@@ -16,20 +16,28 @@ public class PostService {
 
     private final PostRepository postRepository;
     private final FileService fileService;
-    private PostMapper postMapper;
+    private final PostMapper postMapper;
 
-    public PostService(PostRepository postRepository, FileService fileService) {
+    public PostService(PostRepository postRepository, FileService fileService, PostMapper postMapper) {
         this.postRepository = postRepository;
         this.fileService = fileService;
+        this.postMapper = postMapper;
     }
 
     @Transactional
     public void createPost(Long userId, PostRequest postRequest) {
         try {
-            MultipartFile postFile = postRequest.getFile();
-            FileDB fileDB = fileService.store(postFile, false, userId);
-            Post post = postMapper.mapToPost(postRequest, fileDB);
-            postRepository.save(post);
+            Post post;
+            if(postRequest.getFile()!=null) {
+                MultipartFile postFile = postRequest.getFile();
+                FileDB fileDB = fileService.store(postFile, false, userId);
+                post = postMapper.mapToPost(postRequest,fileDB.getId(), userId);
+            }
+            else {
+                post = postMapper.mapToPost(postRequest,userId);
+            }
+            if(post!=null)
+                postRepository.save(post);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
