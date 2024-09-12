@@ -120,13 +120,19 @@ public class FileController {
     }
 
     @GetMapping("/files/user/{userId}/images")
-    public ResponseEntity<List<String>> getUserImages(@PathVariable Long userId) {
-        List<String> encodedImages = fileService.getAllFiles()
-                .filter(file -> file.getUser().getId().equals(userId) && "image/png".equals(file.getType()))
-                .map(file -> Base64.getEncoder().encodeToString(file.getData()))
-                .collect(Collectors.toList());
+    public ResponseEntity<List<Map<String, String>>> getUserImages(@PathVariable Long userId) {
+        List<Map<String, String>> images = fileService.getAllFiles()
+                .filter(file -> file.getUser().getId().equals(userId) && file.getType().startsWith("image/"))
+                // Sort images: Profile picture comes first (isProfilePicture == true)
+                .sorted((file1, file2) -> Boolean.compare(file2.getProfilePicture(), file1.getProfilePicture()))
+                // Map to the required format
+                .map(file -> Map.of(
+                        "type", file.getType(),
+                        "data", Base64.getEncoder().encodeToString(file.getData())
+                ))
+                .toList();
 
-        return ResponseEntity.ok(encodedImages);
+        return ResponseEntity.ok(images);
     }
 
     @DeleteMapping("/files/{id}")
