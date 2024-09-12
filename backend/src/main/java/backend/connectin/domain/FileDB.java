@@ -22,7 +22,7 @@ public class FileDB {
     @Column(name = "user_id", nullable = false)
     private Long userId;
 
-    @OneToOne
+    @ManyToOne
     @JoinColumn(name = "user_id", referencedColumnName = "id", insertable = false, updatable = false)
     private User user;
 

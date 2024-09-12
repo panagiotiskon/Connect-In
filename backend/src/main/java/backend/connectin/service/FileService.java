@@ -6,7 +6,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
 import java.io.IOException;
+import java.util.Optional;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
@@ -28,6 +30,10 @@ public class FileService {
         FileDB fileDB = new FileDB(fileName, file.getContentType(), file.getBytes(), isProfilePicture, userId);
         fileDBRepository.save(fileDB);
         return fileDB;
+    }
+
+    public Optional<FileDB> getProfilePicture(Long userId) {
+        return fileDBRepository.findProfilePicture(userId);
     }
 
     public FileDB getFile(String id) {
