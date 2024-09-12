@@ -1,7 +1,7 @@
 import axios from "axios";
 import AuthService from "../api/AuthenticationAPI";
 
-const API_URL = "https://localhost:8443";
+const API_URL = "https://localhost:8443/auth";
 
 const getFeed = async (userId) => {
   try {
