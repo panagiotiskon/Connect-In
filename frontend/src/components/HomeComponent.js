@@ -23,7 +23,7 @@ const HomeComponent = () => {
   const fileInputRef = useRef(null); // Ref to trigger file input
 
   useEffect(() => {
-    // Fetch the current user when the component is mounted
+
     const fetchCurrentUser = async () => {
       const user = await AuthService.getCurrentUser();
       setCurrentUser(user);
@@ -144,7 +144,7 @@ const HomeComponent = () => {
                               src={uploadedFile.previewUrl}
                               alt="Preview"
                               className="img-thumbnail mt-2"
-                              width={100}
+                              width={120}
                           />
                           {/* Remove Image Button */}
                           <MDBBtn

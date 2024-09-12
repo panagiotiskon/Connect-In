@@ -47,6 +47,21 @@
 .audio-btn{
     background-color: #BA4595 !important;
 }
+
+.image-preview-container{
+    display:flex;
+    align-items: center;
+    position:relative;
+}
+
+.img-thumbnail{
+    border: 3px solid #b4bad1 !important;
+}
+
+.remove-image-btn{
+    margin-left: 10px;
+}
+
 .submit-post-btn {
     position:relative;
     color: white;
