@@ -134,6 +134,18 @@
     flex:1;
 }
 
+.comment-date{
+    text-align: right;
+    margin-left: auto;
+    font-size: 0.8rem;
+}
+
+.comment-container{
+    display: flex;
+    flex-direction: column;
+    width: 60%;
+}
+
 /* Ensure the layout is responsive */
 @media (min-width: 768px) {
     .new-post-container {

@@ -49,7 +49,7 @@ public class Post implements Serializable {
         this.createdAt = createdAt;
     }
 
-    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "post", fetch = FetchType.EAGER)
     public List<Comment> getComments() {
         return comments;
     }
@@ -58,7 +58,7 @@ public class Post implements Serializable {
         this.comments = comments;
     }
 
-    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "post", fetch = FetchType.EAGER)
     public List<Reaction> getReactions() {
         return reactions;
     }
