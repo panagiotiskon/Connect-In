@@ -24,6 +24,7 @@ const HomeComponent = () => {
   const [uploadedFile, setUploadedFile] = useState(null);
   const [posts, setPosts] = useState([]); // State to hold the posts
   const [commentInputs, setCommentInputs] = useState({}); // Track comment input for each post
+  const [postsMap, setPostsMap] = useState({});
 
   const fileInputRef = useRef(null);
 
@@ -40,16 +41,18 @@ const HomeComponent = () => {
     const fetchPosts = async () => {
       try {
         const user = await AuthService.getCurrentUser();
-        const response = await PostService.getFeed(user?.id); // Fetch posts from backend
+        const response = await PostService.getFeed(user?.id);  // Fetch posts from backend
 
         const fetchedPosts = Array.isArray(response) ? response : response?.data || [];
 
-        // Fetch user photos for each comment
+        // Create a dictionary where the key is the post ID and the value is the post object
+        const postsById = {};
+
         const postsWithUserPhotos = await Promise.all(
           fetchedPosts.map(async (post) => {
             const commentsWithPhotos = await Promise.all(
               post.comments.map(async (comment) => {
-                const userImage = await FileService.getUserImages(comment.userId); // Fetch user's image by ID
+                const userImage = await FileService.getUserImages(comment.userId);
                 const userProfileImage =
                   userImage.length > 0
                     ? `data:${userImage[0].type};base64,${userImage[0].data}`
@@ -62,19 +65,27 @@ const HomeComponent = () => {
               })
             );
 
-            return {
+            const processedPost = {
               ...post,
-              comments: commentsWithPhotos, // Replace the comments with ones containing photos
+              comments: commentsWithPhotos,
             };
+
+            // Add the processed post to the dictionary using post.id as the key
+            postsById[post.id] = processedPost;
+
+            return processedPost;
           })
         );
 
-        setPosts(postsWithUserPhotos); // Set posts with user photos
+        setPosts(postsWithUserPhotos);  // Still set the array of posts for UI rendering
+        setPostsMap(postsById);  // Set the dictionary mapping post IDs to posts
       } catch (error) {
         console.error("Error fetching posts:", error);
         setPosts([]);
       }
     };
+
+
 
     if (currentUser) {
       fetchPosts();
@@ -144,30 +155,35 @@ const HomeComponent = () => {
   };
 
   const handleCommentSubmit = async (postId) => {
-    const commentContent = commentInputs[postId];
-    if (!commentContent) {
+    const comment = commentInputs[postId];
+    if (!comment) {
       alert("Comment cannot be empty.");
       return;
     }
 
     try {
-      await AuthService.createComment(currentUser.id, postId, commentContent); // Assume the API takes the user ID, post ID, and comment content
-      alert("Comment submitted successfully!");
+      const post = postsMap[postId];
 
-      // Clear comment input for this post
-      setCommentInputs((prev) => ({
-        ...prev,
-        [postId]: "",
-      }));
+      if (post) {
+        await AuthService.createComment(postId, comment);
+        alert("Comment submitted successfully!");
 
-      // Refetch posts to include the new comment
-      const fetchedPosts = await PostService.getFeed(currentUser?.id);
-      setPosts(fetchedPosts);
+        setCommentInputs((prev) => ({
+          ...prev,
+          [postId]: "",
+        }));
+
+        const fetchedPosts = await PostService.getFeed(currentUser?.id);
+        setPosts(fetchedPosts);
+      } else {
+        console.error("Post not found for the given postId:", postId);
+      }
     } catch (error) {
       console.error("Error submitting comment:", error);
       alert("Failed to submit comment.");
     }
   };
+
 
   return (
     <>
@@ -271,24 +287,25 @@ const HomeComponent = () => {
                         style={{ width: "100%", height: "auto", border: "1px" }}
                       />
                     )}
-                    <div className="add-comment-container ">
+
+                    <div className="add-comment-container">
                       <input
                         type="text"
                         className="form-control"
                         placeholder="Add a comment..."
-                        value={commentInputs[post.id] || ""}
-                        onChange={(e) =>
-                          handleCommentInputChange(post.id, e.target.value)
-                        }
+                        value={commentInputs[post.id] || ""}  // Tie input to the specific post ID
+                        onChange={(e) => handleCommentInputChange(post.id, e.target.value)}
                       />
                       <MDBBtn
                         className="submit-post-btn"
                         color="primary"
-                        onClick={() => handleCommentSubmit(post.id)}
+                        onClick={() => handleCommentSubmit(post.id)}  // Use post ID for submitting the comment
                       >
                         Comment
                       </MDBBtn>
+                      
                     </div>
+
                     {/* Display Comments */}
                     <div className="comments-section">
                       {post.comments && post.comments.length > 0 ? (
@@ -301,9 +318,12 @@ const HomeComponent = () => {
                               width="40"
                               alt="Commenter's Avatar"
                             />
-                            <div className="ms-3">
+                            <div className="ms-3 comment-container">
                               <strong>{comment.username}</strong>
                               <p>{comment.content}</p>
+                            </div>
+                            <div className="comment-date text-muted">
+                              {new Date(comment.createdAt).toLocaleString()} 
                             </div>
                           </div>
                         ))
@@ -311,15 +331,13 @@ const HomeComponent = () => {
                         <p>No comments yet.</p>
                       )}
                     </div>
-
-                    {/* Add Comment */}
-
                   </MDBCardBody>
                 </MDBCard>
               ))
             ) : (
               <p>No posts available.</p>
             )}
+
           </MDBCol>
         </MDBRow>
       </MDBContainer>

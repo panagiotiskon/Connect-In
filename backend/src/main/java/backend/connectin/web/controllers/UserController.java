@@ -9,6 +9,7 @@ import backend.connectin.domain.User;
 import backend.connectin.service.JWTService;
 import backend.connectin.service.PostService;
 import backend.connectin.service.UserService;
+import backend.connectin.service.*;
 import backend.connectin.web.dto.EducationDTO;
 import backend.connectin.web.dto.ExperienceDTO;
 import backend.connectin.web.dto.SkillDTO;
@@ -33,6 +34,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 
 @CrossOrigin(origins = "http://localhost:3000", allowCredentials = "true")
 @RestController
@@ -45,9 +47,9 @@ public class UserController {
     private final PostService postService;
     private final PostMapper postMapper;
     private final CommentService commentService;
-    private final CommentMapper commentMapper;
+    private final ReactionService reactionService;
 
-    public UserController(UserService userService, JWTService jwtService, PersonalInfoMapper personalInfoMapper, UserMapper userMapper, PostService postService, PostMapper postMapper, CommentService commentService, CommentMapper commentMapper) {
+    public UserController(UserService userService, JWTService jwtService, PersonalInfoMapper personalInfoMapper, UserMapper userMapper, PostService postService, PostMapper postMapper, CommentService commentService, CommentMapper commentMapper, ReactionService reactionService) {
         this.userService = userService;
         this.jwtService = jwtService;
         this.personalInfoMapper = personalInfoMapper;
@@ -55,7 +57,7 @@ public class UserController {
         this.postService = postService;
         this.postMapper = postMapper;
         this.commentService = commentService;
-        this.commentMapper = commentMapper;
+        this.reactionService = reactionService;
     }
 
     @PostMapping("/{userId}/change-password")
@@ -132,18 +134,6 @@ public class UserController {
         return new ResponseEntity<>(skillDTOS, HttpStatus.OK);
     }
 
-    @PostMapping("/{userId}/create-post")
-    public ResponseEntity<String> createPost(@PathVariable long userId,
-                                             @RequestParam("content") String content,
-                                             @RequestParam(value = "file", required = false) MultipartFile file) {
-        PostRequest postRequest;
-        if (file != null)
-            postRequest = new PostRequest(content, file);
-        else
-            postRequest = new PostRequest(content);
-        postService.createPost(userId, postRequest);
-        return ResponseEntity.ok("Post Created");
-    }
 
     @GetMapping("/{userId}/feed")
     public ResponseEntity<List<PostResource>> getUserFeed(@PathVariable long userId) {
@@ -161,12 +151,81 @@ public class UserController {
         return new ResponseEntity<>(userMapper.mapToUserDTO(user), HttpStatus.OK);
     }
 
+    @PostMapping("/{userId}/create-post")
+    public ResponseEntity<String> createPost(@PathVariable long userId,
+                                             @RequestParam("content") String content,
+                                             @RequestParam(value = "file", required = false) MultipartFile file) {
+        PostRequest postRequest;
+        if (file != null)
+            postRequest = new PostRequest(content, file);
+        else
+            postRequest = new PostRequest(content);
+        postService.createPost(userId, postRequest);
+        return ResponseEntity.ok("Post Created");
+    }
+
+
+    @GetMapping("/{userId}/posts")
+    public ResponseEntity<List<PostResource>> getUserPosts(@PathVariable long userId) {
+        List<Post> posts = postService.fetchUserPosts(userId);
+        List<PostResource> postResources = posts.stream()
+                .map(postMapper::mapToPostResource).toList();
+        return new ResponseEntity<>(postResources, HttpStatus.OK);
+    }
+
+    @DeleteMapping("/{userId}/{postId}")
+    public ResponseEntity<String> deletePost(@PathVariable long userId,
+                                             @PathVariable long postId) {
+        postService.deletePost(userId, postId);
+        return new ResponseEntity<>("Post Deleted", HttpStatus.OK);
+    }
+
+
     @PostMapping("/{userId}/{postId}/create-comment")
     public ResponseEntity<String> createComment(@PathVariable long userId,
                                                 @PathVariable long postId,
                                                 @RequestBody CommentRequest commentRequest) {
         commentService.createComment(userId, postId, commentRequest);
         return new ResponseEntity<>("Comment Created", HttpStatus.OK);
+    }
+
+    // this returns a map to post id -> list of comment ids of the user
+
+    @GetMapping("/{userId}/get-comments")
+    public ResponseEntity<Map<Long, List<Long>>> getUserComments(@PathVariable long userId){
+        Map<Long, List<Long>> userComments = commentService.fetchUserComments(userId);
+        return new ResponseEntity<>(userComments, HttpStatus.OK);
+    }
+
+    @DeleteMapping("/{userId}/{postId}/{commentId}")
+    public ResponseEntity<String> deleteComment(@PathVariable long userId,
+                                                @PathVariable long postId,
+                                                @PathVariable long commentId) {
+        commentService.deleteComment(userId, postId, commentId);
+        return new ResponseEntity<>("Comment Deleted", HttpStatus.OK);
+    }
+
+    @PostMapping("/{userId}/{postId}/create-reaction")
+    public ResponseEntity<String> createReaction(@PathVariable long userId,
+                                                 @PathVariable long postId){
+        reactionService.createReaction(userId, postId);
+        return new ResponseEntity<>("Reaction Created", HttpStatus.OK);
+    }
+
+    // returns a list of users reacted posts
+
+    @GetMapping("/{userId}/reactions")
+    public ResponseEntity<List<Long>> getUserReactions(@PathVariable long userId) {
+        List<Long> reactedPostsList = reactionService.fetchUserReactions(userId);
+        return new ResponseEntity<>(reactedPostsList, HttpStatus.OK);
+    }
+
+
+    @DeleteMapping("/{userId}/{postId}/reaction")
+    public ResponseEntity<String> deleteReaction(@PathVariable long userId,
+                                                 @PathVariable long postId){
+        reactionService.deleteReaction(userId, postId);
+        return new ResponseEntity<>("Reaction Deleted", HttpStatus.OK);
     }
 
 

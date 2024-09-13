@@ -128,7 +128,7 @@ public class User {
     }
 
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "user",  orphanRemoval = true)
     @JsonIgnore
     public List<Post> getPosts() {
         return posts;
@@ -138,7 +138,7 @@ public class User {
         this.posts = posts;
     }
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "user", orphanRemoval = true)
     public List<FileDB> getFiles() {
         return files;
     }
