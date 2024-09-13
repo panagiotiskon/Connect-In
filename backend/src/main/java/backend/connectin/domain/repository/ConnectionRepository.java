@@ -13,11 +13,11 @@ public interface ConnectionRepository extends JpaRepository<Connection, Long> {
 
     // find all user connections
     @Query(value = """
-            SELECT c
-            FROM Connection c
-            WHERE (c.userId1 = :userId)
-                  AND c.status = 'ACCEPTED'
-            """)
+        SELECT c
+        FROM Connection c
+        WHERE c.userId1 = :userId
+        AND (c.status = 'ACCEPTED')
+        """)
     List<Connection> findUserConnections(@Param("userId") Long userId);
 
     // find all connection requests a user has

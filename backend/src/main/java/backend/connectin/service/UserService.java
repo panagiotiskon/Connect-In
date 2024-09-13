@@ -4,10 +4,7 @@ import backend.connectin.domain.*;
 import backend.connectin.domain.repository.FileRepository;
 import backend.connectin.domain.repository.PersonalInfoRepository;
 import backend.connectin.domain.repository.UserRepository;
-import backend.connectin.web.dto.EducationDTO;
-import backend.connectin.web.dto.ExperienceDTO;
-import backend.connectin.web.dto.SkillDTO;
-import backend.connectin.web.dto.UserDetailDTO;
+import backend.connectin.web.dto.*;
 import backend.connectin.web.mappers.PersonalInfoMapper;
 import backend.connectin.web.mappers.UserMapper;
 import backend.connectin.web.requests.UserChangeEmailRequest;
@@ -26,10 +23,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -39,16 +33,13 @@ public class UserService {
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
     private final FileService fileService;
-    private final FileRepository fileRepository;
     private final PersonalInfoRepository personalInfoRepository;
     private final PersonalInfoMapper personalInfoMapper;
-
-    public UserService(UserRepository userRepository, UserMapper userMapper, PasswordEncoder passwordEncoder, FileService fileService, FileRepository fileRepository, PersonalInfoRepository personalInfoRepository, PersonalInfoMapper personalInfoMapper) {
+    public UserService(UserRepository userRepository, UserMapper userMapper, PasswordEncoder passwordEncoder, FileService fileService, PersonalInfoRepository personalInfoRepository, PersonalInfoMapper personalInfoMapper) {
         this.userRepository = userRepository;
         this.userMapper = userMapper;
         this.passwordEncoder = passwordEncoder;
         this.fileService = fileService;
-        this.fileRepository = fileRepository;
         this.personalInfoRepository = personalInfoRepository;
         this.personalInfoMapper = personalInfoMapper;
     }
@@ -99,7 +90,6 @@ public class UserService {
         if (!passwordEncoder.matches(userChangePasswordRequest.getOldPassword(), user.getPassword())) {
             throw new RuntimeException("Old password does not match");
         }
-        // Encode the new password
         user.setPassword(passwordEncoder.encode(userChangePasswordRequest.getNewPassword()));
         userRepository.save(user);
     }
@@ -233,17 +223,14 @@ public class UserService {
     }
 
     public UserDetailDTO getUserDetails(long userId) {
-        // Check if the user exists
         if (userRepository.findById(userId).isEmpty()) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found");
         }
 
-        // Retrieve personal info
         PersonalInfo personalInfo = personalInfoRepository.findByUserId(userId);
         UserDetailDTO userDetailDTO = new UserDetailDTO();
 
         if (personalInfo != null) {
-            // Map personal info to DTOs if present
             List<SkillDTO> skillDTOS = personalInfo.getSkills().stream()
                     .map(personalInfoMapper::mapToSkillDTO)
                     .collect(Collectors.toList());
@@ -258,7 +245,6 @@ public class UserService {
             userDetailDTO.setExperiences(experienceDTOS);
             userDetailDTO.setEducation(educationDTOS);
         } else {
-            // Optionally, log that personalInfo was not found
             System.out.println("No personal info found for userId: " + userId);
         }
 
@@ -273,6 +259,67 @@ public class UserService {
                 ));
     }
 
+    public List<ConnectedUserDTO> getFilteredUsers(String searchTerm, long userId) {
+        List<User> users = fetchAll();
+
+        users = users.stream()
+                .filter(user -> user.getId() != 1 && user.getId() != userId)
+                .collect(Collectors.toList());
+
+
+        if (searchTerm != null && !searchTerm.trim().isEmpty()) {
+            String lowerCaseSearchTerm = searchTerm.toLowerCase();
+            String[] searchTerms = lowerCaseSearchTerm.split(" ");
+
+            users = users.stream()
+                    .filter(user -> {
+                        boolean matches = false;
+
+                        if (searchTerms.length == 1) {
+                            matches = user.getFirstName().toLowerCase().startsWith(searchTerms[0]);
+                        } else if (searchTerms.length >= 2) {
+                            matches = user.getFirstName().toLowerCase().startsWith(searchTerms[0])
+                                    && user.getLastName().toLowerCase().startsWith(searchTerms[1]);
+                        }
+
+                        return matches;
+                    }).toList();
+            if(users.isEmpty()){
+                return new ArrayList<>();}
+            List<ConnectedUserDTO> connectedUserDTOS = new ArrayList<>();
+            for (User user : users) {
+                List<Experience> experiences = getExperience(user.getId()); // get latest experience
+                String jobTitle;
+                String companyName;
+                if(experiences.isEmpty()){
+                    jobTitle=null;
+                    companyName=null;
+                }
+                else{
+                    jobTitle= experiences.getFirst().getJobTitle();
+                    companyName = experiences.getFirst().getCompanyName();
+                }
+                FileDB profilePicture= fileService.getProfilePicture(user.getId()).get();
+                String profilePic;
+                String profilePicType;
+                if (profilePicture.getType().startsWith("image/")) {
+                    profilePic =  Base64.getEncoder().encodeToString(profilePicture.getData());
+                    profilePicType = profilePicture.getType();
+                }
+                else{
+                    profilePic=null;
+                    profilePicType=null;
+                }
+                ConnectedUserDTO connectedUserDTO = new ConnectedUserDTO(user.getId(),user.getFirstName(),user.getLastName(),jobTitle,companyName,profilePic,profilePicType);
+                connectedUserDTOS.add(connectedUserDTO);
+            }
+            return connectedUserDTOS;
+
+        }
+        else {
+            return new ArrayList<>();
+        }
+    }
 
 
 }
