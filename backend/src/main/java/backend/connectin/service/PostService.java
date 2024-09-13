@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.List;
 
 @Service
 public class PostService {
@@ -42,5 +43,12 @@ public class PostService {
             throw new RuntimeException(e);
         }
     }
+
+    public List<Post> fetchUserPosts(Long userId) {
+        List<Post> userPosts = postRepository.findAllByUserId(userId);
+        return userPosts;
+    }
+
+
 }
 

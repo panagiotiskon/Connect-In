@@ -12,10 +12,12 @@ import backend.connectin.web.dto.ExperienceDTO;
 import backend.connectin.web.dto.SkillDTO;
 import backend.connectin.web.dto.UserDTO;
 import backend.connectin.web.mappers.PersonalInfoMapper;
+import backend.connectin.web.mappers.PostMapper;
 import backend.connectin.web.mappers.UserMapper;
 import backend.connectin.web.requests.PostRequest;
 import backend.connectin.web.requests.UserChangeEmailRequest;
 import backend.connectin.web.requests.UserChangePasswordRequest;
+import backend.connectin.web.resources.PostResource;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.HttpStatus;
@@ -24,6 +26,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.Comparator;
 import java.util.List;
 
 @CrossOrigin(origins = "http://localhost:3000", allowCredentials = "true")
@@ -35,13 +38,15 @@ public class UserController {
     private final PersonalInfoMapper personalInfoMapper;
     private final UserMapper userMapper;
     private final PostService postService;
+    private final PostMapper postMapper;
 
-    public UserController(UserService userService, JWTService jwtService, PersonalInfoMapper personalInfoMapper, UserMapper userMapper, PostService postService) {
+    public UserController(UserService userService, JWTService jwtService, PersonalInfoMapper personalInfoMapper, UserMapper userMapper, PostService postService, PostMapper postMapper) {
         this.userService = userService;
         this.jwtService = jwtService;
         this.personalInfoMapper = personalInfoMapper;
         this.userMapper = userMapper;
         this.postService = postService;
+        this.postMapper = postMapper;
     }
 
     @PostMapping("/{userId}/change-password")
@@ -123,13 +128,24 @@ public class UserController {
                                              @RequestParam("content") String content,
                                              @RequestParam(value = "file", required = false) MultipartFile file) {
         PostRequest postRequest;
-        if (file!=null)
+        if (file != null)
             postRequest = new PostRequest(content, file);
         else
             postRequest = new PostRequest(content);
         postService.createPost(userId, postRequest);
         return ResponseEntity.ok("Post Created");
     }
+
+    @GetMapping("/{userId}/feed")
+    public ResponseEntity<List<PostResource>> getUserFeed(@PathVariable long userId) {
+        List<Post> posts = postService.fetchUserPosts(userId);
+        List<PostResource> postResources = posts.stream()
+                .map(postMapper::mapToPostResource)
+                .sorted(Comparator.comparing(PostResource::getCreatedAt).reversed())
+                .toList();
+        return new ResponseEntity<>(postResources, HttpStatus.OK);
+    }
+
     @GetMapping("/{userId}")
     public ResponseEntity<UserDTO> getUser(@PathVariable long userId) {
         User user = userService.findUserOrThrow(userId);
