@@ -191,8 +191,6 @@ const createPost = async (content, photo) => {
 
 const createComment = async(postId, content) => {
 
-  console.log(content);
-
   const commentRequest = {
     content
   };
