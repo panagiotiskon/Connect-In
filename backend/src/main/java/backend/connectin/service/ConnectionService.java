@@ -105,4 +105,13 @@ public class ConnectionService {
         connectionList.add(connection2);
         return connectionList;
     }
+
+    @Transactional
+    public void changeConnectionStatusToAccepted(long userId,long connectionUserId){
+        connectionRepository.updateConnectionStatus(userId,connectionUserId,ConnectionStatus.ACCEPTED);
+    }
+    @Transactional
+    public void deleteConnection(long userId,long connectionUserId){
+        connectionRepository.deleteConnection(userId,connectionUserId);
+    }
 }

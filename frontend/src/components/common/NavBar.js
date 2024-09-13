@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "./NavBar.scss";
 import {
@@ -10,19 +10,49 @@ import {
   MDBCollapse,
   MDBContainer,
   MDBNavbarToggler,
+  MDBBadge, // Import MDBBadge for notifications
 } from "mdb-react-ui-kit";
 import ConnectInLogo from "../../assets/ConnectIn.png"; // Adjust the path if needed
 import AuthService from "../../api/AuthenticationAPI";
+import NotificationAPI from "../../api/NotificationAPI"; // Import NotificationAPI
 
 const NavbarComponent = () => {
   const navigate = useNavigate();
   const [openNavSecond, setOpenNavSecond] = useState(false);
-  const currentUser = AuthService.getCurrentUser();
+  const [notificationCount, setNotificationCount] = useState(0); // State for notification count
+  const [currentUser, setCurrentUser] = useState(null); // State for current user
 
-  const handleHomeClick = () => {
-    navigate("/home");
-  };
+  useEffect(() => {
+    const fetchCurrentUser = async () => {
+      try {
+        const user = await AuthService.getCurrentUser();
+        setCurrentUser(user);
+      } catch (error) {
+        console.error("Error fetching current user:", error);
+      }
+    };
 
+    fetchCurrentUser();
+  }, []);
+
+  useEffect(() => {
+    const fetchNotificationCount = async () => {
+      try {
+        if (currentUser && currentUser.id) {
+          const count = await NotificationAPI.getNumberOfNotifications(
+            currentUser.id
+          );
+          setNotificationCount(count);
+        }
+      } catch (error) {
+        console.error("Error fetching notification count:", error);
+      }
+    };
+
+    fetchNotificationCount();
+  }, [currentUser]);
+
+  const handleHomeClick = () => navigate("/home");
   const handleNetworkClick = () => navigate("/network");
   const handleJobsClick = () => navigate("/jobs");
   const handleMessagingClick = () => navigate("/messaging");
@@ -82,12 +112,31 @@ const NavbarComponent = () => {
               <span style={{ fontSize: "0.9rem" }}>Messaging</span>
             </MDBNavbarItem>
             <MDBNavbarItem className="d-flex flex-column align-items-center navbar-nav-item">
-              <MDBNavbarLink onClick={handleNotificationsClick}>
+              <MDBNavbarLink
+                onClick={handleNotificationsClick}
+                style={{ position: "relative", cursor: "pointer" }} // Ensure cursor is pointer
+              >
                 <MDBIcon
                   fas
-                  icon="exclamation"
+                  icon="bell" // Changed to bell icon
                   style={{ fontSize: "1.4rem" }}
                 />
+                {notificationCount > 0 && (
+                  <MDBBadge
+                    pill
+                    color="danger"
+                    style={{
+                      position: "absolute",
+                      top: "-6px",
+                      right: "-10px",
+                      fontSize: "0.8rem",
+                      minWidth: "20px",
+                      textAlign: "center",
+                    }}
+                  >
+                    {notificationCount}
+                  </MDBBadge>
+                )}
               </MDBNavbarLink>
               <span style={{ fontSize: "0.9rem" }}>Notifications</span>
             </MDBNavbarItem>
