@@ -1,5 +1,6 @@
 package backend.connectin.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
 import java.util.List;
@@ -25,6 +26,7 @@ public class PersonalInfo {
     }
 
     @OneToOne
+    @JsonIgnore
     @JoinColumn(name = "user_id",  referencedColumnName = "id")
     public User getUser() {
         return user;
