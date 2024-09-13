@@ -13,7 +13,7 @@ public class PostResource {
     private String content;
     private Instant createdAt;
     private FileDB file;
-    private List<Comment> comments;
+    private List<CommentResource> comments;
     private List<Reaction> reactions;
 
     public Long getId() {
@@ -48,11 +48,11 @@ public class PostResource {
         this.file = file;
     }
 
-    public List<Comment> getComments() {
+    public List<CommentResource> getComments() {
         return comments;
     }
 
-    public void setComments(List<Comment> comments) {
+    public void setComments(List<CommentResource> comments) {
         this.comments = comments;
     }
 

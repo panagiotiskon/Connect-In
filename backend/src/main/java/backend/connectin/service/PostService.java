@@ -5,9 +5,12 @@ import backend.connectin.domain.Post;
 import backend.connectin.domain.repository.PostRepository;
 import backend.connectin.web.mappers.PostMapper;
 import backend.connectin.web.requests.PostRequest;
+import jakarta.transaction.Status;
 import jakarta.transaction.Transactional;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
 import java.util.List;
@@ -23,6 +26,11 @@ public class PostService {
         this.postRepository = postRepository;
         this.fileService = fileService;
         this.postMapper = postMapper;
+    }
+
+
+    public Post findPostOrThrow(Long postId){
+        return postRepository.findById(postId).orElseThrow(()-> new ResponseStatusException (HttpStatus.NOT_FOUND));
     }
 
     @Transactional
