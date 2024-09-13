@@ -180,7 +180,7 @@ const HomeComponent = () => {
           <MDBCol md="6" className="center-column">
             {/* Create Post Section */}
             <MDBCard className="new-post-container shadow-0">
-              <MDBCardBody className="border-bottom pb-2 w-100">
+              <MDBCardBody className="pb-2 w-100">
                 <div className="d-flex new-post-input-container">
                   <img
                     src={profileImage || "https://via.placeholder.com/150"}
@@ -271,7 +271,24 @@ const HomeComponent = () => {
                         style={{ width: "100%", height: "auto", border: "1px" }}
                       />
                     )}
-
+                    <div className="add-comment-container ">
+                      <input
+                        type="text"
+                        className="form-control"
+                        placeholder="Add a comment..."
+                        value={commentInputs[post.id] || ""}
+                        onChange={(e) =>
+                          handleCommentInputChange(post.id, e.target.value)
+                        }
+                      />
+                      <MDBBtn
+                        className="submit-post-btn"
+                        color="primary"
+                        onClick={() => handleCommentSubmit(post.id)}
+                      >
+                        Comment
+                      </MDBBtn>
+                    </div>
                     {/* Display Comments */}
                     <div className="comments-section">
                       {post.comments && post.comments.length > 0 ? (
@@ -296,24 +313,7 @@ const HomeComponent = () => {
                     </div>
 
                     {/* Add Comment */}
-                    <div className="add-comment-container mt-3">
-                      <input
-                        type="text"
-                        className="form-control"
-                        placeholder="Add a comment..."
-                        value={commentInputs[post.id] || ""}
-                        onChange={(e) =>
-                          handleCommentInputChange(post.id, e.target.value)
-                        }
-                      />
-                      <MDBBtn
-                        className="mt-2"
-                        color="primary"
-                        onClick={() => handleCommentSubmit(post.id)}
-                      >
-                        Comment
-                      </MDBBtn>
-                    </div>
+
                   </MDBCardBody>
                 </MDBCard>
               ))
