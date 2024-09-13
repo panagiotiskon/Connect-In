@@ -3,8 +3,9 @@ import { MDBContainer, MDBRow, MDBCol, MDBInput } from "mdb-react-ui-kit";
 import NavbarComponent from "./common/NavBar";
 import ConnectedUsersCardComponent from "./ConnectedUsersCardComponent";
 import RegisteredUsersCardComponent from "./RegisteredUsersCardComponent";
-import ConnectionAPI from "../api/ConnectionAPI"; // Adjust the path as needed
-import AuthService from "../api/AuthenticationAPI"; // Adjust the path as needed
+import ConnectionAPI from "../api/ConnectionAPI";
+import NotificationAPI from "../api/NotificationAPI"; // Import the NotificationAPI
+import AuthService from "../api/AuthenticationAPI";
 import { useNavigate } from "react-router-dom";
 
 const NetworkComponent = () => {
@@ -86,7 +87,6 @@ const NetworkComponent = () => {
 
   const handleSearchKeyPress = (e) => {
     if (e.key === "Enter") {
-      // Trigger search when Enter key is pressed
       setSearchTerm(e.target.value);
     }
   };
@@ -97,17 +97,28 @@ const NetworkComponent = () => {
       const currentUserId = currentUser?.id;
 
       if (currentUserId) {
+        // Send connection request
         await ConnectionAPI.requestToConnect(currentUserId, connectionUserId);
         console.log("Connection request sent to user ID:", connectionUserId);
 
+        // Send notification with the type 'CONNECTION'
+        await NotificationAPI.createNotification(
+          connectionUserId,
+          "CONNECTION",
+          currentUserId
+        );
+        console.log(
+          "Notification sent for connection to user ID:",
+          connectionUserId
+        );
+
         // Optionally update UI or show a success message
-        // For example, you might want to remove this user from the displayed list
         setDisplayedUsers((prevUsers) =>
           prevUsers.filter((user) => user.userId !== connectionUserId)
         );
       }
     } catch (error) {
-      console.error("Error sending connection request:", error);
+      console.error("Error sending connection request or notification:", error);
     }
   };
 

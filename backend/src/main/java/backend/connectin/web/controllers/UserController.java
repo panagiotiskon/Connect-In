@@ -1,6 +1,9 @@
 package backend.connectin.web.controllers;
 
-import backend.connectin.domain.*;
+import backend.connectin.domain.Education;
+import backend.connectin.domain.Experience;
+import backend.connectin.domain.Skill;
+import backend.connectin.domain.User;
 import backend.connectin.service.JWTService;
 import backend.connectin.service.PostService;
 import backend.connectin.service.UserService;
@@ -11,7 +14,6 @@ import backend.connectin.web.dto.UserDTO;
 import backend.connectin.web.mappers.PersonalInfoMapper;
 import backend.connectin.web.mappers.UserMapper;
 import backend.connectin.web.requests.PostRequest;
-import org.springframework.http.HttpStatus;
 import backend.connectin.web.requests.UserChangeEmailRequest;
 import backend.connectin.web.requests.UserChangePasswordRequest;
 import jakarta.servlet.http.Cookie;
