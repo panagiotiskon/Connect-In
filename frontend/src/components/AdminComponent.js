@@ -226,10 +226,7 @@ export default function AdminComponent() {
                 <MDBCardBody>
                   <div className="text-center mb-3">
                     <MDBCardImage
-                      src={
-                        profileImages[user.id] ||
-                        "https://via.placeholder.com/120"
-                      }
+                      src={profileImages[user.id]}
                       alt={`${user.firstName} ${user.lastName}`}
                       className="rounded-circle"
                       style={{

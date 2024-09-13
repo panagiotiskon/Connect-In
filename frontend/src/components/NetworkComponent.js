@@ -1,179 +1,198 @@
-// NetworkComponent.js
 import React, { useState, useEffect } from "react";
 import { MDBContainer, MDBRow, MDBCol, MDBInput } from "mdb-react-ui-kit";
 import NavbarComponent from "./common/NavBar";
-import UserCard from "./UserCardComponent";
-import AuthService from "../api/AuthenticationAPI"; // For getting current user info
+import ConnectedUsersCardComponent from "./ConnectedUsersCardComponent";
+import RegisteredUsersCardComponent from "./RegisteredUsersCardComponent";
+import ConnectionAPI from "../api/ConnectionAPI"; // Adjust the path as needed
+import AuthService from "../api/AuthenticationAPI"; // Adjust the path as needed
 import { useNavigate } from "react-router-dom";
-const mockUsers = [
-  {
-    id: 1,
-    profileImage: "/path/to/profile-image1.png",
-    firstName: "John",
-    lastName: "Doe",
-    job: "Software Engineer",
-    isConnected: true,
-  },
-  {
-    id: 2,
-    profileImage: "/path/to/profile-image2.png",
-    firstName: "Jane",
-    lastName: "Smith",
-    job: "Product Manager",
-    isConnected: false,
-  },
-  {
-    id: 3,
-    profileImage: "/path/to/profile-image3.png",
-    firstName: "Alice",
-    lastName: "Johnson",
-    job: "UX Designer",
-    isConnected: true,
-  },
-  {
-    id: 4,
-    profileImage: "/path/to/profile-image4.png",
-    firstName: "Bob",
-    lastName: "Brown",
-    job: "Data Scientist",
-    isConnected: false,
-  },
-  {
-    id: 5,
-    profileImage: "/path/to/profile-image5.png",
-    firstName: "Emily",
-    lastName: "Davis",
-    job: "Marketing Specialist",
-    isConnected: true,
-  },
-  {
-    id: 6,
-    profileImage: "/path/to/profile-image6.png",
-    firstName: "Michael",
-    lastName: "Wilson",
-    job: "Project Manager",
-    isConnected: false,
-  },
-  {
-    id: 7,
-    profileImage: "/path/to/profile-image7.png",
-    firstName: "Sarah",
-    lastName: "Moore",
-    job: "Graphic Designer",
-    isConnected: true,
-  },
-  {
-    id: 8,
-    profileImage: "/path/to/profile-image8.png",
-    firstName: "David",
-    lastName: "Taylor",
-    job: "Web Developer",
-    isConnected: false,
-  },
-  {
-    id: 9,
-    profileImage: "/path/to/profile-image9.png",
-    firstName: "Laura",
-    lastName: "Martinez",
-    job: "Content Writer",
-    isConnected: true,
-  },
-  {
-    id: 10,
-    profileImage: "/path/to/profile-image10.png",
-    firstName: "James",
-    lastName: "Anderson",
-    job: "Business Analyst",
-    isConnected: false,
-  },
-  {
-    id: 11,
-    profileImage: "/path/to/profile-image11.png",
-    firstName: "Sophia",
-    lastName: "Harris",
-    job: "Financial Analyst",
-    isConnected: false,
-  },
-  {
-    id: 12,
-    profileImage: "/path/to/profile-image12.png",
-    firstName: "Daniel",
-    lastName: "Garcia",
-    job: "Software Architect",
-    isConnected: true,
-  },
-];
+
 const NetworkComponent = () => {
   const [searchTerm, setSearchTerm] = useState("");
-  const [users, setUsers] = useState([]);
-  const [filteredUsers, setFilteredUsers] = useState([]);
-  const navigate = useNavigate(); // Initialize useNavigate
+  const [connectedUsers, setConnectedUsers] = useState([]);
+  const [registeredUsers, setRegisteredUsers] = useState([]);
+  const [displayedUsers, setDisplayedUsers] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [showRegisteredUsers, setShowRegisteredUsers] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
-    // Simulate fetching users
-    setUsers(mockUsers);
-    setFilteredUsers(mockUsers);
+    const fetchUsers = async () => {
+      try {
+        const currentUser = await AuthService.getCurrentUser();
+        const currentUserId = currentUser?.id;
+
+        if (currentUserId) {
+          // Fetch connected users
+          const connectionsResponse = await ConnectionAPI.getUserConnections(
+            currentUserId
+          );
+          setConnectedUsers(connectionsResponse);
+
+          // Fetch registered users (unconnected)
+          const registeredResponse = await ConnectionAPI.getRegisteredUsers();
+          setRegisteredUsers(registeredResponse);
+
+          // By default, show connected users
+          setDisplayedUsers(connectionsResponse);
+        }
+      } catch (error) {
+        console.error("Error fetching users:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchUsers();
   }, []);
 
   useEffect(() => {
-    const searchTermLower = searchTerm.toLowerCase();
+    const filterUsers = async () => {
+      const currentUser = await AuthService.getCurrentUser();
+      const currentUserId = currentUser?.id;
 
-    const filtered = users
-      .filter((user) => {
-        const fullName = `${user.firstName} ${user.lastName}`.toLowerCase();
-        return fullName.includes(searchTermLower);
-      })
-      .sort((a, b) => b.isConnected - a.isConnected);
+      if (searchTerm.trim() === "") {
+        // Show connected users when search term is empty
+        setDisplayedUsers(connectedUsers);
+        setShowRegisteredUsers(false);
+      } else {
+        try {
+          // Fetch and display filtered registered users based on search term
+          const filteredRegisteredUsers =
+            await ConnectionAPI.getRegisteredUsers(searchTerm, currentUserId);
 
-    setFilteredUsers(filtered);
-  }, [searchTerm, users]);
+          // Exclude users who are already connected
+          const connectedUserIds = new Set(
+            connectedUsers.map((user) => user.userId)
+          );
+          const filteredUsers = filteredRegisteredUsers.filter(
+            (user) => !connectedUserIds.has(user.userId)
+          );
+
+          setDisplayedUsers(filteredUsers);
+          setShowRegisteredUsers(true);
+        } catch (error) {
+          console.error("Error fetching filtered registered users:", error);
+        }
+      }
+    };
+
+    filterUsers();
+  }, [searchTerm, connectedUsers]);
 
   const handleSearchChange = (e) => {
     setSearchTerm(e.target.value);
   };
 
-  const handleConnect = (userId) => {
-    console.log("Connect with user ID:", userId);
+  const handleSearchKeyPress = (e) => {
+    if (e.key === "Enter") {
+      // Trigger search when Enter key is pressed
+      setSearchTerm(e.target.value);
+    }
+  };
+
+  const handleConnect = async (connectionUserId) => {
+    try {
+      const currentUser = await AuthService.getCurrentUser();
+      const currentUserId = currentUser?.id;
+
+      if (currentUserId) {
+        await ConnectionAPI.requestToConnect(currentUserId, connectionUserId);
+        console.log("Connection request sent to user ID:", connectionUserId);
+
+        // Optionally update UI or show a success message
+        // For example, you might want to remove this user from the displayed list
+        setDisplayedUsers((prevUsers) =>
+          prevUsers.filter((user) => user.userId !== connectionUserId)
+        );
+      }
+    } catch (error) {
+      console.error("Error sending connection request:", error);
+    }
+  };
+
+  const handleMessage = (userId) => {
+    console.log("Message user ID:", userId);
   };
 
   const handleShowProfile = (userId) => {
-    const user = users.find((user) => user.id === userId);
-    if (user) {
-      const profilePath = `/profile/${user.firstName}-${user.lastName}`;
-      navigate(profilePath); // Navigate to the user's profile page
-    }
+    navigate(`/profile/${userId}`);
   };
 
   return (
     <div>
       <NavbarComponent />
       <MDBContainer fluid className="mt-5">
-        <MDBRow className="mb-4">
-          <MDBCol md="8" className="d-flex justify-content-center mx-auto">
-            <MDBInput
-              label="Search users"
-              value={searchTerm}
-              onChange={handleSearchChange}
-              className="search-bar"
-              style={{
-                width: "100%",
-                maxWidth: "600px",
-                height: "50px",
-              }}
-            />
-          </MDBCol>
-        </MDBRow>
-        <MDBRow className="gx-2">
-          {filteredUsers.map((user) => (
-            <MDBCol md="" key={user.id} className="p-1">
-              <UserCard
-                user={user}
-                onConnect={() => handleConnect(user.id)}
-                onShowProfile={() => handleShowProfile(user.id)}
-              />
-            </MDBCol>
-          ))}
-        </MDBRow>
+        {isLoading ? (
+          <div>Loading...</div>
+        ) : (
+          <>
+            <MDBRow className="mb-4">
+              <MDBCol md="8" className="d-flex justify-content-center mx-auto">
+                <MDBInput
+                  label="Search users"
+                  value={searchTerm}
+                  onChange={handleSearchChange}
+                  onKeyDown={handleSearchKeyPress} // Trigger search on Enter key press
+                  className="search-bar"
+                  style={{
+                    width: "100%",
+                    maxWidth: "600px",
+                    height: "50px",
+                  }}
+                />
+              </MDBCol>
+            </MDBRow>
+            <MDBRow className="gx-3 gy-4 justify-content-start">
+              {displayedUsers.length > 0 ? (
+                displayedUsers.map((user) => (
+                  <MDBCol
+                    key={user.userId}
+                    xs="12"
+                    sm="6"
+                    md="4"
+                    lg="3"
+                    xl="2"
+                    className="d-flex align-items-stretch"
+                  >
+                    {showRegisteredUsers ? (
+                      <RegisteredUsersCardComponent
+                        user={{
+                          id: user.userId,
+                          profileImage: `data:${user.profileType};base64,${user.profilePic}`,
+                          firstName: user.firstName,
+                          lastName: user.lastName,
+                          job: user.jobTitle,
+                          companyName: user.companyName,
+                        }}
+                        onConnect={() => handleConnect(user.userId)}
+                        onShowProfile={() => handleShowProfile(user.userId)}
+                      />
+                    ) : (
+                      <ConnectedUsersCardComponent
+                        user={{
+                          id: user.userId,
+                          profileImage: `data:${user.profileType};base64,${user.profilePic}`,
+                          firstName: user.firstName,
+                          lastName: user.lastName,
+                          job: user.jobTitle,
+                          companyName: user.companyName,
+                          isConnected: true, // Ensure connected users have isConnected set to true
+                        }}
+                        onMessage={() => handleMessage(user.userId)}
+                        onShowProfile={() => handleShowProfile(user.userId)}
+                      />
+                    )}
+                  </MDBCol>
+                ))
+              ) : (
+                <MDBCol xs="12" className="text-center">
+                  <div>No users found</div>
+                </MDBCol>
+              )}
+            </MDBRow>
+          </>
+        )}
       </MDBContainer>
     </div>
   );
