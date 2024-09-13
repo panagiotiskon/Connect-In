@@ -44,6 +44,7 @@ public class PostMapper {
         postResource.setId(post.getId());
         postResource.setContent(post.getContent());
         postResource.setCreatedAt(post.getCreatedAt());
+        postResource.setUserId(post.getUserId());
 
         if(post.getFileId() != null) {
             FileDB fileDB = fileService.getFile(post.getFileId());
@@ -56,6 +57,8 @@ public class PostMapper {
                 .toList();
 
         postResource.setComments(commentResources);
+
+        postResource.setReactionCount((long) post.getReactions().size());
 
         return postResource;
     }

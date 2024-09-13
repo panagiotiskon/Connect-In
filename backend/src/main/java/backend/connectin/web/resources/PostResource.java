@@ -1,8 +1,6 @@
 package backend.connectin.web.resources;
 
-import backend.connectin.domain.Comment;
 import backend.connectin.domain.FileDB;
-import backend.connectin.domain.Reaction;
 
 import java.time.Instant;
 import java.util.List;
@@ -10,11 +8,12 @@ import java.util.List;
 public class PostResource {
 
     private Long id;
+    private Long userId;
     private String content;
     private Instant createdAt;
     private FileDB file;
     private List<CommentResource> comments;
-    private List<Reaction> reactions;
+    private Long ReactionCount;
 
     public Long getId() {
         return id;
@@ -56,11 +55,19 @@ public class PostResource {
         this.comments = comments;
     }
 
-    public List<Reaction> getReactions() {
-        return reactions;
+    public Long getUserId() {
+        return userId;
     }
 
-    public void setReactions(List<Reaction> reactions) {
-        this.reactions = reactions;
+    public void setUserId(Long userId) {
+        this.userId = userId;
+    }
+
+    public Long getReactionCount() {
+        return ReactionCount;
+    }
+
+    public void setReactionCount(Long reactionCount) {
+        ReactionCount = reactionCount;
     }
 }
