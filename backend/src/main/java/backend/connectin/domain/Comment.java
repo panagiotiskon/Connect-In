@@ -1,5 +1,6 @@
 package backend.connectin.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
 import java.time.Instant;
@@ -42,8 +43,9 @@ public class Comment {
         this.createdAt = createdAt;
     }
 
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id",  referencedColumnName = "id", insertable = false, updatable = false)
+    @JoinColumn(name = "user_id",  referencedColumnName = "id",updatable = false)
     public User getUser() {
         return user;
     }
@@ -52,8 +54,9 @@ public class Comment {
         this.user = user;
     }
 
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "post_id",  referencedColumnName = "id", insertable = false, updatable = false)
+    @JoinColumn(name = "post_id",  referencedColumnName = "id",updatable = false)
     public Post getPost() {
         return post;
     }

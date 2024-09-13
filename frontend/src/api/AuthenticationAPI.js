@@ -189,6 +189,21 @@ const createPost = async (content, photo) => {
   });
 };
 
+const createComment = async(postId, content) => {
+
+  console.log(content);
+
+  const commentRequest = {
+    content
+  };
+
+
+  const currentUser = await getCurrentUser(); 
+  const userId = currentUser.id;
+
+  return axios.post(`${API_URL}/${userId}/${postId}/create-comment`, commentRequest);
+}
+
 
 const getCurrentUser = async () => {
   try {
@@ -211,6 +226,7 @@ const AuthService = {
   changeEmail,
   changePassword,
   createPost,
+  createComment,
 };
 
 export default AuthService;

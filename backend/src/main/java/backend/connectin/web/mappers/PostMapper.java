@@ -4,18 +4,23 @@ import backend.connectin.domain.FileDB;
 import backend.connectin.domain.Post;
 import backend.connectin.service.FileService;
 import backend.connectin.web.requests.PostRequest;
+import backend.connectin.web.resources.CommentResource;
 import backend.connectin.web.resources.PostResource;
 import org.springframework.stereotype.Component;
 
 import java.time.Instant;
+import java.util.Comparator;
+import java.util.List;
 
 @Component
 public class PostMapper {
 
     private final FileService fileService;
+    private final CommentMapper commentMapper;
 
-    public PostMapper(FileService fileService) {
+    public PostMapper(FileService fileService, CommentMapper commentMapper) {
         this.fileService = fileService;
+        this.commentMapper = commentMapper;
     }
 
     public Post mapToPost(PostRequest postRequest, String fileId, Long userId) {
@@ -44,6 +49,14 @@ public class PostMapper {
             FileDB fileDB = fileService.getFile(post.getFileId());
             postResource.setFile(fileDB);
         }
+
+        List<CommentResource> commentResources = post.getComments().stream()
+                .map(commentMapper::mapToCommentResource)
+                .sorted(Comparator.comparing(CommentResource::getCreatedAt).reversed())
+                .toList();
+
+        postResource.setComments(commentResources);
+
         return postResource;
     }
 

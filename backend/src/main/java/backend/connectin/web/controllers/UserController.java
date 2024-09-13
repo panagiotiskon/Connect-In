@@ -1,5 +1,7 @@
 package backend.connectin.web.controllers;
 
+import backend.connectin.domain.*;
+import backend.connectin.service.CommentService;
 import backend.connectin.domain.Education;
 import backend.connectin.domain.Experience;
 import backend.connectin.domain.Skill;
@@ -11,12 +13,15 @@ import backend.connectin.web.dto.EducationDTO;
 import backend.connectin.web.dto.ExperienceDTO;
 import backend.connectin.web.dto.SkillDTO;
 import backend.connectin.web.dto.UserDTO;
+import backend.connectin.web.mappers.CommentMapper;
 import backend.connectin.web.mappers.PersonalInfoMapper;
 import backend.connectin.web.mappers.PostMapper;
 import backend.connectin.web.mappers.UserMapper;
+import backend.connectin.web.requests.CommentRequest;
 import backend.connectin.web.requests.PostRequest;
 import backend.connectin.web.requests.UserChangeEmailRequest;
 import backend.connectin.web.requests.UserChangePasswordRequest;
+import backend.connectin.web.resources.CommentResource;
 import backend.connectin.web.resources.PostResource;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
@@ -39,14 +44,18 @@ public class UserController {
     private final UserMapper userMapper;
     private final PostService postService;
     private final PostMapper postMapper;
+    private final CommentService commentService;
+    private final CommentMapper commentMapper;
 
-    public UserController(UserService userService, JWTService jwtService, PersonalInfoMapper personalInfoMapper, UserMapper userMapper, PostService postService, PostMapper postMapper) {
+    public UserController(UserService userService, JWTService jwtService, PersonalInfoMapper personalInfoMapper, UserMapper userMapper, PostService postService, PostMapper postMapper, CommentService commentService, CommentMapper commentMapper) {
         this.userService = userService;
         this.jwtService = jwtService;
         this.personalInfoMapper = personalInfoMapper;
         this.userMapper = userMapper;
         this.postService = postService;
         this.postMapper = postMapper;
+        this.commentService = commentService;
+        this.commentMapper = commentMapper;
     }
 
     @PostMapping("/{userId}/change-password")
@@ -150,6 +159,14 @@ public class UserController {
     public ResponseEntity<UserDTO> getUser(@PathVariable long userId) {
         User user = userService.findUserOrThrow(userId);
         return new ResponseEntity<>(userMapper.mapToUserDTO(user), HttpStatus.OK);
+    }
+
+    @PostMapping("/{userId}/{postId}/create-comment")
+    public ResponseEntity<String> createComment(@PathVariable long userId,
+                                                @PathVariable long postId,
+                                                @RequestBody CommentRequest commentRequest) {
+        commentService.createComment(userId, postId, commentRequest);
+        return new ResponseEntity<>("Comment Created", HttpStatus.OK);
     }
 
 
