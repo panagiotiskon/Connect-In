@@ -70,9 +70,13 @@ public class ConnectionService {
         }
         return connectedUserDTOS;
     }
+    public List<Long> getConnectedUserIds(long userId){
+        List<Connection> connectionList = connectionRepository.findUserConnections(userId);
+        return connectionList.stream().map(Connection::getUserId2).toList();
+    }
 
     @Transactional
-    public List<Connection> createUserConnection(long userId, long connectionId) {
+    public List<Connection> requestToConnect(long userId, long connectionId) {
         List<Connection> connectionList = new ArrayList<>();
         if (userRepository.findById(userId).isEmpty()) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "User not found");
@@ -83,7 +87,7 @@ public class ConnectionService {
         Connection connection1 = new Connection();
         connection1.setUserId1(userId);
         connection1.setUserId2(connectionId);
-        connection1.setStatus(ConnectionStatus.ACCEPTED);
+        connection1.setStatus(ConnectionStatus.PENDING);
         connection1.setCreatedAt(Instant.now());
         connection1.setUpdatedAt(Instant.now());
 
@@ -91,7 +95,7 @@ public class ConnectionService {
         Connection connection2 = new Connection();
         connection2.setUserId1(connectionId);
         connection2.setUserId2(userId);
-        connection2.setStatus(ConnectionStatus.ACCEPTED);
+        connection2.setStatus(ConnectionStatus.PENDING);
         connection2.setCreatedAt(Instant.now());
         connection2.setUpdatedAt(Instant.now());
 
