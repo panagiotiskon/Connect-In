@@ -6,6 +6,7 @@ import RegisteredUsersCardComponent from "./RegisteredUsersCardComponent";
 import ConnectionAPI from "../api/ConnectionAPI";
 import NotificationAPI from "../api/NotificationAPI"; // Import the NotificationAPI
 import AuthService from "../api/AuthenticationAPI";
+import MessagingAPI from "../api/MessagingAPI"; // Import the MessagingAPI
 import { useNavigate } from "react-router-dom";
 
 const NetworkComponent = () => {
@@ -122,8 +123,30 @@ const NetworkComponent = () => {
     }
   };
 
-  const handleMessage = (userId) => {
-    console.log("Message user ID:", userId);
+  const handleMessage = async (connectedUserId) => {
+    try {
+      const currentUser = await AuthService.getCurrentUser();
+      const currentUserId = currentUser?.id;
+
+      if (currentUserId) {
+        // Create a conversation between currentUserId and connectedUserId
+        await MessagingAPI.createConversation(currentUserId, connectedUserId);
+        console.log(
+          "Conversation created between user ID:",
+          currentUserId,
+          "and user ID:",
+          connectedUserId
+        );
+
+        // Redirect to the messaging page with the selected user ID
+        navigate(`/messaging`);
+      }
+    } catch (error) {
+      console.error(
+        "Error creating conversation or navigating to messaging page:",
+        error
+      );
+    }
   };
 
   const handleShowProfile = (userId) => {
