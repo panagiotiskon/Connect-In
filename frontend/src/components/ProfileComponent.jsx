@@ -445,6 +445,7 @@ const ProfileComponent = () => {
                           marginBottom:"1rem",
                         
                           backgroundColor:"#35677e"}}
+
                         size="md"
                         onClick={() => handleAddClick("Skills")}
                       >

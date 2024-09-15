@@ -96,6 +96,7 @@ const HomeComponent = () => {
       const commentsData = response?.data || {};
       setUserComments(commentsData);
       fetchPosts();
+
     } catch (error) {
       console.error("Error fetching user comments:", error);
     }
@@ -219,6 +220,7 @@ const HomeComponent = () => {
         setReactedPostIds((prev) => [...prev, postId]); // Add to reacted post IDs
       }
       fetchPosts();
+
     } catch (error) {
       console.error("Error handling reaction:", error);
     }
@@ -354,6 +356,7 @@ const HomeComponent = () => {
                           display:"flex",
                           margin:"0",
                           fontSize: "0.8rem"}}>Posted at: {new Date(post.createdAt).toLocaleString()}</p>
+
                     {post.file && (
                       <img
                         className="feed-post-img"
@@ -389,6 +392,7 @@ const HomeComponent = () => {
                         Comment
                       </MDBBtn>
                     </div>
+
 
                     {/* Display Comments */}
                     <div className="comments-section">
