@@ -27,6 +27,7 @@ const HomeComponent = () => {
   const [commentInputs, setCommentInputs] = useState({}); // Track comment input for each post
   const [postsMap, setPostsMap] = useState({});
   const [reactedPostIds, setReactedPostIds] = useState([]);
+  const [userComments, setUserComments] = useState({});
   const fileInputRef = useRef(null);
 
   const fetchPosts = async () => {
@@ -81,13 +82,24 @@ const HomeComponent = () => {
 
   const fetchReactedPostIds = async () => {
     try {
-      const user = await AuthService.getCurrentUser();
-      const userReactedPostIds = await PostService.getReactedPosts(user.id); // Fetch list of reacted post IDs
+      const response = await PostService.getUserReactions(); // Fetch list of reacted post IDs
+      const userReactedPostIds = response?.data || []; // Ensure data is an array
       setReactedPostIds(userReactedPostIds); // Store the list of reacted post IDs
     } catch (error) {
       console.error("Error fetching reacted post IDs:", error);
     }
   };
+
+  const fetchUserCommentIds = async () => {
+    try {
+      const response = await PostService.getUserComments();
+      const commentsData = response?.data || {};
+      setUserComments(commentsData);
+    } catch (error) {
+      console.error("Error fetching user comments:", error);
+    }
+  };
+
 
   useEffect(() => {
     const fetchCurrentUser = async () => {
@@ -106,6 +118,7 @@ const HomeComponent = () => {
     };
     fetchCurrentUser();
     fetchReactedPostIds();
+    fetchUserCommentIds();
   }, []);
 
   useEffect(() => {
@@ -138,7 +151,6 @@ const HomeComponent = () => {
 
     try {
       await PostService.createPost(postContent, uploadedFile?.file);
-      alert("Post submitted successfully!");
       setPostContent("");
       setUploadedFile(null);
       fetchPosts();
@@ -167,8 +179,6 @@ const HomeComponent = () => {
 
       if (post) {
         await PostService.createComment(postId, comment);
-        alert("Comment submitted successfully!");
-
         setCommentInputs((prev) => ({
           ...prev,
           [postId]: "",
@@ -177,6 +187,7 @@ const HomeComponent = () => {
         fetchPosts();
 
       } else {
+        alert("Failed to submit comment");
         console.error("Post not found for the given postId:", postId);
       }
     } catch (error) {
@@ -189,7 +200,6 @@ const HomeComponent = () => {
     try {
       // Call the deletePost function with the postId
       await PostService.deletePost(postId);
-      alert("Post deleted successfully!");
       fetchPosts();
     } catch (error) {
       console.error("Error deleting post:", error);
@@ -209,6 +219,16 @@ const HomeComponent = () => {
       }
     } catch (error) {
       console.error("Error handling reaction:", error);
+    }
+  };
+
+  const handleDeleteComment = async (postId, commentId) => {
+    try {
+      await PostService.deleteComment(postId, commentId);
+      fetchPosts();
+    } catch (error) {
+      console.error("Error deleting comment:", error);
+      alert("Failed to delete comment.");
     }
   };
 
@@ -318,8 +338,8 @@ const HomeComponent = () => {
                       <div className="poster-text"><strong>{post.posterName}</strong></div>
                       {currentUser?.id === post.userId && (
                         <MDBBtn
-                          className="delete-post-btn"
-                          color="danger"
+                          className="btn-sm delete-post-btn"
+                          color="secondary"
                           onClick={() => handleDeletePost(post.id)}
                         >
                           <MDBIcon fas icon="times" />
@@ -379,6 +399,16 @@ const HomeComponent = () => {
                             </div>
                             <div className="comment-date text-muted">
                               {new Date(comment.createdAt).toLocaleString()}
+                              {userComments[post.id] && userComments[post.id].includes(comment.id) && (
+                                <button
+                                  className="btn btn-secondary btn-sm "
+                                  style={{ fontSize: '12px', padding: '2px 5px', marginLeft:'4px'}}
+                                  onClick={() => handleDeleteComment(post.id, comment.id)}
+                                >
+                                  &#10005;
+                                </button>
+                              )}
+
                             </div>
                           </div>
                         ))

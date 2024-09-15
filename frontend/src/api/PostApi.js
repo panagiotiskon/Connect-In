@@ -49,6 +49,12 @@ const getUserReactions = async() =>{
   return axios.get(`${API_URL}/${userId}/reactions`); 
 }
 
+const getUserComments = async() => {
+  const currentUser = await AuthService.getCurrentUser();
+  const userId = currentUser.id;
+  return axios.get(`${API_URL}/${userId}/comments`); 
+}
+
 
 const deletePost = async(postId) => {
   const currentUser = await AuthService.getCurrentUser(); 
@@ -76,7 +82,7 @@ const deleteComment = async(postId, commentId) => {
   const currentUser = await AuthService.getCurrentUser(); 
   const userId = currentUser.id;
 
-  return axios.post(`${API_URL}/${userId}/${postId}/${commentId}`);
+  return axios.delete(`${API_URL}/${userId}/${postId}/${commentId}`);
 }
   
 
@@ -106,9 +112,10 @@ const PostService = {
   getUserPosts,
   createComment,
   deleteComment,
+  getUserComments,
   createReaction, 
   deleteReaction,
-  getUserReactions
+  getUserReactions,
 };
 
 export default PostService;
