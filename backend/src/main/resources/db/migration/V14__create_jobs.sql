@@ -1,0 +1,18 @@
+CREATE TABLE IF NOT EXISTS job_post (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    user_id BIGINT NOT NULL,
+    job_title VARCHAR(255) NOT NULL,
+    company_name VARCHAR(255) NOT NULL,
+    job_description TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS job_application (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    user_id BIGINT NOT NULL,
+    job_post_id BIGINT NOT NULL,
+    applied_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (job_post_id) REFERENCES job_post(id) ON DELETE CASCADE
+);
