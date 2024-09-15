@@ -6,7 +6,9 @@ import backend.connectin.domain.User;
 import backend.connectin.domain.repository.ReactionRepository;
 import backend.connectin.web.mappers.ReactionMapper;
 import jakarta.transaction.Transactional;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,6 +32,10 @@ public class ReactionService {
     public void createReaction(Long userId, Long postId) {
         User user = userService.findUserOrThrow(userId);
         Post post = postService.findPostOrThrow(postId);
+        // check if the reaction to this post already exists
+        if(reactionRepository.findByUserIdPostId(userId, postId).isPresent()) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "User already reacted to this Post");
+        }
         Reaction reaction = reactionMapper.mapToReaction(user, post);
         reactionRepository.save(reaction);
     }
