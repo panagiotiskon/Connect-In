@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   MDBContainer,
   MDBRow,
@@ -10,22 +10,117 @@ import {
   MDBCardTitle,
   MDBCardText,
   MDBTypography,
+  MDBDropdown,
+  MDBDropdownToggle,
+  MDBDropdownMenu,
+  MDBDropdownItem,
 } from "mdb-react-ui-kit";
-import NavbarComponent from "./common/NavBar"; // Adjust the import path as needed
+import NavbarComponent from "./common/NavBar";
+import AuthService from "../api/AuthenticationAPI";
+import JobAPI from "../api/JobAPI";
+import { useNavigate } from "react-router-dom";
 
 const JobsComponent = () => {
   const [jobTitle, setJobTitle] = useState("");
+  const [companyName, setCompanyName] = useState("");
   const [jobDescription, setJobDescription] = useState("");
   const [jobs, setJobs] = useState([]);
-  const [errors, setErrors] = useState({ title: "", description: "" });
+  const [applications, setApplications] = useState({}); // Store job applications mapped by jobPostId
+  const [errors, setErrors] = useState({
+    title: "",
+    company: "",
+    description: "",
+  });
   const [successMessage, setSuccessMessage] = useState("");
+  const [currentUser, setCurrentUser] = useState(null);
+  const navigate = useNavigate(); // Use useNavigate for navigation
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const user = await AuthService.getCurrentUser();
+        setCurrentUser(user);
+      } catch (error) {
+        console.error("Error fetching user:", error);
+      }
+    };
+    fetchUser();
+  }, []);
+
+  const fetchJobs = async () => {
+    if (currentUser) {
+      try {
+        const response = await JobAPI.getJobPosts(currentUser.id);
+        if (response) {
+          setJobs(response);
+        } else {
+          setJobs([]);
+        }
+      } catch (error) {
+        console.error("Error fetching jobs:", error);
+        setJobs([]);
+      }
+    }
+  };
+
+  const fetchApplications = async () => {
+    if (currentUser) {
+      try {
+        // Fetch all applications for the jobs created by the current user
+        const response = await JobAPI.getJobApplications(currentUser.id);
+        const appMap = {};
+        console.log(response);
+        // Iterate through each application
+        response.forEach((application) => {
+          const { jobPostId, userId, fullName } = application;
+
+          // Initialize the jobPostId in the appMap if it doesn't exist
+          if (!appMap[jobPostId]) {
+            appMap[jobPostId] = new Map(); // Use Map to prevent duplicate users
+          }
+
+          // Add or overwrite the user in the map to avoid duplicate entries
+          appMap[jobPostId].set(userId, { userId, fullName });
+        });
+
+        // Convert the Map back to an array of unique users for each jobPostId
+        const formattedAppMap = {};
+        Object.keys(appMap).forEach((jobPostId) => {
+          formattedAppMap[jobPostId] = Array.from(appMap[jobPostId].values());
+        });
+
+        // Update the state with the mapped applications
+        setApplications(formattedAppMap);
+      } catch (error) {
+        console.error("Error fetching applications:", error);
+      }
+    }
+  };
+
+  useEffect(() => {
+    if (currentUser) {
+      fetchJobs();
+      fetchApplications();
+
+      const pollingInterval = setInterval(() => {
+        fetchJobs();
+        fetchApplications();
+      }, 10000); // Poll every 10 seconds
+
+      return () => clearInterval(pollingInterval); // Cleanup on unmount
+    }
+  }, [currentUser]);
 
   const validateForm = () => {
     let valid = true;
-    const newErrors = { title: "", description: "" };
+    const newErrors = { title: "", company: "", description: "" };
 
     if (!jobTitle.trim()) {
       newErrors.title = "Job title is required";
+      valid = false;
+    }
+    if (!companyName.trim()) {
+      newErrors.company = "Company name is required";
       valid = false;
     }
     if (!jobDescription.trim()) {
@@ -37,71 +132,71 @@ const JobsComponent = () => {
     return valid;
   };
 
-  const handleCreateJob = () => {
+  const handleCreateJob = async () => {
     if (!validateForm()) return;
 
-    // Create new job
-    const newJob = {
-      id: jobs.length + 1,
-      title: jobTitle,
-      description: jobDescription,
-      dateCreated: new Date().toLocaleDateString(),
-      createdBy: "Admin", // Or use a dynamic value
-    };
+    if (currentUser) {
+      try {
+        await JobAPI.createJobPost(
+          currentUser.id,
+          jobTitle,
+          companyName,
+          jobDescription
+        );
 
-    setJobs([...jobs, newJob]);
-    setJobTitle("");
-    setJobDescription("");
-    setErrors({ title: "", description: "" });
-    setSuccessMessage("Job created successfully!");
+        setJobTitle("");
+        setCompanyName("");
+        setJobDescription("");
+        setErrors({ title: "", company: "", description: "" });
+        setSuccessMessage("Job created successfully!");
 
-    // Clear success message after 1 second
-    setTimeout(() => {
-      setSuccessMessage("");
-    }, 1000);
+        setTimeout(() => {
+          setSuccessMessage("");
+        }, 1000);
+
+        fetchJobs();
+      } catch (error) {
+        console.error("Error creating job:", error);
+      }
+    } else {
+      console.error("No current user found!");
+    }
   };
 
-  const handleApply = (jobId) => {
-    console.log(`Applied for job with ID: ${jobId}`);
+  const handleApply = async (jobId) => {
+    if (currentUser) {
+      try {
+        await JobAPI.applyToJob(currentUser.id, jobId);
+        setJobs((prevJobs) =>
+          prevJobs.map((job) =>
+            job.id === jobId ? { ...job, applied: true } : job
+          )
+        );
+      } catch (error) {
+        console.error("Error applying to job:", error);
+      }
+    } else {
+      console.error("No current user found!");
+    }
   };
+
+  const handleProfileNavigation = (userId) => {
+    // Use useNavigate to navigate to the user's profile by their userId
+    navigate(`/profile/${userId}`);
+  };
+
+  // Filter jobs to show only those not applied to by the current user
+  const yourJobs = jobs.filter((job) => job.userId === currentUser?.id);
+  const otherJobs = jobs.filter(
+    (job) => job.userId !== currentUser?.id && !job.applied
+  );
 
   return (
     <div>
       <NavbarComponent />
       <MDBContainer fluid className="mt-5">
         <MDBRow>
-          {/* Job Creation and Jobs Listing Headings */}
-          <MDBCol md="12" className="mb-4">
-            <MDBRow>
-              <MDBCol md="6" className="text-center">
-                <MDBTypography
-                  tag="h1"
-                  className="text-dark"
-                  style={{
-                    fontSize: "2rem",
-                    fontWeight: "bold",
-                  }}
-                >
-                  Create a Job
-                </MDBTypography>
-              </MDBCol>
-              <MDBCol md="6" className="text-center">
-                <MDBTypography
-                  tag="h1"
-                  className="text-dark"
-                  style={{
-                    fontSize: "2rem",
-                    fontWeight: "bold",
-                  }}
-                >
-                  Jobs
-                </MDBTypography>
-              </MDBCol>
-            </MDBRow>
-          </MDBCol>
-
-          {/* Job Creation Card */}
-          <MDBCol md="6" className="mb-4">
+          <MDBCol md="4" className="mb-4">
             <MDBCard>
               <MDBCardBody>
                 {successMessage && (
@@ -112,6 +207,11 @@ const JobsComponent = () => {
                 {errors.title && (
                   <MDBTypography tag="div" color="danger" className="mb-3">
                     {errors.title}
+                  </MDBTypography>
+                )}
+                {errors.company && (
+                  <MDBTypography tag="div" color="danger" className="mb-3">
+                    {errors.company}
                   </MDBTypography>
                 )}
                 {errors.description && (
@@ -127,6 +227,13 @@ const JobsComponent = () => {
                   invalid={!!errors.title}
                 />
                 <MDBInput
+                  label="Company Name"
+                  value={companyName}
+                  onChange={(e) => setCompanyName(e.target.value)}
+                  className="mb-3"
+                  invalid={!!errors.company}
+                />
+                <MDBInput
                   type="textarea"
                   label="Job Description"
                   value={jobDescription}
@@ -139,45 +246,162 @@ const JobsComponent = () => {
             </MDBCard>
           </MDBCol>
 
-          {/* Jobs Listing */}
-          <MDBCol md="6">
+          <MDBCol md="8">
             <MDBRow>
-              {jobs.length === 0 ? (
-                <MDBCol md="12">
-                  <MDBCard className="mb-3">
-                    <MDBCardBody>
-                      <MDBCardText>No jobs available</MDBCardText>
-                    </MDBCardBody>
-                  </MDBCard>
-                </MDBCol>
-              ) : (
-                jobs.map((job) => (
-                  <MDBCol md="12" className="mb-4" key={job.id}>
-                    <MDBCard>
-                      <MDBCardBody>
-                        <MDBCardTitle
-                          style={{ fontSize: "2rem", color: "#333" }}
+              <MDBCol md="12" className="mb-4">
+                <MDBTypography
+                  tag="h2"
+                  className="text-dark"
+                  style={{
+                    fontSize: "1.5rem",
+                    fontWeight: "bold",
+                  }}
+                >
+                  Your Jobs
+                </MDBTypography>
+                <MDBRow>
+                  {yourJobs.length === 0 ? (
+                    <MDBCol md="12">
+                      <MDBCard className="mb-3">
+                        <MDBCardBody>
+                          <MDBCardText>No jobs created by you</MDBCardText>
+                        </MDBCardBody>
+                      </MDBCard>
+                    </MDBCol>
+                  ) : (
+                    yourJobs.map((job) => (
+                      <MDBCol md="12" className="mb-4" key={job.id}>
+                        <MDBCard>
+                          <MDBCardBody>
+                            <MDBCardTitle
+                              style={{ fontSize: "1.5rem", color: "#333" }}
+                            >
+                              {job.jobTitle}
+                            </MDBCardTitle>
+                            <MDBCardText>{job.jobDescription}</MDBCardText>
+                            <MDBCardText>
+                              <small className="text-muted">
+                                Company: {job.companyName}
+                              </small>
+                              <br />
+                              <small className="text-muted">
+                                Date Created:{" "}
+                                {new Date(job.createdAt).toLocaleDateString()}
+                              </small>
+                            </MDBCardText>
+                            {applications[job.id] &&
+                              applications[job.id].length > 0 && (
+                                <>
+                                  <MDBDropdown>
+                                    <MDBDropdownToggle color="primary">
+                                      View Applicants
+                                    </MDBDropdownToggle>
+                                    <MDBDropdownMenu>
+                                      {applications[job.id].map((applicant) => (
+                                        <MDBDropdownItem
+                                          key={applicant.userId}
+                                          onClick={() =>
+                                            handleProfileNavigation(
+                                              applicant.userId
+                                            )
+                                          }
+                                          style={{
+                                            cursor: "pointer",
+                                            padding: "10px",
+                                            transition: "background-color 0.2s",
+                                          }}
+                                          onMouseOver={(e) =>
+                                            (e.currentTarget.style.backgroundColor =
+                                              "#f1f1f1")
+                                          }
+                                          onMouseOut={(e) =>
+                                            (e.currentTarget.style.backgroundColor =
+                                              "transparent")
+                                          }
+                                        >
+                                          {applicant.fullName}
+                                        </MDBDropdownItem>
+                                      ))}
+                                    </MDBDropdownMenu>
+                                  </MDBDropdown>
+                                  <MDBCardText className="text-end text-muted small">
+                                    {applications[job.id].length} applicant
+                                    {applications[job.id].length > 1 ? "s" : ""}
+                                  </MDBCardText>
+                                </>
+                              )}
+                          </MDBCardBody>
+                        </MDBCard>
+                      </MDBCol>
+                    ))
+                  )}
+                </MDBRow>
+              </MDBCol>
+
+              <MDBCol md="12">
+                <MDBTypography
+                  tag="h2"
+                  className="text-dark"
+                  style={{
+                    fontSize: "1.5rem",
+                    fontWeight: "bold",
+                  }}
+                >
+                  Other Jobs
+                </MDBTypography>
+                <MDBRow>
+                  {otherJobs.length === 0 ? (
+                    <MDBCol md="12">
+                      <MDBCard className="mb-3">
+                        <MDBCardBody>
+                          <MDBCardText>No other jobs available</MDBCardText>
+                        </MDBCardBody>
+                      </MDBCard>
+                    </MDBCol>
+                  ) : (
+                    otherJobs.map((job) => (
+                      <MDBCol md="12" className="mb-4" key={job.id}>
+                        <MDBCard
+                          className={job.applied ? "bg-success text-white" : ""}
                         >
-                          {job.title}
-                        </MDBCardTitle>
-                        <MDBCardText>{job.description}</MDBCardText>
-                        <MDBCardText>
-                          <small className="text-muted">
-                            Date Created: {job.dateCreated}
-                          </small>
-                          <br />
-                          <small className="text-muted">
-                            Created By: {job.createdBy}
-                          </small>
-                        </MDBCardText>
-                        <MDBBtn onClick={() => handleApply(job.id)}>
-                          Apply
-                        </MDBBtn>
-                      </MDBCardBody>
-                    </MDBCard>
-                  </MDBCol>
-                ))
-              )}
+                          <MDBCardBody>
+                            <MDBCardTitle
+                              style={{ fontSize: "1.5rem", color: "#333" }}
+                            >
+                              {job.jobTitle}
+                              {job.applied && (
+                                <span className="float-end text-white">
+                                  <i className="fas fa-check-circle"></i>
+                                </span>
+                              )}
+                            </MDBCardTitle>
+                            <MDBCardText>{job.jobDescription}</MDBCardText>
+                            <MDBCardText>
+                              <small className="text-muted">
+                                Company: {job.companyName}
+                              </small>
+                              <br />
+                              <small className="text-muted">
+                                Date Created:{" "}
+                                {new Date(job.createdAt).toLocaleDateString()}
+                              </small>
+                              <br />
+                              <small className="text-muted">
+                                Created By: {job.createdBy}
+                              </small>
+                            </MDBCardText>
+                            {currentUser && (
+                              <MDBBtn onClick={() => handleApply(job.id)}>
+                                Apply
+                              </MDBBtn>
+                            )}
+                          </MDBCardBody>
+                        </MDBCard>
+                      </MDBCol>
+                    ))
+                  )}
+                </MDBRow>
+              </MDBCol>
             </MDBRow>
           </MDBCol>
         </MDBRow>
