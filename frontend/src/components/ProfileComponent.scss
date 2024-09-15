@@ -1,10 +1,15 @@
-.profile-card{
-    width: "70%";
-    height: "450px";
-    margin: "5%";
-    display: "flex";
+.new-post-container{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-right: auto;
+    width: 100%;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid #cecdcdb4;
+    margin-bottom: 1rem;
+    margin-right: 0.5rem;
 }
 
-.add-button{
+.add-btn{
     color: #35677e !important;
 }

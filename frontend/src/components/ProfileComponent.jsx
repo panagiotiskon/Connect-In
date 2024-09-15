@@ -317,11 +317,11 @@ const ProfileComponent = () => {
             <ProfileCard currentUser={currentUser} />
           </MDBCol>
 
-          <MDBCol md="6" className="center-column">
+          <MDBCol md="8" className="center-column">
               {/* Card 1 - Work Experience */}
               <MDBCol md="9" className="center-column">
                 <MDBCard className= "new-post-container">
-                  <MDBCardBody className="border-bottom w-100">
+                  <MDBCardBody className="mt-2 pb-2 border-bottom w-100 container">
                     <MDBCardTitle className="fs-4 ps-2 fw-bold">
                       Work Experience
                     </MDBCardTitle>
@@ -351,9 +351,13 @@ const ProfileComponent = () => {
                       ))}
                     </div>
 
-                    <div className="d-flex justify-content-end mt-auto">
+                    <div className="d-flex justify-content-end mt-auto add-btn">
                       <MDBBtn
                         color="primary"
+                        style={{ 
+                          marginTop: "1rem",
+                          marginBottom:"1rem",
+                          backgroundColor:"#35677e"}}
                         size="md"
                         onClick={() => handleAddClick("Work Experience")}
                       >
@@ -395,7 +399,9 @@ const ProfileComponent = () => {
                     </div>
                     <div className="d-flex justify-content-end mt-auto">
                       <MDBBtn
-                        color="primary"
+                        style={{ 
+                          marginTop: "1rem",
+                          backgroundColor:"#35677e"}}
                         size="md"
                         onClick={() => handleAddClick("Education")}
                       >
@@ -434,7 +440,11 @@ const ProfileComponent = () => {
                     <div className="d-flex justify-content-end mt-auto">
                       <MDBBtn
                         className="add-button"
-                        color="primary"
+                        style={{ 
+                          marginTop: "1rem",
+                          marginBottom:"1rem",
+                        
+                          backgroundColor:"#35677e"}}
                         size="md"
                         onClick={() => handleAddClick("Skills")}
                       >
