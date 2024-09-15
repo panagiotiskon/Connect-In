@@ -15,7 +15,7 @@ public interface ReactionRepository extends JpaRepository<Reaction, Long> {
     List<Reaction> findAllByUserId(Long userId);
 
     @Query(value= """
-            SELECT r
+            SELECT r.*
             FROM reactions r
             WHERE r.user_id = :userId AND r.post_id = :postId
             """, nativeQuery=true)

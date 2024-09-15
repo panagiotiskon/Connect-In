@@ -197,7 +197,7 @@ public class UserController {
 
     // this returns a map to post id -> list of comment ids of the user
 
-    @GetMapping("/{userId}/get-comments")
+    @GetMapping("/{userId}/comments")
     public ResponseEntity<Map<Long, List<Long>>> getUserComments(@PathVariable long userId){
         Map<Long, List<Long>> userComments = commentService.fetchUserComments(userId);
         return new ResponseEntity<>(userComments, HttpStatus.OK);
