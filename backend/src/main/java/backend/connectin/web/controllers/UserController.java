@@ -134,6 +134,8 @@ public class UserController {
         return new ResponseEntity<>(skillDTOS, HttpStatus.OK);
     }
 
+    // --------FEED-----------
+
 
     @GetMapping("/{userId}/feed")
     public ResponseEntity<List<PostResource>> getUserFeed(@PathVariable long userId) {
@@ -150,6 +152,8 @@ public class UserController {
         User user = userService.findUserOrThrow(userId);
         return new ResponseEntity<>(userMapper.mapToUserDTO(user), HttpStatus.OK);
     }
+
+    // --------POSTS-----------
 
     @PostMapping("/{userId}/create-post")
     public ResponseEntity<String> createPost(@PathVariable long userId,
@@ -180,6 +184,8 @@ public class UserController {
         return new ResponseEntity<>("Post Deleted", HttpStatus.OK);
     }
 
+    // --------COMMENTS-----------
+
 
     @PostMapping("/{userId}/{postId}/create-comment")
     public ResponseEntity<String> createComment(@PathVariable long userId,
@@ -204,6 +210,9 @@ public class UserController {
         commentService.deleteComment(userId, postId, commentId);
         return new ResponseEntity<>("Comment Deleted", HttpStatus.OK);
     }
+
+    // --------REACTIONS-----------
+
 
     @PostMapping("/{userId}/{postId}/create-reaction")
     public ResponseEntity<String> createReaction(@PathVariable long userId,

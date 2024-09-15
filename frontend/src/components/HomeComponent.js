@@ -14,6 +14,7 @@ import AuthService from "../api/AuthenticationAPI";
 import ProfileCard from "../components/common/ProfileCard";
 import PostService from "../api/PostApi";
 import FileService from "../api/UserFilesApi"; // Import the service to fetch the images
+import PersonalInfoService from "../api/UserPersonalInformationAPI";
 
 import "./HomeComponent.scss";
 
@@ -25,90 +26,93 @@ const HomeComponent = () => {
   const [posts, setPosts] = useState([]); // State to hold the posts
   const [commentInputs, setCommentInputs] = useState({}); // Track comment input for each post
   const [postsMap, setPostsMap] = useState({});
-
+  const [reactedPostIds, setReactedPostIds] = useState([]);
   const fileInputRef = useRef(null);
+
+  const fetchPosts = async () => {
+    try {
+      const user = await AuthService.getCurrentUser();
+      const response = await PostService.getFeed(user?.id);
+
+      const fetchedPosts = Array.isArray(response) ? response : response?.data || [];
+
+      const postsById = {};
+
+      const postsWithUserPhotos = await Promise.all(
+        fetchedPosts.map(async (post) => {
+          // Fetch poster info
+          const poster = await PersonalInfoService.getUser(post.userId);
+          // Process comments
+          const commentsWithPhotos = await Promise.all(
+            post.comments.map(async (comment) => {
+              const userImage = await FileService.getUserImages(comment.userId);
+              const userProfileImage =
+                userImage.length > 0
+                  ? `data:${userImage[0].type};base64,${userImage[0].data}`
+                  : null;
+
+              return {
+                ...comment,
+                profileImage: userProfileImage,
+              };
+            })
+          );
+
+          const processedPost = {
+            ...post,
+            posterName: poster.firstName + " " + poster.lastName,
+            posterImage: poster?.profilePictureData ? `data:image/jpeg;base64,${poster.profilePictureData}` : "https://via.placeholder.com/40",
+            comments: commentsWithPhotos,
+          };
+
+          postsById[post.id] = processedPost;
+
+          return processedPost;
+        })
+      );
+
+      setPosts(postsWithUserPhotos);  // Still set the array of posts for UI rendering
+      setPostsMap(postsById);  // Set the dictionary mapping post IDs to posts
+    } catch (error) {
+      console.error("Error fetching posts:", error);
+      setPosts([]);
+    }
+  };
+
+  const fetchReactedPostIds = async () => {
+    try {
+      const user = await AuthService.getCurrentUser();
+      const userReactedPostIds = await PostService.getReactedPosts(user.id); // Fetch list of reacted post IDs
+      setReactedPostIds(userReactedPostIds); // Store the list of reacted post IDs
+    } catch (error) {
+      console.error("Error fetching reacted post IDs:", error);
+    }
+  };
 
   useEffect(() => {
     const fetchCurrentUser = async () => {
       const user = await AuthService.getCurrentUser();
       setCurrentUser(user);
+
+      if (user?.id) {
+        const userImages = await FileService.getUserImages(user.id);
+        if (userImages.length > 0) {
+          const profileImageData = `data:${userImages[0].type};base64,${userImages[0].data}`;
+          setProfileImage(profileImageData); // Set profile image for the user
+        } else {
+          setProfileImage(null); // Fallback if no image is found
+        }
+      }
     };
     fetchCurrentUser();
+    fetchReactedPostIds();
   }, []);
 
   useEffect(() => {
-    // Fetch posts from the backend when component mounts
-    const fetchPosts = async () => {
-      try {
-        const user = await AuthService.getCurrentUser();
-        const response = await PostService.getFeed(user?.id);  // Fetch posts from backend
-
-        const fetchedPosts = Array.isArray(response) ? response : response?.data || [];
-
-        // Create a dictionary where the key is the post ID and the value is the post object
-        const postsById = {};
-
-        const postsWithUserPhotos = await Promise.all(
-          fetchedPosts.map(async (post) => {
-            const commentsWithPhotos = await Promise.all(
-              post.comments.map(async (comment) => {
-                const userImage = await FileService.getUserImages(comment.userId);
-                const userProfileImage =
-                  userImage.length > 0
-                    ? `data:${userImage[0].type};base64,${userImage[0].data}`
-                    : null;
-
-                return {
-                  ...comment,
-                  profileImage: userProfileImage, // Attach the profile image to the comment
-                };
-              })
-            );
-
-            const processedPost = {
-              ...post,
-              comments: commentsWithPhotos,
-            };
-
-            // Add the processed post to the dictionary using post.id as the key
-            postsById[post.id] = processedPost;
-
-            return processedPost;
-          })
-        );
-
-        setPosts(postsWithUserPhotos);  // Still set the array of posts for UI rendering
-        setPostsMap(postsById);  // Set the dictionary mapping post IDs to posts
-      } catch (error) {
-        console.error("Error fetching posts:", error);
-        setPosts([]);
-      }
-    };
-
-
-
     if (currentUser) {
       fetchPosts();
     }
   }, [currentUser]);
-
-  useEffect(() => {
-    const fetchProfileImage = async () => {
-      const currentUser = await AuthService.getCurrentUser();
-      if (currentUser) {
-        try {
-          const images = await FileService.getUserImages(currentUser.id);
-          if (images.length > 0) {
-            const { type, data } = images[0]; // Assume the first image is the profile image
-            setProfileImage(`data:${type};base64,${data}`); // Dynamically set image type and data
-          }
-        } catch (error) {
-          console.error("Error fetching profile image:", error);
-        }
-      }
-    };
-    fetchProfileImage();
-  }, []);
 
   const handleImageClick = () => {
     fileInputRef.current.click();
@@ -133,14 +137,11 @@ const HomeComponent = () => {
     }
 
     try {
-      await AuthService.createPost(postContent, uploadedFile?.file);
+      await PostService.createPost(postContent, uploadedFile?.file);
       alert("Post submitted successfully!");
       setPostContent("");
       setUploadedFile(null);
-
-      // Refetch posts after submitting
-      const fetchedPosts = await PostService.getFeed(currentUser?.id);
-      setPosts(fetchedPosts);
+      fetchPosts();
     } catch (error) {
       console.error("Error submitting post:", error);
       alert("Failed to submit post.");
@@ -165,7 +166,7 @@ const HomeComponent = () => {
       const post = postsMap[postId];
 
       if (post) {
-        await AuthService.createComment(postId, comment);
+        await PostService.createComment(postId, comment);
         alert("Comment submitted successfully!");
 
         setCommentInputs((prev) => ({
@@ -173,8 +174,8 @@ const HomeComponent = () => {
           [postId]: "",
         }));
 
-        const fetchedPosts = await PostService.getFeed(currentUser?.id);
-        setPosts(fetchedPosts);
+        fetchPosts();
+
       } else {
         console.error("Post not found for the given postId:", postId);
       }
@@ -183,6 +184,35 @@ const HomeComponent = () => {
       alert("Failed to submit comment.");
     }
   };
+
+  const handleDeletePost = async (postId) => {
+    try {
+      // Call the deletePost function with the postId
+      await PostService.deletePost(postId);
+      alert("Post deleted successfully!");
+      fetchPosts();
+    } catch (error) {
+      console.error("Error deleting post:", error);
+      alert("Failed to delete post.");
+    }
+  };
+
+  const handleReactionToggle = async (postId) => {
+    try {
+      const hasReacted = reactedPostIds.includes(postId);
+      if (hasReacted) {
+        await PostService.deleteReaction(postId);
+        setReactedPostIds((prev) => prev.filter((id) => id !== postId)); // Remove from reacted post IDs
+      } else {
+        await PostService.createReaction(postId);
+        setReactedPostIds((prev) => [...prev, postId]); // Add to reacted post IDs
+      }
+    } catch (error) {
+      console.error("Error handling reaction:", error);
+    }
+  };
+
+
 
 
   return (
@@ -277,6 +307,25 @@ const HomeComponent = () => {
               posts.map((post) => (
                 <MDBCard key={post.id} className="mt-3 shadow-0 feed-post">
                   <MDBCardBody>
+                    <div className="poster-info">
+                      <img
+                        src={post.posterImage}
+                        className="rounded-circle"
+                        height="45"
+                        width="45"
+                        alt="Poster Avatar"
+                      />
+                      <div className="poster-text"><strong>{post.posterName}</strong></div>
+                      {currentUser?.id === post.userId && (
+                        <MDBBtn
+                          className="delete-post-btn"
+                          color="danger"
+                          onClick={() => handleDeletePost(post.id)}
+                        >
+                          <MDBIcon fas icon="times" />
+                        </MDBBtn>
+                      )}
+                    </div>
                     <h5>{post.content}</h5>
                     <p>Posted at: {new Date(post.createdAt).toLocaleString()}</p>
                     {post.file && (
@@ -287,7 +336,14 @@ const HomeComponent = () => {
                         style={{ width: "100%", height: "auto", border: "1px" }}
                       />
                     )}
-
+                    <div className="reaction-button-container">
+                      <MDBBtn
+                        className={reactedPostIds.includes(post.id) ? "custom-success" : "custom-primary"}
+                        onClick={() => handleReactionToggle(post.id)}
+                      >
+                        {reactedPostIds.includes(post.id) ? "Reacted" : "React"}
+                      </MDBBtn>
+                    </div>
                     <div className="add-comment-container">
                       <input
                         type="text"
@@ -299,11 +355,10 @@ const HomeComponent = () => {
                       <MDBBtn
                         className="submit-post-btn"
                         color="primary"
-                        onClick={() => handleCommentSubmit(post.id)}  // Use post ID for submitting the comment
+                        onClick={() => handleCommentSubmit(post.id)}
                       >
                         Comment
                       </MDBBtn>
-                      
                     </div>
 
                     {/* Display Comments */}
@@ -314,8 +369,8 @@ const HomeComponent = () => {
                             <img
                               src={comment.profileImage || "https://via.placeholder.com/40"}
                               className="rounded-circle"
-                              height="40"
-                              width="40"
+                              height="35"
+                              width="35"
                               alt="Commenter's Avatar"
                             />
                             <div className="ms-3 comment-container">
@@ -323,7 +378,7 @@ const HomeComponent = () => {
                               <p>{comment.content}</p>
                             </div>
                             <div className="comment-date text-muted">
-                              {new Date(comment.createdAt).toLocaleString()} 
+                              {new Date(comment.createdAt).toLocaleString()}
                             </div>
                           </div>
                         ))
@@ -337,7 +392,6 @@ const HomeComponent = () => {
             ) : (
               <p>No posts available.</p>
             )}
-
           </MDBCol>
         </MDBRow>
       </MDBContainer>

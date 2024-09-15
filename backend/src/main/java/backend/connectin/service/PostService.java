@@ -14,7 +14,9 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 @Service
 public class PostService {
@@ -23,12 +25,14 @@ public class PostService {
     private final FileService fileService;
     private final PostMapper postMapper;
     private final UserService userService;
+    private final ConnectionService connectionService;
 
-    public PostService(PostRepository postRepository, FileService fileService, PostMapper postMapper, UserService userService) {
+    public PostService(PostRepository postRepository, FileService fileService, PostMapper postMapper, UserService userService, ConnectionService connectionService) {
         this.postRepository = postRepository;
         this.fileService = fileService;
         this.postMapper = postMapper;
         this.userService = userService;
+        this.connectionService = connectionService;
     }
 
 
@@ -55,7 +59,11 @@ public class PostService {
     }
 
     public List<Post> fetchUserPosts(Long userId) {
-        return postRepository.findAllByUserId(userId);
+
+        List<Long> connectionIds = new ArrayList<>(connectionService.getConnectedUserIds(userId));
+        connectionIds.add(userId);
+        Set<Post> userPostsSet = postRepository.findAllByUserIdIn(connectionIds);
+        return userPostsSet.stream().toList();
     }
 
     public List<Post> fetchAll() {

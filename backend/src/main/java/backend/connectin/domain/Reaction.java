@@ -27,7 +27,7 @@ public class Reaction {
 
     @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", referencedColumnName = "id", insertable = false, updatable = false)
+    @JoinColumn(name = "user_id", referencedColumnName = "id", updatable = false)
     public User getUser() {
         return user;
     }
@@ -38,7 +38,7 @@ public class Reaction {
 
     @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "post_id", referencedColumnName = "id", insertable = false, updatable = false)
+    @JoinColumn(name = "post_id", referencedColumnName = "id",updatable = false)
     public Post getPost() {
         return post;
     }
