@@ -95,6 +95,7 @@ const HomeComponent = () => {
       const response = await PostService.getUserComments();
       const commentsData = response?.data || {};
       setUserComments(commentsData);
+      fetchPosts();
     } catch (error) {
       console.error("Error fetching user comments:", error);
     }
@@ -217,6 +218,7 @@ const HomeComponent = () => {
         await PostService.createReaction(postId);
         setReactedPostIds((prev) => [...prev, postId]); // Add to reacted post IDs
       }
+      fetchPosts();
     } catch (error) {
       console.error("Error handling reaction:", error);
     }
@@ -243,7 +245,7 @@ const HomeComponent = () => {
           <MDBCol md="4" className="left-column">
             <ProfileCard currentUser={currentUser} profileImage={profileImage} />
           </MDBCol>
-          <MDBCol md="6" className="center-column">
+          <MDBCol md="6" className="center-column" style={{marginBottom:"1rem"}}>
             {/* Create Post Section */}
             <MDBCard className="new-post-container shadow-0">
               <MDBCardBody className="pb-2 w-100">
@@ -347,7 +349,11 @@ const HomeComponent = () => {
                       )}
                     </div>
                     <h5>{post.content}</h5>
-                    <p>Posted at: {new Date(post.createdAt).toLocaleString()}</p>
+                    <p className="text-muted" 
+                        style={{
+                          display:"flex",
+                          margin:"0",
+                          fontSize: "0.8rem"}}>Posted at: {new Date(post.createdAt).toLocaleString()}</p>
                     {post.file && (
                       <img
                         className="feed-post-img"
@@ -358,7 +364,10 @@ const HomeComponent = () => {
                     )}
                     <div className="reaction-button-container">
                       <MDBBtn
+
                         className={reactedPostIds.includes(post.id) ? "custom-success" : "custom-primary"}
+                        style={{marginTop:'1rem'}}
+
                         onClick={() => handleReactionToggle(post.id)}
                       >
                         {reactedPostIds.includes(post.id) ? "Reacted" : "React"}
