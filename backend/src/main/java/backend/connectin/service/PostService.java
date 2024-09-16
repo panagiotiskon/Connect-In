@@ -6,7 +6,6 @@ import backend.connectin.domain.User;
 import backend.connectin.domain.repository.PostRepository;
 import backend.connectin.web.mappers.PostMapper;
 import backend.connectin.web.requests.PostRequest;
-import jakarta.transaction.Status;
 import jakarta.transaction.Transactional;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -58,7 +57,7 @@ public class PostService {
         }
     }
 
-    public List<Post> fetchUserPosts(Long userId) {
+    public List<Post> fetchFeed(Long userId) {
 
         List<Long> connectionIds = new ArrayList<>(connectionService.getConnectedUserIds(userId));
         connectionIds.add(userId);
@@ -69,12 +68,14 @@ public class PostService {
     public List<Post> fetchAll() {
         return postRepository.findAll();
     }
+    public List<Post> fetchUserPosts(Long userId){return postRepository.findAllByUserId(userId);}
 
     public void deletePost(Long userId, Long postId) {
         User user = userService.findUserOrThrow(userId);
         Post post = findPostOrThrow(postId);
         postRepository.delete(post);
     }
+
 
 
 }

@@ -4,18 +4,18 @@ import java.time.Instant;
 
 public class CommentResource {
 
-    private Long id;
+    private Long commentId;
     private String content;
     private Instant createdAt;
     private Long userId;
     private String username;
 
-    public Long getId() {
-        return id;
+    public Long getCommentId() {
+        return commentId;
     }
 
-    public void setId(Long id) {
-        this.id = id;
+    public void setCommentId(Long commentId) {
+        this.commentId = commentId;
     }
 
     public String getContent() {

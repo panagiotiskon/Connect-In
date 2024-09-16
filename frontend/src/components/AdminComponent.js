@@ -89,7 +89,7 @@ export default function AdminComponent() {
   // Extract selected users' details in either JSON or XML format
   const extractUsers = async (format) => {
     if (selectedUsers.length === 0) {
-      console.error("No users selected");
+      alert("Please Select Users");
       return;
     }
 
@@ -110,6 +110,7 @@ export default function AdminComponent() {
   };
 
   // Convert user details to XML
+  // Convert user details to XML
   const convertToXML = (data) => {
     try {
       const usersXmlData = {
@@ -126,7 +127,7 @@ export default function AdminComponent() {
                   isPublic: exp.isPublic,
                 },
               }))
-              : [], // Default to an empty array if experiences is null or undefined
+              : [],
             skills: Array.isArray(userDetails.skills)
               ? userDetails.skills.map((skill) => ({
                 skill: {
@@ -135,7 +136,7 @@ export default function AdminComponent() {
                   isPublic: skill.isPublic,
                 },
               }))
-              : [], // Default to an empty array if skills is null or undefined
+              : [],
             education: Array.isArray(userDetails.education)
               ? userDetails.education.map((edu) => ({
                 education: {
@@ -146,7 +147,65 @@ export default function AdminComponent() {
                   isPublic: edu.isPublic,
                 },
               }))
-              : [], // Default to an empty array if education is null or undefined
+              : [],
+            jobApplications: Array.isArray(userDetails.jobApplications)
+              ? userDetails.jobApplications.map((app) => ({
+                jobApplication: {
+                  jobId: app.jobId || "",
+                  applicationDate: app.applicationDate || "",
+                  status: app.status || "",
+                },
+              }))
+              : [],
+            connectedUsers: Array.isArray(userDetails.connectedUsers)
+              ? userDetails.connectedUsers.map((connection) => ({
+                connection: {
+                  connectionId: connection.connectionId || "",
+                  connectedUserId: connection.connectedUserId || "",
+                  createdAt: connection.createdAt || "",
+                },
+              }))
+              : [],
+            jobPosts: Array.isArray(userDetails.jobPosts)
+              ? userDetails.jobPosts.map((post) => ({
+                jobPost: {
+                  postId: post.postId || "",
+                  jobTitle: post.jobTitle || "",
+                  postDate: post.postDate || "",
+                  status: post.status || "",
+                },
+              }))
+              : [],
+            posts: Array.isArray(userDetails.posts)
+              ? userDetails.posts.map((post) => ({
+                post: {
+                  postId: post.postId || "",
+                  content: post.content || "",
+                  createdAt: post.createdAt || "",
+                  file: post.file || null, // Handle if file is null
+                },
+              }))
+              : [],
+            comments: Array.isArray(userDetails.comments)
+              ? userDetails.comments.map((comment) => ({
+                comment: {
+                  commentId: comment.commentId || "",
+                  content: comment.content || "",
+                  createdAt: comment.createdAt || "",
+                  userId: comment.userId || "",
+                  username: comment.username || "",
+                },
+              }))
+              : [],
+            reactions: Array.isArray(userDetails.reactions)
+              ? userDetails.reactions.map((reaction) => ({
+                reaction: {
+                  reactionId: reaction.reactionId || "",
+                  postId: reaction.postId || "",
+                  createdAt: reaction.createdAt || "",
+                },
+              }))
+              : [],
           },
         })),
       };
@@ -157,6 +216,8 @@ export default function AdminComponent() {
       throw error;
     }
   };
+
+
 
   // Helper function to download the file
   const downloadFile = (filename, content, mimeType) => {

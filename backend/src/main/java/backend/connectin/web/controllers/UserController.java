@@ -22,8 +22,7 @@ import backend.connectin.web.requests.CommentRequest;
 import backend.connectin.web.requests.PostRequest;
 import backend.connectin.web.requests.UserChangeEmailRequest;
 import backend.connectin.web.requests.UserChangePasswordRequest;
-import backend.connectin.web.resources.CommentResource;
-import backend.connectin.web.resources.PostResource;
+import backend.connectin.web.resources.PostResourceDetailed;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.HttpStatus;
@@ -138,13 +137,13 @@ public class UserController {
 
 
     @GetMapping("/{userId}/feed")
-    public ResponseEntity<List<PostResource>> getUserFeed(@PathVariable long userId) {
-        List<Post> posts = postService.fetchUserPosts(userId);
-        List<PostResource> postResources = posts.stream()
-                .map(postMapper::mapToPostResource)
-                .sorted(Comparator.comparing(PostResource::getCreatedAt).reversed())
+    public ResponseEntity<List<PostResourceDetailed>> getUserFeed(@PathVariable long userId) {
+        List<Post> posts = postService.fetchFeed(userId);
+        List<PostResourceDetailed> postResourceDetailed = posts.stream()
+                .map(postMapper::mapToPostResourceDetailed)
+                .sorted(Comparator.comparing(PostResourceDetailed::getCreatedAt).reversed())
                 .toList();
-        return new ResponseEntity<>(postResources, HttpStatus.OK);
+        return new ResponseEntity<>(postResourceDetailed, HttpStatus.OK);
     }
 
     @GetMapping("/{userId}")
@@ -170,11 +169,11 @@ public class UserController {
 
 
     @GetMapping("/{userId}/posts")
-    public ResponseEntity<List<PostResource>> getUserPosts(@PathVariable long userId) {
-        List<Post> posts = postService.fetchUserPosts(userId);
-        List<PostResource> postResources = posts.stream()
-                .map(postMapper::mapToPostResource).toList();
-        return new ResponseEntity<>(postResources, HttpStatus.OK);
+    public ResponseEntity<List<PostResourceDetailed>> getUserPosts(@PathVariable long userId) {
+        List<Post> posts = postService.fetchFeed(userId);
+        List<PostResourceDetailed> postResourceDetaileds = posts.stream()
+                .map(postMapper::mapToPostResourceDetailed).toList();
+        return new ResponseEntity<>(postResourceDetaileds, HttpStatus.OK);
     }
 
     @DeleteMapping("/{userId}/{postId}")
@@ -225,7 +224,7 @@ public class UserController {
 
     @GetMapping("/{userId}/reactions")
     public ResponseEntity<List<Long>> getUserReactions(@PathVariable long userId) {
-        List<Long> reactedPostsList = reactionService.fetchUserReactions(userId);
+        List<Long> reactedPostsList = reactionService.fetchUserReactionIds(userId);
         return new ResponseEntity<>(reactedPostsList, HttpStatus.OK);
     }
 

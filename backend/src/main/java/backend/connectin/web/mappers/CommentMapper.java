@@ -24,7 +24,7 @@ public class CommentMapper {
 
     public CommentResource mapToCommentResource(Comment comment) {
         CommentResource commentResource = new CommentResource();
-        commentResource.setId(comment.getId());
+        commentResource.setCommentId(comment.getId());
         commentResource.setContent(comment.getContent());
         commentResource.setCreatedAt(comment.getCreatedAt());
         commentResource.setUserId(comment.getUser().getId());

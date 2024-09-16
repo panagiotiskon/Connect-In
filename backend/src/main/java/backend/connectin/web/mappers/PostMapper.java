@@ -6,6 +6,7 @@ import backend.connectin.service.FileService;
 import backend.connectin.web.requests.PostRequest;
 import backend.connectin.web.resources.CommentResource;
 import backend.connectin.web.resources.PostResource;
+import backend.connectin.web.resources.PostResourceDetailed;
 import org.springframework.stereotype.Component;
 
 import java.time.Instant;
@@ -39,16 +40,16 @@ public class PostMapper {
         return post;
     }
 
-    public PostResource mapToPostResource(Post post) {
-        PostResource postResource = new PostResource();
-        postResource.setId(post.getId());
-        postResource.setContent(post.getContent());
-        postResource.setCreatedAt(post.getCreatedAt());
-        postResource.setUserId(post.getUserId());
+    public PostResourceDetailed mapToPostResourceDetailed(Post post) {
+        PostResourceDetailed postResourceDetailed = new PostResourceDetailed();
+        postResourceDetailed.setId(post.getId());
+        postResourceDetailed.setContent(post.getContent());
+        postResourceDetailed.setCreatedAt(post.getCreatedAt());
+        postResourceDetailed.setUserId(post.getUserId());
 
         if(post.getFileId() != null) {
             FileDB fileDB = fileService.getFile(post.getFileId());
-            postResource.setFile(fileDB);
+            postResourceDetailed.setFile(fileDB);
         }
 
         List<CommentResource> commentResources = post.getComments().stream()
@@ -56,10 +57,22 @@ public class PostMapper {
                 .sorted(Comparator.comparing(CommentResource::getCreatedAt).reversed())
                 .toList();
 
-        postResource.setComments(commentResources);
+        postResourceDetailed.setComments(commentResources);
 
-        postResource.setReactionCount((long) post.getReactions().size());
+        postResourceDetailed.setReactionCount((long) post.getReactions().size());
 
+        return postResourceDetailed;
+    }
+
+    public PostResource mapToPostResource(Post post) {
+        PostResource postResource = new PostResource();
+        postResource.setPostId(post.getId());
+        postResource.setContent(post.getContent());
+        postResource.setCreatedAt(post.getCreatedAt());
+        if(post.getFileId() != null) {
+            FileDB fileDB = fileService.getFile(post.getFileId());
+            postResource.setFile(fileDB);
+        }
         return postResource;
     }
 
