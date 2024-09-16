@@ -4,11 +4,13 @@ import backend.connectin.domain.Connection;
 import backend.connectin.service.ConnectionService;
 import backend.connectin.service.UserService;
 import backend.connectin.web.dto.ConnectedUserDTO;
+import backend.connectin.web.dto.RegisteredUserDTO;
 import backend.connectin.web.mappers.UserMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.swing.plaf.PanelUI;
 import java.util.List;
 
 @RestController
@@ -32,6 +34,13 @@ public class ConnectionController {
         return new ResponseEntity<>(connectedUserDTOList, HttpStatus.OK);
     }
 
+    @GetMapping("/connections/pending/{userId}")
+    @ResponseBody
+    public ResponseEntity<List<ConnectedUserDTO>> getUserPendingConnections(@PathVariable Long userId) {
+        List<ConnectedUserDTO> connectedUserDTOList = connectionService.getPendingUserConnections(userId);
+        return new ResponseEntity<>(connectedUserDTOList, HttpStatus.OK);
+    }
+
     @PostMapping("/connections/{userId}")
     public ResponseEntity<List<Connection>> requestToConnect(@PathVariable Long userId, @RequestParam Long connectionUserId) {
         return new ResponseEntity<>(connectionService.requestToConnect(userId,connectionUserId),HttpStatus.CREATED);
@@ -40,12 +49,12 @@ public class ConnectionController {
     @GetMapping("/connections/registered-users")
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
-    public List<ConnectedUserDTO> getSpecificRegisteredUsers(
+    public List<RegisteredUserDTO> getSpecificRegisteredUsers(
             @RequestParam(value = "search", required = false) String searchTerm,
             @RequestParam(value = "userId") long userId) {
 
-        List<ConnectedUserDTO> users = userService.getFilteredUsers(searchTerm, userId);
-        return users;
+        List<Long> users = userService.getFilteredUsers(searchTerm, userId);
+        return connectionService.removeConnectedAndPendingUsers(users,userId);
     }
 
 
