@@ -42,6 +42,7 @@ const ViewProfileCard = ({ viewedUser, connections, onNavigateToProfile }) => {
       className="mb-4"
       style={{
         width: "70%",
+        margin: "3%",
         height: "450px",
         display: "flex",
       }}
