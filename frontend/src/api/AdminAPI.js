@@ -1,6 +1,5 @@
 import axios from "axios";
 
-// Set your API URL
 const API_URL = "https://localhost:8443/admin";
 
 // Set default configuration for axios
