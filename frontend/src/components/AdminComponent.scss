@@ -1,10 +1,14 @@
 .card-container-admin {
     display: grid;
-    grid-template-columns: repeat(4, 1fr); /* 3 cards per row */
-    grid-gap: 1rem; /* Gap between cards */
-    justify-items: center; /* Center cards horizontally */
-    height: 10%;
+    grid-template-columns: repeat(4, 1fr);
+    /* 3 cards per row */
+    grid-gap: 1rem;
+    /* Gap between cards */
+    justify-items: center;
+    /* Center cards horizontally */
     max-height: 100px;
+    width: 100%;
+    height: auto;
 }
 
 .center-content {
@@ -23,10 +27,9 @@
     border-bottom: 1px solid #cecdcdb4;
 }
 
-
-
 .card-admin {
-    width: 100%; /* Each card takes full width of the column */
+    width: 100%;
+    /* Each card takes full width of the column */
     max-width: 350px;
 }
 
@@ -56,6 +59,11 @@
 
 @media (max-width: 1080px) {
     .card-container-admin {
-      grid-template-columns: repeat(2, 1fr); /* 2 cards per row for tablets */
+        grid-template-columns: repeat(2, 1fr);
+        /* 2 cards per row for tablets */
+        height: auto;
+        margin-bottom: 1rem;
+        max-height: none;
     }
-  }
+}
+
