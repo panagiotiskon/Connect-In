@@ -26,9 +26,9 @@ public interface ConnectionRepository extends JpaRepository<Connection, Long> {
     @Query(value = """
             SELECT c
             FROM Connection c
-            WHERE c.userId2 = :userId AND c.status = 'PENDING'
+            WHERE c.userId1 = :userId AND (c.status = 'PENDING')
             """)
-    List<Connection> findAllConnectionRequests(@Param("userId") Long userId);
+    List<Connection> findPendingUserConnections(@Param("userId") Long userId);
 
     @Modifying
     @Query("UPDATE Connection c SET c.status = :status WHERE (c.userId1 = :userId1 AND c.userId2 = :userId2) OR (c.userId1 = :userId2 AND c.userId2 = :userId1)")

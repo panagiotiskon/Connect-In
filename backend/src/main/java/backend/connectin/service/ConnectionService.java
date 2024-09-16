@@ -8,6 +8,7 @@ import backend.connectin.domain.enums.ConnectionStatus;
 import backend.connectin.domain.repository.ConnectionRepository;
 import backend.connectin.domain.repository.UserRepository;
 import backend.connectin.web.dto.ConnectedUserDTO;
+import backend.connectin.web.dto.RegisteredUserDTO;
 import backend.connectin.web.mappers.ConnectionMapper;
 import backend.connectin.web.resources.ConnectionResource;
 import jakarta.transaction.Transactional;
@@ -67,7 +68,7 @@ public class ConnectionService {
                 profilePic = null;
                 profilePicType = null;
             }
-            ConnectedUserDTO connectedUserDTO = new ConnectedUserDTO(user.getId(), user.getFirstName(), user.getLastName(), jobTitle, companyName, profilePic, profilePicType);
+            ConnectedUserDTO connectedUserDTO = new ConnectedUserDTO(user.getId(), user.getFirstName(), user.getLastName(), jobTitle, companyName, profilePic, profilePicType,false);
             connectedUserDTOS.add(connectedUserDTO);
         }
         if (connectionList.isEmpty()) {
@@ -75,6 +76,48 @@ public class ConnectionService {
         }
         return connectedUserDTOS;
     }
+
+    public List<ConnectedUserDTO> getPendingUserConnections(long userId) {
+        List<ConnectedUserDTO> connectedUserDTOS = new ArrayList<>();
+        if (userRepository.findById(userId).isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found");
+        }
+        List<Connection> connectionList = connectionRepository.findPendingUserConnections(userId);
+
+        List<User> pendingConnectedUsers = connectionList.stream()
+                .map(connection -> userService.findUserOrThrow(connection.getUserId2()))
+                .toList();
+
+        for (User user : pendingConnectedUsers) {
+            List<Experience> experiences = userService.getExperience(user.getId()); // get latest experience
+            String jobTitle;
+            String companyName;
+            if (experiences.isEmpty()) {
+                jobTitle = null;
+                companyName = null;
+            } else {
+                jobTitle = experiences.getFirst().getJobTitle();
+                companyName = experiences.getFirst().getCompanyName();
+            }
+            FileDB profilePicture = fileService.getProfilePicture(user.getId()).get();
+            String profilePic;
+            String profilePicType;
+            if (profilePicture.getType().startsWith("image/")) {
+                profilePic = Base64.getEncoder().encodeToString(profilePicture.getData());
+                profilePicType = profilePicture.getType();
+            } else {
+                profilePic = null;
+                profilePicType = null;
+            }
+            ConnectedUserDTO connectedUserDTO = new ConnectedUserDTO(user.getId(), user.getFirstName(), user.getLastName(), jobTitle, companyName, profilePic, profilePicType,true);
+            connectedUserDTOS.add(connectedUserDTO);
+        }
+        if (connectionList.isEmpty()) {
+            return List.of();
+        }
+        return connectedUserDTOS;
+    }
+
 
     public List<Long> getConnectedUserIds(long userId) {
         List<Connection> connectionList = connectionRepository.findUserConnections(userId);
@@ -115,5 +158,47 @@ public class ConnectionService {
     @Transactional
     public void deleteConnection(long userId, long connectionUserId) {
         connectionRepository.deleteConnection(userId, connectionUserId);
+    }
+
+    @Transactional
+    public List<RegisteredUserDTO> removeConnectedAndPendingUsers(List<Long> users, long userId){
+        if(users.isEmpty()){
+            return List.of();
+        }
+        List<RegisteredUserDTO> registeredUserDTOS = new ArrayList<>();
+        List<Long> pendingUserConnections = connectionRepository.findPendingUserConnections(userId).stream().map(Connection::getUserId2).toList();
+        List<Long> acceptedUserConnections = connectionRepository.findUserConnections(userId).stream().map(Connection::getUserId2).toList();
+        List<Long> finalRegisteredUsers = users.stream().filter(user -> !pendingUserConnections.contains(user) && !acceptedUserConnections.contains(user)).toList();
+        if(finalRegisteredUsers.isEmpty()){
+            return List.of();
+        }
+        for (long finalRegisteredUserId : finalRegisteredUsers) {
+            User user = userService.findUserOrThrow(finalRegisteredUserId);
+            List<Experience> experiences = userService.getExperience(user.getId()); // get latest experience
+            String jobTitle;
+            String companyName;
+            if (experiences.isEmpty()) {
+                jobTitle = null;
+                companyName = null;
+            } else {
+                jobTitle = experiences.getFirst().getJobTitle();
+                companyName = experiences.getFirst().getCompanyName();
+            }
+            FileDB profilePicture = fileService.getProfilePicture(user.getId()).get();
+            String profilePic;
+            String profilePicType;
+            if (profilePicture.getType().startsWith("image/")) {
+                profilePic = Base64.getEncoder().encodeToString(profilePicture.getData());
+                profilePicType = profilePicture.getType();
+            } else {
+                profilePic = null;
+                profilePicType = null;
+            }
+            RegisteredUserDTO registeredUserDTO = new RegisteredUserDTO(user.getId(), user.getFirstName(), user.getLastName(), jobTitle, companyName, profilePic, profilePicType);
+            registeredUserDTOS.add(registeredUserDTO);
+        }
+        return registeredUserDTOS;
+
+
     }
 }
