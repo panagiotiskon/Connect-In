@@ -298,7 +298,7 @@ public class UserService {
                 ));
     }
 
-    public List<ConnectedUserDTO> getFilteredUsers(String searchTerm, long userId) {
+    public List<Long> getFilteredUsers(String searchTerm, long userId) {
         List<User> users = fetchAll();
 
         users = users.stream()
@@ -325,34 +325,8 @@ public class UserService {
                     }).toList();
             if(users.isEmpty()){
                 return new ArrayList<>();}
-            List<ConnectedUserDTO> connectedUserDTOS = new ArrayList<>();
-            for (User user : users) {
-                List<Experience> experiences = getExperience(user.getId()); // get latest experience
-                String jobTitle;
-                String companyName;
-                if(experiences.isEmpty()){
-                    jobTitle=null;
-                    companyName=null;
-                }
-                else{
-                    jobTitle= experiences.getFirst().getJobTitle();
-                    companyName = experiences.getFirst().getCompanyName();
-                }
-                FileDB profilePicture= fileService.getProfilePicture(user.getId()).get();
-                String profilePic;
-                String profilePicType;
-                if (profilePicture.getType().startsWith("image/")) {
-                    profilePic =  Base64.getEncoder().encodeToString(profilePicture.getData());
-                    profilePicType = profilePicture.getType();
-                }
-                else{
-                    profilePic=null;
-                    profilePicType=null;
-                }
-                ConnectedUserDTO connectedUserDTO = new ConnectedUserDTO(user.getId(),user.getFirstName(),user.getLastName(),jobTitle,companyName,profilePic,profilePicType);
-                connectedUserDTOS.add(connectedUserDTO);
-            }
-            return connectedUserDTOS;
+
+            return users.stream().map(User::getId).toList();
 
         }
         else {

@@ -8,11 +8,12 @@ import NotificationAPI from "../api/NotificationAPI"; // Import the Notification
 import AuthService from "../api/AuthenticationAPI";
 import MessagingAPI from "../api/MessagingAPI"; // Import the MessagingAPI
 import { useNavigate } from "react-router-dom";
+import PendingUsersCardComponent from "./PendingUserCardComponent";
 
 const NetworkComponent = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [connectedUsers, setConnectedUsers] = useState([]);
-  const [registeredUsers, setRegisteredUsers] = useState([]);
+  const [pendingUsers, setPendingUsers] = useState([]);
   const [displayedUsers, setDisplayedUsers] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showRegisteredUsers, setShowRegisteredUsers] = useState(false);
@@ -25,18 +26,20 @@ const NetworkComponent = () => {
         const currentUserId = currentUser?.id;
 
         if (currentUserId) {
-          // Fetch connected users
           const connectionsResponse = await ConnectionAPI.getUserConnections(
             currentUserId
           );
           setConnectedUsers(connectionsResponse);
 
-          // Fetch registered users (unconnected)
-          const registeredResponse = await ConnectionAPI.getRegisteredUsers();
-          setRegisteredUsers(registeredResponse);
+          const pendingConnectionsResponse =
+            await ConnectionAPI.getUserPendingConnections(currentUserId);
+          setPendingUsers(pendingConnectionsResponse);
 
-          // By default, show connected users
-          setDisplayedUsers(connectionsResponse);
+          const combinedUsers = [
+            ...connectionsResponse,
+            ...pendingConnectionsResponse,
+          ];
+          setDisplayedUsers(combinedUsers);
         }
       } catch (error) {
         console.error("Error fetching users:", error);
@@ -54,8 +57,8 @@ const NetworkComponent = () => {
       const currentUserId = currentUser?.id;
 
       if (searchTerm.trim() === "") {
-        // Show connected users when search term is empty
-        setDisplayedUsers(connectedUsers);
+        const combinedUsers = [...connectedUsers, ...pendingUsers];
+        setDisplayedUsers(combinedUsers);
         setShowRegisteredUsers(false);
       } else {
         try {
@@ -63,15 +66,7 @@ const NetworkComponent = () => {
           const filteredRegisteredUsers =
             await ConnectionAPI.getRegisteredUsers(searchTerm, currentUserId);
 
-          // Exclude users who are already connected
-          const connectedUserIds = new Set(
-            connectedUsers.map((user) => user.userId)
-          );
-          const filteredUsers = filteredRegisteredUsers.filter(
-            (user) => !connectedUserIds.has(user.userId)
-          );
-
-          setDisplayedUsers(filteredUsers);
+          setDisplayedUsers(filteredRegisteredUsers);
           setShowRegisteredUsers(true);
         } catch (error) {
           console.error("Error fetching filtered registered users:", error);
@@ -80,7 +75,7 @@ const NetworkComponent = () => {
     };
 
     filterUsers();
-  }, [searchTerm, connectedUsers]);
+  }, [searchTerm, connectedUsers, pendingUsers]);
 
   const handleSearchChange = (e) => {
     setSearchTerm(e.target.value);
@@ -202,8 +197,20 @@ const NetworkComponent = () => {
                         onConnect={() => handleConnect(user.userId)}
                         onShowProfile={() => handleShowProfile(user.userId)}
                       />
+                    ) : user.isPending ? (
+                      <PendingUsersCardComponent // Render the pending card for pending users
+                        user={{
+                          id: user.userId,
+                          profileImage: `data:${user.profileType};base64,${user.profilePic}`,
+                          firstName: user.firstName,
+                          lastName: user.lastName,
+                          job: user.jobTitle,
+                          companyName: user.companyName,
+                        }}
+                        onShowProfile={() => handleShowProfile(user.userId)}
+                      />
                     ) : (
-                      <ConnectedUsersCardComponent
+                      <ConnectedUsersCardComponent // Render the connected users' card
                         user={{
                           id: user.userId,
                           profileImage: `data:${user.profileType};base64,${user.profilePic}`,
