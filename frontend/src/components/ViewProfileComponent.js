@@ -8,7 +8,7 @@ import {
   MDBCardTitle,
 } from "mdb-react-ui-kit";
 import { useParams, useNavigate } from "react-router-dom";
-import NavbarComponent from "./common/NavBar";
+import NavbarAdminComponent from "./NavBarAdminComponent";
 import ViewProfileCard from "./common/ViewProfileCard";
 import PersonalInfoService from "../api/UserPersonalInformationAPI";
 import AuthenticationAPI from "../api/AuthenticationAPI";
@@ -103,23 +103,22 @@ const ViewProfileComponent = () => {
 
   return (
     <div>
-      <NavbarComponent />
-      <MDBContainer fluid className="mt-5" style={{ padding: 0 }}>
+      <NavbarAdminComponent />
+      <MDBContainer fluid className="home-container">
         <MDBRow>
-          {/* Profile Card Column */}
-          <MDBCol md="4" className="ps-0">
-            <ViewProfileCard viewedUser={user} />
+          <MDBCol md="4" className="left-column"
+          >
+            <ViewProfileCard viewedUser={user}/>
           </MDBCol>
 
-          {/* Cards Column */}
-          <MDBCol md="7" className="ps-0">
+          <MDBCol md="8" className="center-column">
             <MDBRow>
               {["Work Experience", "Education", "Skills"].map(
                 (section, index) => (
-                  <MDBCol md="12" key={index} className="mb-6">
-                    <MDBCard style={{ height: "330px" }}>
-                      <MDBCardBody className="d-flex flex-column">
-                        <MDBCardTitle className="fs-4 fw-bold">
+                  <MDBCol md="9" key={index} className="center-column mb-4">
+                    <MDBCard className="new-post-container">
+                      <MDBCardBody className="mt-2 pb-2 border-bottom w-100">
+                        <MDBCardTitle className="fs-4 ps-2 fw-bold">
                           {section}
                         </MDBCardTitle>
                         <div
@@ -155,6 +154,9 @@ const ViewProfileComponent = () => {
                                     : " - Present"}
                                 </div>
                               )}
+                              <div style={{ fontSize: "12px", color: "#999" }}>
+                                {item.isPublic ? "Public" : "Private"}
+                              </div>
                             </div>
                           ))}
                         </div>
