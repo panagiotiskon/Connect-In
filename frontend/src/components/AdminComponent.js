@@ -16,6 +16,8 @@ import {
   MDBCardImage,
 } from "mdb-react-ui-kit";
 
+import './AdminComponent.scss';
+
 export default function AdminComponent() {
   const [users, setUsers] = useState([]);
   const [selectedUsers, setSelectedUsers] = useState([]);
@@ -116,34 +118,34 @@ export default function AdminComponent() {
             id: { id: userId },
             experiences: Array.isArray(userDetails.experiences)
               ? userDetails.experiences.map((exp) => ({
-                  experience: {
-                    jobTitle: exp.jobTitle || "",
-                    companyName: exp.companyName || "",
-                    startDate: exp.startDate || "",
-                    endDate: exp.endDate || "",
-                    isPublic: exp.isPublic,
-                  },
-                }))
+                experience: {
+                  jobTitle: exp.jobTitle || "",
+                  companyName: exp.companyName || "",
+                  startDate: exp.startDate || "",
+                  endDate: exp.endDate || "",
+                  isPublic: exp.isPublic,
+                },
+              }))
               : [], // Default to an empty array if experiences is null or undefined
             skills: Array.isArray(userDetails.skills)
               ? userDetails.skills.map((skill) => ({
-                  skill: {
-                    skillTitle: skill.skillTitle || "",
-                    skillDescription: skill.skillDescription || "",
-                    isPublic: skill.isPublic,
-                  },
-                }))
+                skill: {
+                  skillTitle: skill.skillTitle || "",
+                  skillDescription: skill.skillDescription || "",
+                  isPublic: skill.isPublic,
+                },
+              }))
               : [], // Default to an empty array if skills is null or undefined
             education: Array.isArray(userDetails.education)
               ? userDetails.education.map((edu) => ({
-                  education: {
-                    universityName: edu.universityName || "",
-                    fieldOfStudy: edu.fieldOfStudy || "",
-                    startDate: edu.startDate || "",
-                    endDate: edu.endDate || "",
-                    isPublic: edu.isPublic,
-                  },
-                }))
+                education: {
+                  universityName: edu.universityName || "",
+                  fieldOfStudy: edu.fieldOfStudy || "",
+                  startDate: edu.startDate || "",
+                  endDate: edu.endDate || "",
+                  isPublic: edu.isPublic,
+                },
+              }))
               : [], // Default to an empty array if education is null or undefined
           },
         })),
@@ -182,73 +184,44 @@ export default function AdminComponent() {
     <div>
       <NavBarAdminComponent />
       <MDBContainer fluid className="py-5">
-        <style>
-          {`
-            .center-content {
-              text-align: center;
-            }
-            .section-heading {
-              margin-bottom: 20px;
-            }
-            .button-group {
-              display: flex;
-              justify-content: center;
-              gap: 15px;
-            }
-            .card-container {
-              display: flex;
-              flex-wrap: wrap;
-              justify-content: center;
-              gap: 1rem;
-            }
-            .card {
-              flex: 1 0 18rem;
-            }
-          `}
-        </style>
         <div className="center-content">
           <h4 className="section-heading">Extract Selected Users</h4>
           <div className="button-group">
-            <MDBBtn color="primary" onClick={() => extractUsers("json")}>
+            <MDBBtn className="btn-custom " onClick={() => extractUsers("json")}>
               JSON Format
             </MDBBtn>
-            <MDBBtn color="secondary" onClick={() => extractUsers("xml")}>
+            <MDBBtn className="btn-custom btn-custom2" onClick={() => extractUsers("xml")}>
               XML Format
             </MDBBtn>
           </div>
         </div>
         {/* User cards layout */}
-        <div className="card-container">
+        <div className="card-container-admin">
           {users
             .filter((user) => user.id !== adminId) // Skip the admin user
             .map((user) => (
-              <MDBCard key={user.id} className="m-3 card">
+              <MDBCard key={user.id} className="m-3 card-admin">
                 <MDBCardBody>
                   <div className="text-center mb-3">
                     <MDBCardImage
                       src={profileImages[user.id]}
                       alt={`${user.firstName} ${user.lastName}`}
-                      className="rounded-circle"
-                      style={{
-                        width: "120px",
-                        height: "120px",
-                        objectFit: "cover",
-                      }}
+                      className="rounded-circle profile-image-admin"
                       fluid
                     />
                   </div>
                   <MDBCardTitle className="text-center">
                     {user.firstName} {user.lastName}
                   </MDBCardTitle>
-                  <MDBCardText className="d-flex flex-column align-items-start">
+                  <MDBCardText className="d-flex justify-content-between flex-row align-items-center card-text">
                     <MDBCheckbox
                       id={`user-${user.id}`}
                       label="Select"
-                      className="mb-3"
+                      className="mb-3 select-btn"
                       onChange={() => handleCheckboxChange(user.id)}
                     />
                     <MDBBtn
-                      color="primary"
+                      className="btn-custom"
                       onClick={() => handleShowProfile(user.id)}
                     >
                       Show Profile
