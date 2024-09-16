@@ -193,6 +193,7 @@ const NetworkComponent = () => {
                           lastName: user.lastName,
                           job: user.jobTitle,
                           companyName: user.companyName,
+                          connections: user.connections, // Pass connections
                         }}
                         onConnect={() => handleConnect(user.userId)}
                         onShowProfile={() => handleShowProfile(user.userId)}
@@ -219,6 +220,7 @@ const NetworkComponent = () => {
                           job: user.jobTitle,
                           companyName: user.companyName,
                           isConnected: true, // Ensure connected users have isConnected set to true
+                          connections: user.connections, // Pass connections
                         }}
                         onMessage={() => handleMessage(user.userId)}
                         onShowProfile={() => handleShowProfile(user.userId)}

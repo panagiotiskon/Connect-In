@@ -12,6 +12,7 @@ import NavbarAdminComponent from "./NavBarAdminComponent";
 import ViewProfileCard from "./common/ViewProfileCard";
 import PersonalInfoService from "../api/UserPersonalInformationAPI";
 import AuthenticationAPI from "../api/AuthenticationAPI";
+import ConnectionAPI from "../api/ConnectionAPI";
 
 const ViewProfileComponent = () => {
   const { userId } = useParams();
@@ -21,7 +22,9 @@ const ViewProfileComponent = () => {
     Education: [],
     Skills: [],
   });
-  const [isAdmin, setIsAdmin] = useState(false); // State to check if the current user is admin
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [connections, setConnections] = useState([]);
+  const [currentUserId, setCurrentUserId] = useState(null); // State to store current user ID
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -53,7 +56,7 @@ const ViewProfileComponent = () => {
 
         const educationData = await PersonalInfoService.getEducation(userId);
         const formattedEducationData = educationData
-          .filter((edu) => isAdmin || edu.isPublic) // Show private data if admin
+          .filter((edu) => isAdmin || edu.isPublic)
           .map((edu) => ({
             universityName: edu.universityName,
             fieldOfStudy: edu.fieldOfStudy,
@@ -66,7 +69,7 @@ const ViewProfileComponent = () => {
           userId
         );
         const formattedExperienceData = workExperienceData
-          .filter((exp) => isAdmin || exp.isPublic) // Show private data if admin
+          .filter((exp) => isAdmin || exp.isPublic)
           .map((exp) => ({
             jobTitle: exp.jobTitle,
             companyName: exp.companyName,
@@ -77,7 +80,7 @@ const ViewProfileComponent = () => {
 
         const skillData = await PersonalInfoService.getSkills(userId);
         const formattedSkillData = skillData
-          .filter((skill) => isAdmin || skill.isPublic) // Show private data if admin
+          .filter((skill) => isAdmin || skill.isPublic)
           .map((skill) => ({
             skillTitle: skill.skillTitle,
             skillDescription: skill.skillDescription,
@@ -89,6 +92,9 @@ const ViewProfileComponent = () => {
           Education: formattedEducationData,
           Skills: formattedSkillData,
         });
+
+        const userConnections = await ConnectionAPI.getUserConnections(userId);
+        setConnections(userConnections);
       } catch (error) {
         console.error("Error fetching user data", error);
       }
@@ -96,6 +102,14 @@ const ViewProfileComponent = () => {
 
     fetchData();
   }, [userId, navigate, isAdmin]);
+
+  const handleNavigateToProfile = (connectionId) => {
+    if (connectionId === currentUserId) {
+      navigate("/profile");
+    } else {
+      navigate(`/profile/${connectionId}`);
+    }
+  };
 
   if (!user) {
     return <div>Loading...</div>;
@@ -106,6 +120,13 @@ const ViewProfileComponent = () => {
       <NavbarAdminComponent />
       <MDBContainer fluid className="home-container">
         <MDBRow>
+          {/* Profile Card Column */}
+          <MDBCol md="4" className="ps-0">
+            <ViewProfileCard
+              viewedUser={user}
+              connections={connections}
+              onNavigateToProfile={handleNavigateToProfile}
+            />
           <MDBCol md="4" className="left-column"
           >
             <ViewProfileCard viewedUser={user}/>
