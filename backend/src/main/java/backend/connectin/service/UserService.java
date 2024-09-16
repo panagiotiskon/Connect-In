@@ -1,7 +1,9 @@
 package backend.connectin.service;
+import backend.connectin.domain.repository.JobApplicationRepository;
+import backend.connectin.web.mappers.PostMapper;
+import backend.connectin.web.resources.*;
 
 import backend.connectin.domain.*;
-import backend.connectin.domain.repository.FileRepository;
 import backend.connectin.domain.repository.PersonalInfoRepository;
 import backend.connectin.domain.repository.UserRepository;
 import backend.connectin.web.dto.*;
@@ -10,14 +12,9 @@ import backend.connectin.web.mappers.UserMapper;
 import backend.connectin.web.requests.UserChangeEmailRequest;
 import backend.connectin.web.requests.UserChangePasswordRequest;
 import backend.connectin.web.requests.UserRegisterRequest;
-import backend.connectin.web.resources.UserResource;
 import jakarta.transaction.Transactional;
-import jdk.jfr.Registered;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.Pageable;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -35,13 +32,38 @@ public class UserService {
     private final FileService fileService;
     private final PersonalInfoRepository personalInfoRepository;
     private final PersonalInfoMapper personalInfoMapper;
-    public UserService(UserRepository userRepository, UserMapper userMapper, PasswordEncoder passwordEncoder, FileService fileService, PersonalInfoRepository personalInfoRepository, PersonalInfoMapper personalInfoMapper) {
+    private final ReactionService reactionService;
+    private final JobService jobService;
+    private final CommentService commentService;
+    private final PostService postService;
+    private final PostMapper postMapper;
+    private final ConnectionService connectionService;
+
+    public UserService(UserRepository userRepository,
+                       UserMapper userMapper,
+                       PasswordEncoder passwordEncoder,
+                       FileService fileService,
+                       PersonalInfoRepository personalInfoRepository,
+                       PersonalInfoMapper personalInfoMapper,
+                       @Lazy ReactionService reactionService,
+                       @Lazy JobService jobService,
+                       @Lazy CommentService commentService,
+                       @Lazy PostService postService,
+                       PostMapper postMapper,
+                       @Lazy ConnectionService connectionService) {
+
         this.userRepository = userRepository;
         this.userMapper = userMapper;
         this.passwordEncoder = passwordEncoder;
         this.fileService = fileService;
         this.personalInfoRepository = personalInfoRepository;
         this.personalInfoMapper = personalInfoMapper;
+        this.reactionService = reactionService;
+        this.jobService = jobService;
+        this.commentService = commentService;
+        this.postService = postService;
+        this.postMapper = postMapper;
+        this.connectionService = connectionService;
     }
 
     // Check if user with the given email already exists
@@ -231,23 +253,40 @@ public class UserService {
         UserDetailDTO userDetailDTO = new UserDetailDTO();
 
         if (personalInfo != null) {
+
             List<SkillDTO> skillDTOS = personalInfo.getSkills().stream()
                     .map(personalInfoMapper::mapToSkillDTO)
-                    .collect(Collectors.toList());
+                    .toList();
+
             List<ExperienceDTO> experienceDTOS = personalInfo.getExperiences().stream()
                     .map(personalInfoMapper::mapToExperienceDTO)
-                    .collect(Collectors.toList());
+                    .toList();
+
             List<EducationDTO> educationDTOS = personalInfo.getEducations().stream()
                     .map(personalInfoMapper::mapToEducationDTO)
-                    .collect(Collectors.toList());
+                    .toList();
 
             userDetailDTO.setSkills(skillDTOS);
             userDetailDTO.setExperiences(experienceDTOS);
             userDetailDTO.setEducation(educationDTOS);
-        } else {
-            System.out.println("No personal info found for userId: " + userId);
         }
+        List<ConnectionResource> connectionResources = connectionService.getConnectedUsers(userId);
+        List<JobApplicationDTO> jobApplicationDTOS = jobService.getJobApplications(userId);
+        List<JobPostDTO> jobPostDTOS = jobService.getJobPosts(userId);
 
+        List<PostResource> postResources = postService.fetchUserPosts(userId)
+                .stream()
+                .map(postMapper::mapToPostResource)
+                .toList();
+
+        List<CommentResource> commentResources = commentService.fetchUserCommentResources(userId);
+        List<ReactionResource> reactionResources = reactionService.fetchUserReactions(userId);
+        userDetailDTO.setConnectedUsers(connectionResources);
+        userDetailDTO.setJobApplications(jobApplicationDTOS);
+        userDetailDTO.setJobPosts(jobPostDTOS);
+        userDetailDTO.setPosts(postResources);
+        userDetailDTO.setComments(commentResources);
+        userDetailDTO.setReactions(reactionResources);
         return userDetailDTO;
     }
 

@@ -4,6 +4,7 @@ import backend.connectin.domain.Post;
 import backend.connectin.domain.Reaction;
 import backend.connectin.domain.User;
 import backend.connectin.service.PostService;
+import backend.connectin.web.resources.*;
 import org.springframework.stereotype.Component;
 
 import java.time.Instant;
@@ -22,5 +23,14 @@ public class ReactionMapper {
         post.getReactions().add(reaction);
         return reaction;
     }
+
+    public ReactionResource mapToReactionResource(Reaction reaction){
+        ReactionResource reactionResource = new ReactionResource();
+        reactionResource.setReactionId(reaction.getId());
+        reactionResource.setPostId(reaction.getPost().getId());
+        reactionResource.setCreatedAt(reaction.getCreatedAt());
+        return reactionResource;
+    }
+
 
 }

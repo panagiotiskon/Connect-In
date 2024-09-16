@@ -6,6 +6,7 @@ import backend.connectin.domain.User;
 import backend.connectin.domain.repository.CommentRepository;
 import backend.connectin.web.mappers.CommentMapper;
 import backend.connectin.web.requests.CommentRequest;
+import backend.connectin.web.resources.CommentResource;
 import jakarta.transaction.Transactional;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -83,8 +84,13 @@ public class CommentService {
                 userComments.put(post.getId(), commentIds);
             }
         }
-
         return userComments;
+    }
+
+    public List<CommentResource> fetchUserCommentResources(Long userId) {
+        User user = userService.findUserOrThrow(userId);
+        List<Comment> comments = commentRepository.findAllByUserId(userId);
+        return comments.stream().map(commentMapper::mapToCommentResource).toList();
     }
 
 

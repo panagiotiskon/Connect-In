@@ -36,23 +36,14 @@ public class AdminController {
     public List<UserDTO> getUsers() {
         List<User> users = userService.fetchAll();
         return users.stream().map(userMapper::mapToUserDTO).toList();
+
     }
     @GetMapping("/users/details")
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
     public Map<Long,UserDetailDTO> getUsersDetails(@RequestParam List<Long> userIds) {
         Map<Long,UserDetailDTO> userDetailDTOMap = userService.getUsersDetails(userIds);
-
-        // Convert map to JSON string manually
         return userDetailDTOMap;
     }
-
-
-//    @GetMapping("/{userId}")
-//    @ResponseStatus(HttpStatus.OK)
-//    @ResponseBody
-//    public Page<UserResource> getUser(@RequestParam String userId) {
-//
-//    }
 
 }

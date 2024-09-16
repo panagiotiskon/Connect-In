@@ -9,6 +9,7 @@ import backend.connectin.domain.repository.ConnectionRepository;
 import backend.connectin.domain.repository.UserRepository;
 import backend.connectin.web.dto.ConnectedUserDTO;
 import backend.connectin.web.mappers.ConnectionMapper;
+import backend.connectin.web.resources.ConnectionResource;
 import jakarta.transaction.Transactional;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -78,6 +79,13 @@ public class ConnectionService {
     public List<Long> getConnectedUserIds(long userId) {
         List<Connection> connectionList = connectionRepository.findUserConnections(userId);
         return connectionList.stream().map(Connection::getUserId2).toList();
+    }
+
+    public List<ConnectionResource> getConnectedUsers(Long userId){
+        return connectionRepository.findUserConnections(userId)
+                .stream()
+                .map(connectionMapper::mapToConnectionResource)
+                .toList();
     }
 
     @Transactional

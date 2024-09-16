@@ -1,4 +1,5 @@
 package backend.connectin.service;
+import backend.connectin.web.resources.*;
 
 import backend.connectin.domain.Post;
 import backend.connectin.domain.Reaction;
@@ -54,8 +55,7 @@ public class ReactionService {
 
     // fetches a list of post ids which the user reacted
 
-    public List<Long> fetchUserReactions(Long userId) {
-        User user = userService.findUserOrThrow(userId);
+    public List<Long> fetchUserReactionIds(Long userId) {
         List<Reaction> reactions = reactionRepository.findAllByUserId(userId);
         List<Long> reactedPostIds = new ArrayList<>();
         reactedPostIds = reactions.stream()
@@ -64,5 +64,15 @@ public class ReactionService {
                 .toList();
         return reactedPostIds;
     }
+
+
+    public List<ReactionResource> fetchUserReactions(Long userId) {
+        User user = userService.findUserOrThrow(userId);
+        List<Reaction> reactions = reactionRepository.findAllByUserId(userId);
+        return  reactions.stream()
+                .map(reactionMapper::mapToReactionResource)
+                .toList();
+    }
+
 
 }
