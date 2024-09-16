@@ -13,7 +13,7 @@ import ViewProfileCard from "./common/ViewProfileCard";
 import PersonalInfoService from "../api/UserPersonalInformationAPI";
 import AuthenticationAPI from "../api/AuthenticationAPI";
 import ConnectionAPI from "../api/ConnectionAPI";
-
+import NavbarComponent from "./common/NavBar";
 const ViewProfileComponent = () => {
   const { userId } = useParams();
   const [user, setUser] = useState(null);
@@ -24,15 +24,18 @@ const ViewProfileComponent = () => {
   });
   const [isAdmin, setIsAdmin] = useState(false);
   const [connections, setConnections] = useState([]);
-  const [currentUserId, setCurrentUserId] = useState(null); // State to store current user ID
+  const [currentUserId, setCurrentUserId] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
     const fetchCurrentUser = async () => {
       try {
         const currentUser = await AuthenticationAPI.getCurrentUser();
-        if (currentUser?.role === "ROLE_ADMIN") {
-          setIsAdmin(true);
+        if (currentUser) {
+          setCurrentUserId(currentUser.id); // Ensure this is how you get the ID
+          if (currentUser.role === "ROLE_ADMIN") {
+            setIsAdmin(true);
+          }
         }
       } catch (error) {
         console.error("Error fetching logged-in user", error);
@@ -117,26 +120,21 @@ const ViewProfileComponent = () => {
 
   return (
     <div>
-      <NavbarAdminComponent />
+      {isAdmin ? <NavbarAdminComponent /> : <NavbarComponent />}
       <MDBContainer fluid className="home-container">
         <MDBRow>
-          {/* Profile Card Column */}
           <MDBCol md="4" className="ps-0">
             <ViewProfileCard
               viewedUser={user}
               connections={connections}
               onNavigateToProfile={handleNavigateToProfile}
             />
-          <MDBCol md="4" className="left-column"
-          >
-            <ViewProfileCard viewedUser={user}/>
           </MDBCol>
-
           <MDBCol md="8" className="center-column">
             <MDBRow>
               {["Work Experience", "Education", "Skills"].map(
                 (section, index) => (
-                  <MDBCol md="9" key={index} className="center-column mb-4">
+                  <MDBCol md="12" key={index} className="mb-4">
                     <MDBCard className="new-post-container">
                       <MDBCardBody className="mt-2 pb-2 border-bottom w-100">
                         <MDBCardTitle className="fs-4 ps-2 fw-bold">
