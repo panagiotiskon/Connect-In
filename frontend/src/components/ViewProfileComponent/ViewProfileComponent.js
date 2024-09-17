@@ -8,12 +8,12 @@ import {
   MDBCardTitle,
 } from "mdb-react-ui-kit";
 import { useParams, useNavigate } from "react-router-dom";
-import NavbarAdminComponent from "./AdminComponent/NavBarAdminComponent";
-import ViewProfileCard from "./common/ViewProfileCard";
-import PersonalInfoService from "../api/UserPersonalInformationAPI";
-import AuthenticationAPI from "../api/AuthenticationAPI";
-import ConnectionAPI from "../api/ConnectionAPI";
-import NavbarComponent from "./common/NavBar";
+import NavbarAdminComponent from "../AdminComponent/NavBarAdminComponent";
+import ViewProfileCard from "../common/ViewProfileCard";
+import PersonalInfoService from "../../api/UserPersonalInformationAPI";
+import AuthenticationAPI from "../../api/AuthenticationAPI";
+import ConnectionAPI from "../../api/ConnectionAPI";
+import NavbarComponent from "../common/NavBar";
 const ViewProfileComponent = () => {
   const { userId } = useParams();
   const [user, setUser] = useState(null);
@@ -130,7 +130,7 @@ const ViewProfileComponent = () => {
               onNavigateToProfile={handleNavigateToProfile}
             />
           </MDBCol>
-          <MDBCol md="8" className="center-column">
+          <MDBCol md="6" className="center-column" style={{marginBottom:"1rem"}}>
             <MDBRow>
               {["Work Experience", "Education", "Skills"].map(
                 (section, index) => (

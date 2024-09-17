@@ -62,7 +62,7 @@ public class PersonalInfoMapper {
         Skill skill = new Skill();
         skill.setSkillTitle(skillDTO.skillTitle());
         skill.setSkillDescription(skillDTO.skillDescription());
-        skill.setIsPublic(skill.getIsPublic());
+        skill.setIsPublic(skillDTO.isPublic());
         return skill;
     }
 }
