@@ -57,5 +57,10 @@ public class ConnectionController {
         return connectionService.removeConnectedAndPendingUsers(users,userId);
     }
 
+    @DeleteMapping("connections/{userId}")
+    public ResponseEntity<String> deleteConnection(@PathVariable Long userId, @RequestParam Long connectionUserId) {
+        connectionService.deleteConnection(userId,connectionUserId);
+        return new ResponseEntity<>("Successfully deleted", HttpStatus.OK);
+    }
 
 }

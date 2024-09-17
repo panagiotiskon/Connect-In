@@ -1,14 +1,11 @@
 import axios from "axios";
 
-// Set your API URL
 const API_URL = "https://localhost:8443/auth";
 
-// Set default configuration for axios
 axios.defaults.withCredentials = true;
 
-// Create the Notification API object
 const NotificationAPI = {
-  // Method to create a notification
+
   createNotification: async (userId, type, connectionUserId) => {
     try {
       const response = await axios.post(
@@ -28,14 +25,13 @@ const NotificationAPI = {
     }
   },
 
-  // Method to get notifications for a specific user
   getNotifications: async (userId) => {
     try {
       const response = await axios.get(`${API_URL}/notifications/${userId}`, {
         headers: {
           "Content-Type": "application/json",
         },
-        withCredentials: true, // Send cookies with the request
+        withCredentials: true, 
       });
       return response.data;
     } catch (error) {
@@ -44,17 +40,16 @@ const NotificationAPI = {
     }
   },
 
-  // Method to accept a notification
   acceptNotification: async (userId, notificationId) => {
     try {
       await axios.put(
         `${API_URL}/notifications/${userId}/accept/${notificationId}`,
-        null, // No request body in this case
+        null, 
         {
           headers: {
             "Content-Type": "application/json",
           },
-          withCredentials: true, // Send cookies with the request
+          withCredentials: true, 
         }
       );
     } catch (error) {
@@ -63,7 +58,6 @@ const NotificationAPI = {
     }
   },
 
-  // Method to decline a notification
   declineNotification: async (userId, notificationId) => {
     try {
       await axios.delete(
@@ -72,7 +66,25 @@ const NotificationAPI = {
           headers: {
             "Content-Type": "application/json",
           },
-          withCredentials: true, // Send cookies with the request
+          withCredentials: true,
+        }
+      );
+    } catch (error) {
+      console.error("Error declining notification:", error);
+      throw error;
+    }
+  },
+
+
+  deleteNotification: async(userId, connectionUserId)=>{
+    try {
+      await axios.delete(
+        `${API_URL}/notifications/${userId}/delete/${connectionUserId}`,
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+          withCredentials: true, 
         }
       );
     } catch (error) {

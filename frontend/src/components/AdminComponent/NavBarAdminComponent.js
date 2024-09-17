@@ -7,9 +7,9 @@ import {
   MDBCollapse,
   MDBBtn,
 } from "mdb-react-ui-kit";
-import ConnectInLogo from "../assets/ConnectIn.png"; // Adjust the path if needed
-import AuthService from "../api/AuthenticationAPI"; // Import the AuthenticationAPI service
-import "../components/NavBarAdminComponent.scss"
+import ConnectInLogo from "../../assets/ConnectIn.png"; // Adjust the path if needed
+import AuthService from "../../api/AuthenticationAPI"; // Import the AuthenticationAPI service
+import "./NavBarAdminComponent.scss"
 
 const NavBarAdminComponent = () => {
   const navigate = useNavigate();

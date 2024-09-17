@@ -44,5 +44,9 @@ public class NotificationController {
         notifictionService.declineNotification(userId,notificationId);
     }
 
-
+    @DeleteMapping("notifications/{userId}/delete/{connectedUserId}")
+    public ResponseEntity<String> deleteNotification(@PathVariable long userId, @PathVariable long connectedUserId) {
+        notifictionService.deleteNotification(userId,connectedUserId);
+        return new ResponseEntity<>("Notification Deleted Successfully",HttpStatus.OK);
+    }
 }

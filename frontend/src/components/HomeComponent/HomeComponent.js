@@ -9,12 +9,12 @@ import {
   MDBCol,
   MDBIcon,
 } from "mdb-react-ui-kit";
-import NavbarComponent from "./common/NavBar";
-import AuthService from "../api/AuthenticationAPI";
-import ProfileCard from "../components/common/ProfileCard";
-import PostService from "../api/PostApi";
-import FileService from "../api/UserFilesApi"; // Import the service to fetch the images
-import PersonalInfoService from "../api/UserPersonalInformationAPI";
+import NavbarComponent from "../common/NavBar";
+import AuthService from "../../api/AuthenticationAPI";
+import ProfileCard from "../common/ProfileCard";
+import PostService from "../../api/PostApi";
+import FileService from "../../api/UserFilesApi"; // Import the service to fetch the images
+import PersonalInfoService from "../../api/UserPersonalInformationAPI";
 
 import "./HomeComponent.scss";
 

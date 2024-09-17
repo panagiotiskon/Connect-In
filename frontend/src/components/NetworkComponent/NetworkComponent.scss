@@ -1,0 +1,73 @@
+/* Grid layout for user cards */
+.card-container-network {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-gap: 1rem;
+  justify-items: center;
+  width: 100%;
+}
+
+.search-bar{
+  background-color: white !important; 
+  margin-top: 20px; 
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  border: 1px solid #ccc; 
+}
+
+.search-bar input{
+  width: 100%; /* Make the search input span the full width of the column */
+  height: auto; 
+}
+
+
+.center-content {
+  text-align: center;
+}
+
+.section-heading {
+  margin-bottom: 20px;
+}
+
+.button-group {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #cecdcdb4;
+}
+
+.card-network {
+  width: 100%;
+  max-width: 350px;
+}
+
+.profile-image {
+  width: 120px !important;
+  height: 120px !important;
+  object-fit: cover;
+}
+
+.card-text {
+  margin-top: 1rem;
+}
+
+.btn-custom {
+  background-color: #35677e !important;
+}
+
+.btn-custom2 {
+  background-color: #b1d4e0 !important;
+  color: #0c2d48 !important;
+}
+
+.select-btn {
+  margin-top: 0.5rem;
+}
+
+@media (max-width: 1080px) {
+  .card-container-network {
+      grid-template-columns: repeat(2, 1fr);
+      height: auto;
+      margin-bottom: 1rem;
+  }
+}

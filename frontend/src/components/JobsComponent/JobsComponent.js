@@ -15,9 +15,9 @@ import {
   MDBDropdownMenu,
   MDBDropdownItem,
 } from "mdb-react-ui-kit";
-import NavbarComponent from "./common/NavBar";
-import AuthService from "../api/AuthenticationAPI";
-import JobAPI from "../api/JobAPI";
+import NavbarComponent from "../common/NavBar";
+import AuthService from "../../api/AuthenticationAPI";
+import JobAPI from "../../api/JobAPI";
 import { useNavigate } from "react-router-dom";
 
 const JobsComponent = () => {

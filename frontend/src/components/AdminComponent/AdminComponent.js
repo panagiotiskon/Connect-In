@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import AdminAPI from "../api/AdminAPI"; // Adjust the import path as needed
-import FileService from "../api/UserFilesApi"; // Adjust the import path as needed
+import AdminAPI from "../../api/AdminAPI"; // Adjust the import path as needed
+import FileService from "../../api/UserFilesApi"; // Adjust the import path as needed
 import NavBarAdminComponent from "./NavBarAdminComponent";
-import FooterComponent from "./common/FooterComponent";
+import FooterComponent from "../common/FooterComponent";
 import json2xml from "json2xml";
 import {
   MDBContainer,
@@ -285,7 +285,7 @@ export default function AdminComponent() {
                       className="btn-custom"
                       onClick={() => handleShowProfile(user.id)}
                     >
-                      Show Profile
+                      View Profile
                     </MDBBtn>
                   </MDBCardText>
                 </MDBCardBody>
