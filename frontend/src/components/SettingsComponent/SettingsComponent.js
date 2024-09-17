@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import NavbarComponent from "./common/NavBar";
-import AuthService from "../api/AuthenticationAPI";
+import NavbarComponent from "../common/NavBar";
+import AuthService from "../../api/AuthenticationAPI";
 import { useNavigate } from "react-router-dom";
 
 import {

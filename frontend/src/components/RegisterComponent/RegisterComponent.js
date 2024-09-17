@@ -2,10 +2,10 @@ import React, { useState } from "react";
 import { MDBContainer, MDBInput, MDBBtn, MDBSpinner } from "mdb-react-ui-kit";
 import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
-import AuthService from "../api/AuthenticationAPI";
-import ConnectInLogo from "../assets/ConnectIn.png";
-import PhotoUpload from "./PhotoUpload";
-import FooterComponent from "./common/FooterComponent";
+import AuthService from "../../api/AuthenticationAPI";
+import ConnectInLogo from "../../assets/ConnectIn.png";
+import PhotoUpload from "../PhotoUpload";
+import FooterComponent from "../common/FooterComponent";
 import "./RegisterComponent.scss";
 
 const RegisterComponent = () => {

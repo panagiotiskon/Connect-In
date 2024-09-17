@@ -3,6 +3,7 @@ package backend.connectin.service;
 import backend.connectin.domain.Notification;
 import backend.connectin.domain.User;
 import backend.connectin.domain.enums.NotificationType;
+import backend.connectin.domain.repository.ConnectionRepository;
 import backend.connectin.domain.repository.NotificationRepository;
 import backend.connectin.web.dto.NotificationDTO;
 import jakarta.transaction.Transactional;
@@ -19,7 +20,7 @@ public class NotifictionService {
     private final ConnectionService connectionService;
     private final NotificationRepository notificationRepository;
 
-    public NotifictionService(UserService userService, ConnectionService connectionService, NotificationRepository notificationRepository) {
+    public NotifictionService(UserService userService, ConnectionService connectionService, NotificationRepository notificationRepository, ConnectionRepository connectionRepository) {
         this.userService = userService;
         this.connectionService = connectionService;
         this.notificationRepository = notificationRepository;
@@ -99,6 +100,12 @@ public class NotifictionService {
         userService.findUserOrThrow(userId);
         List<Notification> notifications = notificationRepository.getNotificationsByUserId(userId);
         return notifications.size();
+    }
+
+    @Transactional
+    public void deleteNotification(Long userId, Long connectionId){
+        Notification notification = notificationRepository.getNotificationByUserIdAndConnectionUserId(userId, connectionId);
+        notificationRepository.delete(notification);
     }
 
 }

@@ -8,7 +8,7 @@ import {
   MDBCardTitle,
 } from "mdb-react-ui-kit";
 import { useParams, useNavigate } from "react-router-dom";
-import NavbarAdminComponent from "./NavBarAdminComponent";
+import NavbarAdminComponent from "./AdminComponent/NavBarAdminComponent";
 import ViewProfileCard from "./common/ViewProfileCard";
 import PersonalInfoService from "../api/UserPersonalInformationAPI";
 import AuthenticationAPI from "../api/AuthenticationAPI";

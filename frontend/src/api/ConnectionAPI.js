@@ -105,13 +105,37 @@ const requestToConnect = async (userId, connectionUserId) => {
   }
 };
 
-// Export the ConnectionAPI functions
+
+// Request to connect with another user
+const deleteConnection = async (userId, connectionUserId) => {
+  try {
+    console.log(userId,connectionUserId);
+    const response = await axios.delete(
+      `${API_URL}/connections/${userId}`,
+      {
+        params: {
+          connectionUserId: connectionUserId,
+        },
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    return response.data; 
+  } catch (error) {
+    console.error("Error requesting connection:", error);
+    throw error;
+  }
+};
+
+
 const ConnectionAPI = {
   getUserConnections,
   createUserConnection,
   getRegisteredUsers,
-  getUserPendingConnections, // <-- Added the new function here
+  getUserPendingConnections, 
   requestToConnect,
+  deleteConnection,
 };
 
 export default ConnectionAPI;
