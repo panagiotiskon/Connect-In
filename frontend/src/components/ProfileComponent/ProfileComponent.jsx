@@ -199,7 +199,43 @@ const ProfileComponent = () => {
         setErrorMessage("Please fill out all required fields.");
         return;
       }
+      const handleDelete = async (id, category) => {
+        try {
+          let response;
+          if (category === "Education") {
+            response = await PersonalInfoService.deleteEducation(
+              currentUser.id,
+              id
+            );
+          } else if (category === "Work Experience") {
+            response = await PersonalInfoService.deleteExperience(
+              currentUser.id,
+              id
+            );
+          } else if (category === "Skills") {
+            response = await PersonalInfoService.deleteSkill(
+              currentUser.id,
+              id
+            );
+          }
 
+          if (response.status === 200) {
+            setCardsContent((prev) => {
+              const updatedContent = prev[category].filter(
+                (item) => item.id !== id
+              );
+              return { ...prev, [category]: updatedContent };
+            });
+
+            setToastMessage(`Successfully deleted ${category.slice(0, -1)}!`);
+            setShowToast(true);
+          } else {
+            setErrorMessage(`Failed to delete ${category.slice(0, -1)}.`);
+          }
+        } catch (error) {
+          setErrorMessage(`Failed to delete ${category.slice(0, -1)}.`);
+        }
+      };
       if (!validateDates()) return;
 
       const experienceDTO = {
@@ -308,152 +344,152 @@ const ProfileComponent = () => {
   return (
     <div>
       <NavbarComponent />
-      <MDBContainer
-        fluid
-        className="home-container"
-      >
+      <MDBContainer fluid className="home-container">
         <MDBRow>
           <MDBCol md="4" className="left-column">
             <ProfileCard currentUser={currentUser} />
           </MDBCol>
 
           <MDBCol md="8" className="center-column">
-              {/* Card 1 - Work Experience */}
-              <MDBCol md="9" className="center-column">
-                <MDBCard className= "new-post-container">
-                  <MDBCardBody className="mt-2 pb-2 border-bottom w-100 container">
-                    <MDBCardTitle className="fs-4 ps-2 fw-bold">
-                      Work Experience
-                    </MDBCardTitle>
-                    <div
-                      style={{
-                        overflowY: "auto",
-                        maxHeight: "200px", // Adjust the height to fit your design
-                        padding: "10px 0",
-                      }}
-                    >
-                      {cardsContent["Work Experience"].map((exp, index) => (
-                        <div key={index} style={{ padding: "10px 0" }}>
-                          <div style={{ fontSize: "20px", fontWeight: "bold" }}>
-                            {exp.jobTitle}
-                          </div>
-                          <div style={{ fontSize: "14px", fontWeight: "500" }}>
-                            {exp.companyName}
-                          </div>
-                          <div style={{ fontSize: "12px", color: "#666" }}>
-                            {exp.startDate}{" "}
-                            {exp.endDate ? ` - ${exp.endDate}` : " - Present"}
-                          </div>
-                          <div style={{ fontSize: "12px", color: "#999" }}>
-                            {exp.isPublic ? "Public" : "Private"}
-                          </div>
+            {/* Card 1 - Work Experience */}
+            <MDBCol md="9" className="center-column">
+              <MDBCard className="new-post-container">
+                <MDBCardBody className="mt-2 pb-2 border-bottom w-100 container">
+                  <MDBCardTitle className="fs-4 ps-2 fw-bold">
+                    Work Experience
+                  </MDBCardTitle>
+                  <div
+                    style={{
+                      overflowY: "auto",
+                      maxHeight: "200px", // Adjust the height to fit your design
+                      padding: "10px 0",
+                    }}
+                  >
+                    {cardsContent["Work Experience"].map((exp, index) => (
+                      <div key={index} style={{ padding: "10px 0" }}>
+                        <div style={{ fontSize: "20px", fontWeight: "bold" }}>
+                          {exp.jobTitle}
                         </div>
-                      ))}
-                    </div>
-
-                    <div className="d-flex justify-content-end mt-auto add-btn">
-                      <MDBBtn
-                        color="primary"
-                        style={{ 
-                          marginTop: "1rem",
-                          marginBottom:"1rem",
-                          backgroundColor:"#35677e"}}
-                        size="md"
-                        onClick={() => handleAddClick("Work Experience")}
-                      >
-                        + ADD
-                      </MDBBtn>
-                    </div>
-                  </MDBCardBody>
-                </MDBCard>
-
-                <MDBCard className="new-post-container mt-4">
-                  <MDBCardBody className="border-bottom  w-100">
-                    <MDBCardTitle  className="fs-4 fw-bold">
-                      Education
-                    </MDBCardTitle>
-                    <div
-                      style={{
-                        overflowY: "auto",
-                        maxHeight: "200px",
-                        padding: "10px 0",
-                      }}
-                    >
-                      {cardsContent.Education.map((edu, index) => (
-                        <div key={index} style={{ padding: "10px 0" }}>
-                          <div style={{ fontSize: "20px", fontWeight: "bold" }}>
-                            {edu.universityName}
-                          </div>
-                          <div style={{ fontSize: "14px", fontWeight: "500" }}>
-                            {edu.fieldOfStudy}
-                          </div>
-                          <div style={{ fontSize: "12px", color: "#666" }}>
-                            {edu.startDate}{" "}
-                            {edu.endDate ? ` - ${edu.endDate}` : " - Present"}
-                          </div>
-                          <div style={{ fontSize: "12px", color: "#999" }}>
-                            {edu.isPublic ? "Public" : "Private"}
-                          </div>
+                        <div style={{ fontSize: "14px", fontWeight: "500" }}>
+                          {exp.companyName}
                         </div>
-                      ))}
-                    </div>
-                    <div className="d-flex justify-content-end mt-auto">
-                      <MDBBtn
-                        style={{ 
-                          marginTop: "1rem",
-                          backgroundColor:"#35677e"}}
-                        size="md"
-                        onClick={() => handleAddClick("Education")}
-                      >
-                        + ADD
-                      </MDBBtn>
-                    </div>
-                  </MDBCardBody>
-                </MDBCard>
+                        <div style={{ fontSize: "12px", color: "#666" }}>
+                          {exp.startDate}{" "}
+                          {exp.endDate ? ` - ${exp.endDate}` : " - Present"}
+                        </div>
+                        <div style={{ fontSize: "12px", color: "#999" }}>
+                          {exp.isPublic ? "Public" : "Private"}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="d-flex justify-content-end mt-auto add-btn">
+                    <MDBBtn
+                      color="primary"
+                      style={{
+                        marginTop: "1rem",
+                        marginBottom: "1rem",
+                        backgroundColor: "#35677e",
+                      }}
+                      size="md"
+                      onClick={() => handleAddClick("Work Experience")}
+                    >
+                      + ADD
+                    </MDBBtn>
+                  </div>
+                </MDBCardBody>
+              </MDBCard>
+
+              <MDBCard className="new-post-container mt-4">
+                <MDBCardBody className="border-bottom  w-100">
+                  <MDBCardTitle className="fs-4 fw-bold">
+                    Education
+                  </MDBCardTitle>
+                  <div
+                    style={{
+                      overflowY: "auto",
+                      maxHeight: "200px",
+                      padding: "10px 0",
+                    }}
+                  >
+                    {cardsContent.Education.map((edu, index) => (
+                      <div key={index} style={{ padding: "10px 0" }}>
+                        <div style={{ fontSize: "20px", fontWeight: "bold" }}>
+                          {edu.universityName}
+                        </div>
+                        <div style={{ fontSize: "14px", fontWeight: "500" }}>
+                          {edu.fieldOfStudy}
+                        </div>
+                        <div style={{ fontSize: "12px", color: "#666" }}>
+                          {edu.startDate}{" "}
+                          {edu.endDate ? ` - ${edu.endDate}` : " - Present"}
+                        </div>
+                        <div style={{ fontSize: "12px", color: "#999" }}>
+                          {edu.isPublic ? "Public" : "Private"}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="d-flex justify-content-end mt-auto">
+                    <MDBBtn
+                      style={{
+                        marginTop: "1rem",
+                        backgroundColor: "#35677e",
+                      }}
+                      size="md"
+                      onClick={() => handleAddClick("Education")}
+                    >
+                      + ADD
+                    </MDBBtn>
+                  </div>
+                </MDBCardBody>
+              </MDBCard>
 
               {/* Card 3 - Skills */}
-                <MDBCard  className="new-post-container mt-4">
-                  <MDBCardBody className="border-bottom pb-2 w-100">
-                    <MDBCardTitle className="fs-4 fw-bold">Skills</MDBCardTitle>
-                    <div
-                      style={{
-                        overflowY: "auto",
-                        height:"30%",
-                        maxHeight: "200px",
-                        padding: "10px 0",
-                      }}
-                    >
-                      {cardsContent.Skills.map((skill, index) => (
-                        <div key={index} style={{ padding: "10px 0" }}>
-                          <div style={{ fontSize: "20px", fontWeight: "bold" }}>
-                            {skill.skillTitle}
-                          </div>
-                          <div style={{ fontSize: "14px", fontWeight: "500" }}>
-                            {skill.skillDescription}
-                          </div>
-                          <div style={{ fontSize: "12px", color: "#999" }}>
-                            {skill.isPublic ? "Public" : "Private"}
-                          </div>
+              <MDBCard className="new-post-container mt-4">
+                <MDBCardBody className="border-bottom pb-2 w-100">
+                  <MDBCardTitle className="fs-4 fw-bold">Skills</MDBCardTitle>
+                  <div
+                    style={{
+                      overflowY: "auto",
+                      height: "30%",
+                      maxHeight: "200px",
+                      padding: "10px 0",
+                    }}
+                  >
+                    {cardsContent.Skills.map((skill, index) => (
+                      <div key={index} style={{ padding: "10px 0" }}>
+                        <div style={{ fontSize: "20px", fontWeight: "bold" }}>
+                          {skill.skillTitle}
                         </div>
-                      ))}
-                    </div>
-                    <div className="d-flex justify-content-end mt-auto">
-                      <MDBBtn
-                        className="add-button"
-                        style={{ 
-                          marginTop: "1rem",
-                          marginBottom:"1rem",
-                        
-                          backgroundColor:"#35677e"}}
-                        size="md"
-                        onClick={() => handleAddClick("Skills")}
-                      >
-                        + ADD
-                      </MDBBtn>
-                    </div>
-                  </MDBCardBody>
-                </MDBCard>
-              </MDBCol>
+                        <div style={{ fontSize: "14px", fontWeight: "500" }}>
+                          {skill.skillDescription}
+                        </div>
+                        <div style={{ fontSize: "12px", color: "#999" }}>
+                          {skill.isPublic ? "Public" : "Private"}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="d-flex justify-content-end mt-auto">
+                    <MDBBtn
+                      className="add-button"
+                      style={{
+                        marginTop: "1rem",
+                        marginBottom: "1rem",
+
+                        backgroundColor: "#35677e",
+                      }}
+                      size="md"
+                      onClick={() => handleAddClick("Skills")}
+                    >
+                      + ADD
+                    </MDBBtn>
+                  </div>
+                </MDBCardBody>
+              </MDBCard>
+            </MDBCol>
 
             <Modal show={showModal} onHide={handleModalClose}>
               <Modal.Header closeButton>
@@ -615,10 +651,21 @@ const ProfileComponent = () => {
                 )}
               </Modal.Body>
               <Modal.Footer>
-                <MDBBtn color="danger" onClick={handleModalClose} style ={{maxWidth:"100px", maxHeight:"2.1rem",}}>
+                <MDBBtn
+                  color="danger"
+                  onClick={handleModalClose}
+                  style={{ maxWidth: "100px", maxHeight: "2.1rem" }}
+                >
                   Close
                 </MDBBtn>
-                <MDBBtn onClick={handleSave} style ={{backgroundColor:"#35677e",maxWidth:"100px", maxHeight:"2.1rem",}}>
+                <MDBBtn
+                  onClick={handleSave}
+                  style={{
+                    backgroundColor: "#35677e",
+                    maxWidth: "100px",
+                    maxHeight: "2.1rem",
+                  }}
+                >
                   Save
                 </MDBBtn>
               </Modal.Footer>
@@ -649,4 +696,3 @@ const ProfileComponent = () => {
 };
 
 export default ProfileComponent;
-
