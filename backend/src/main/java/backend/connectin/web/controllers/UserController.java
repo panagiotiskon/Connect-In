@@ -133,6 +133,26 @@ public class UserController {
         return new ResponseEntity<>(skillDTOS, HttpStatus.OK);
     }
 
+    @DeleteMapping("/{userId}/personal-info/skills/{skillId}")
+    public void deleteSkill(
+            @PathVariable long userId,
+            @PathVariable long skillId) {
+            userService.deleteSkill(userId, skillId);
+    }
+
+    @DeleteMapping("/{userId}/personal-info/experiences/{experienceId}")
+    public void deleteExperience(
+            @PathVariable long userId,
+            @PathVariable long experienceId) {
+        userService.deleteExperience(userId, experienceId);
+    }
+
+    @DeleteMapping("/{userId}/personal-info/educations/{educationId}")
+    public void deleteEducation(
+            @PathVariable long userId,
+            @PathVariable long educationId) {
+        userService.deleteEducation(userId, educationId);
+    }
     // --------FEED-----------
 
 

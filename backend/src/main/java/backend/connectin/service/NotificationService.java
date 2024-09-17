@@ -15,12 +15,12 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
-public class NotifictionService {
+public class NotificationService {
     private final UserService userService;
     private final ConnectionService connectionService;
     private final NotificationRepository notificationRepository;
 
-    public NotifictionService(UserService userService, ConnectionService connectionService, NotificationRepository notificationRepository, ConnectionRepository connectionRepository) {
+    public NotificationService(UserService userService, ConnectionService connectionService, NotificationRepository notificationRepository, ConnectionRepository connectionRepository) {
         this.userService = userService;
         this.connectionService = connectionService;
         this.notificationRepository = notificationRepository;
@@ -30,7 +30,10 @@ public class NotifictionService {
     public Notification createNotification(long userId, NotificationType type,long connectionUserId){
         userService.findUserOrThrow(userId);
         userService.findUserOrThrow(connectionUserId);
-        Notification notification;
+        if(userId==connectionUserId){
+            return null;
+        }
+        Notification notification=new Notification();
         if(type==NotificationType.CONNECTION) {
             userService.findUserOrThrow(connectionUserId);
             List<Long> ids = connectionService.getConnectedUserIds(userId);
@@ -42,18 +45,23 @@ public class NotifictionService {
             notification.setUserId(userId);
             notification.setConnectionUserId(connectionUserId);
             notification.setCreatedAt(Instant.now());
-
             notificationRepository.save(notification);
+
         }
         else{
-            notification = new Notification();
-            notification.setType(type);
-            notification.setUserId(userId);
-            notification.setConnectionUserId(connectionUserId);
-            notification.setCreatedAt(Instant.now());
+            List<Notification> notifications = notificationRepository.getNotificationsByUserId(userId);
+            if(notifications.stream().noneMatch(notification1 -> notification1.getConnectionUserId()==connectionUserId)) {
+                notification = new Notification();
+                notification.setType(type);
+                notification.setUserId(userId);
+                notification.setConnectionUserId(connectionUserId);
+                notification.setCreatedAt(Instant.now());
+                notificationRepository.save(notification);
 
-            notificationRepository.save(notification);
+            }
         }
+
+
         return notification;
     }
     public List<NotificationDTO> getNotifications(long userId) {
@@ -64,6 +72,7 @@ public class NotifictionService {
         if (notifications.isEmpty()) {
             return List.of();
         }
+
 
         List<Long> connectionIds = notifications.stream()
                 .map(Notification::getConnectionUserId)
@@ -118,6 +127,13 @@ public class NotifictionService {
     public void deleteNotification(Long userId, Long connectionId){
         Notification notification = notificationRepository.getNotificationByUserIdAndConnectionUserId(userId, connectionId);
         notificationRepository.delete(notification);
+    }
+    @Transactional
+    public void deleteNotificationUsingId(long notificationId){
+        if(notificationRepository.findById(notificationId).isEmpty()){
+            throw new RuntimeException("notification does not exist");
+        }
+        notificationRepository.delete(notificationRepository.findById(notificationId).get());
     }
 
 }
