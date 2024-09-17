@@ -9,10 +9,10 @@ import {
   MDBBtn,
 } from "mdb-react-ui-kit";
 import { Modal, Button, Form, Alert, Toast } from "react-bootstrap";
-import NavbarComponent from "./common/NavBar";
-import ProfileCard from "./common/ProfileCard";
-import AuthService from "../api/AuthenticationAPI";
-import PersonalInfoService from "../api/UserPersonalInformationAPI";
+import NavbarComponent from "../common/NavBar";
+import ProfileCard from "../common/ProfileCard";
+import AuthService from "../../api/AuthenticationAPI";
+import PersonalInfoService from "../../api/UserPersonalInformationAPI";
 
 const ProfileComponent = () => {
   const [currentUser, setCurrentUser] = useState(null);
