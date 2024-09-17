@@ -30,18 +30,30 @@ public class NotifictionService {
     public Notification createNotification(long userId, NotificationType type,long connectionUserId){
         userService.findUserOrThrow(userId);
         userService.findUserOrThrow(connectionUserId);
-        List<Long> ids=connectionService.getConnectedUserIds(userId);
-        if(ids.contains(connectionUserId)){
-            throw new RuntimeException("users already connected");
+        Notification notification;
+        if(type==NotificationType.CONNECTION) {
+            userService.findUserOrThrow(connectionUserId);
+            List<Long> ids = connectionService.getConnectedUserIds(userId);
+            if (ids.contains(connectionUserId)) {
+                throw new RuntimeException("users already connected");
+            }
+            notification = new Notification();
+            notification.setType(type);
+            notification.setUserId(userId);
+            notification.setConnectionUserId(connectionUserId);
+            notification.setCreatedAt(Instant.now());
+
+            notificationRepository.save(notification);
         }
-        Notification notification = new Notification();
-        notification.setType(type);
-        notification.setUserId(userId);
-        notification.setConnectionUserId(connectionUserId);
-        notification.setCreatedAt(Instant.now());
+        else{
+            notification = new Notification();
+            notification.setType(type);
+            notification.setUserId(userId);
+            notification.setConnectionUserId(connectionUserId);
+            notification.setCreatedAt(Instant.now());
 
-        notificationRepository.save(notification);
-
+            notificationRepository.save(notification);
+        }
         return notification;
     }
     public List<NotificationDTO> getNotifications(long userId) {
