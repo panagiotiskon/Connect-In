@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import { MDBCard, MDBCardBody, MDBCardImage } from "mdb-react-ui-kit";
 import { useNavigate } from "react-router-dom";
 import FileService from "../../api/UserFilesApi"; // Adjust the import path as needed
-import { Card } from "react-bootstrap";
 
 const ProfileCard = ({ currentUser }) => {
   const navigate = useNavigate();
@@ -78,7 +77,6 @@ const ProfileCard = ({ currentUser }) => {
             fontSize: "1.8rem",
             cursor: "pointer",
             textAlign: "center", // Center the text horizontally
-            marginBottom: "1rem", // Adjust margin if needed
             font: "Segoe UI",
             marginBottom:"2rem",
           }}

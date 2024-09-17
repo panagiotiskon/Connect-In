@@ -221,7 +221,7 @@ public class UserService {
     @Transactional
     public List<Skill> addSkill(long userId,Skill skill){
         if(userRepository.findById(userId).isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "User not found");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found");
         }
         PersonalInfo personalInfo;
         if(personalInfoRepository.findByUserId(userId)==null){

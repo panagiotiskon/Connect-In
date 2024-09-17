@@ -42,7 +42,8 @@ const ViewProfileCard = ({ viewedUser, connections, onNavigateToProfile }) => {
       className="mb-4"
       style={{
         width: "70%",
-        margin: "3%",
+        margin: "2rem",
+        marginLeft: "2rem",
         height: "450px",
         display: "flex",
       }}
@@ -92,6 +93,8 @@ const ViewProfileCard = ({ viewedUser, connections, onNavigateToProfile }) => {
                   fontSize: "1rem",
                   textAlign: "center",
                   font: "Segoe UI",
+                  backgroundColor: "#35677e",
+
                 }}
               >
                 Connections
@@ -105,11 +108,12 @@ const ViewProfileCard = ({ viewedUser, connections, onNavigateToProfile }) => {
                       fontWeight: "bold",
                       fontSize: "1rem",
                       cursor: "pointer",
-                      textAlign: "center",
+                      textAlign: "start",
                       font: "Segoe UI",
-                      padding: "10px",
+                      padding: "1.1rem",
                     }}
                   >
+                    <div>
                     <img
                       src={`data:${connection.profileType};base64,${connection.profilePic}`}
                       alt={`${connection.firstName} ${connection.lastName}`}
@@ -119,8 +123,10 @@ const ViewProfileCard = ({ viewedUser, connections, onNavigateToProfile }) => {
                         objectFit: "cover",
                         borderRadius: "50%",
                         marginRight: "10px",
+                        backgroundColor: "#35677e",
+                        
                       }}
-                    />
+                    /></div>
                     {`${connection.firstName} ${connection.lastName}`}
                   </MDBDropdownItem>
                 ))}

@@ -615,12 +615,12 @@ const ProfileComponent = () => {
                 )}
               </Modal.Body>
               <Modal.Footer>
-                <Button variant="secondary" onClick={handleModalClose}>
+                <MDBBtn color="danger" onClick={handleModalClose} style ={{maxWidth:"100px", maxHeight:"2.1rem",}}>
                   Close
-                </Button>
-                <Button variant="primary" onClick={handleSave}>
-                  Save Changes
-                </Button>
+                </MDBBtn>
+                <MDBBtn onClick={handleSave} style ={{backgroundColor:"#35677e",maxWidth:"100px", maxHeight:"2.1rem",}}>
+                  Save
+                </MDBBtn>
               </Modal.Footer>
             </Modal>
 
