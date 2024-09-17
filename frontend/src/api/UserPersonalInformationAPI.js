@@ -197,6 +197,51 @@ const addSkill = async (userId, skillDTO) => {
   }
 };
 
+const deleteSkill = async (userId, skillId) => {
+  try {
+    await axios.delete(`${API_URL}/${userId}/personal-info/skills/${skillId}`, {
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+  } catch (error) {
+    console.error("Error deleting skill:", error.message);
+    throw error;
+  }
+};
+
+const deleteEducation = async (userId, educationId) => {
+  try {
+    await axios.delete(
+      `${API_URL}/${userId}/personal-info/educations/${educationId}`,
+      {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+  } catch (error) {
+    console.error("Error deleting education:", error.message);
+    throw error;
+  }
+};
+
+const deleteExperience = async (userId, experienceId) => {
+  try {
+    await axios.delete(
+      `${API_URL}/${userId}/personal-info/experiences/${experienceId}`,
+      {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+  } catch (error) {
+    console.error("Error deleting experience:", error.message);
+    throw error;
+  }
+};
+
 const PersonalInfoService = {
   getUser,
   getEducation,
@@ -205,6 +250,9 @@ const PersonalInfoService = {
   addExperience,
   getSkills,
   addSkill,
+  deleteSkill,
+  deleteExperience,
+  deleteEducation,
 };
 
 export default PersonalInfoService;

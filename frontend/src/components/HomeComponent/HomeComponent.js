@@ -15,7 +15,7 @@ import ProfileCard from "../common/ProfileCard";
 import PostService from "../../api/PostApi";
 import FileService from "../../api/UserFilesApi"; // Import the service to fetch the images
 import PersonalInfoService from "../../api/UserPersonalInformationAPI";
-
+import NotificationAPI from "../../api/NotificationAPI";
 import "./HomeComponent.scss";
 
 const HomeComponent = () => {
@@ -35,7 +35,9 @@ const HomeComponent = () => {
       const user = await AuthService.getCurrentUser();
       const response = await PostService.getFeed(user?.id);
 
-      const fetchedPosts = Array.isArray(response) ? response : response?.data || [];
+      const fetchedPosts = Array.isArray(response)
+        ? response
+        : response?.data || [];
 
       const postsById = {};
 
@@ -72,8 +74,8 @@ const HomeComponent = () => {
         })
       );
 
-      setPosts(postsWithUserPhotos);  // Still set the array of posts for UI rendering
-      setPostsMap(postsById);  // Set the dictionary mapping post IDs to posts
+      setPosts(postsWithUserPhotos); // Still set the array of posts for UI rendering
+      setPostsMap(postsById); // Set the dictionary mapping post IDs to posts
     } catch (error) {
       console.error("Error fetching posts:", error);
       setPosts([]);
@@ -100,7 +102,6 @@ const HomeComponent = () => {
       console.error("Error fetching user comments:", error);
     }
   };
-
 
   useEffect(() => {
     const fetchCurrentUser = async () => {
@@ -187,6 +188,13 @@ const HomeComponent = () => {
 
         fetchPosts();
 
+        if (post.userId !== currentUser.id) {
+          await NotificationAPI.createNotification(
+            post.userId,
+            "COMMENT",
+            currentUser.id
+          );
+        }
       } else {
         alert("Failed to submit comment");
         console.error("Post not found for the given postId:", postId);
@@ -211,12 +219,39 @@ const HomeComponent = () => {
   const handleReactionToggle = async (postId) => {
     try {
       const hasReacted = reactedPostIds.includes(postId);
+      const post = postsMap[postId];
+
       if (hasReacted) {
         await PostService.deleteReaction(postId);
         setReactedPostIds((prev) => prev.filter((id) => id !== postId)); // Remove from reacted post IDs
+
+        const notifications = await NotificationAPI.getNotifications(
+          post.userId
+        );
+        if (notifications.length > 0) {
+          for (const notification of notifications) {
+            console.log(notification);
+            if (notification.notificationType === "REACTION") {
+              try {
+                await NotificationAPI.deleteNotificationById(notification.id);
+              } catch (error) {
+                console.error("Error deleting notification:", error);
+              }
+            }
+          }
+        }
       } else {
         await PostService.createReaction(postId);
         setReactedPostIds((prev) => [...prev, postId]); // Add to reacted post IDs
+
+        // Create a new notification
+        if (post.userId !== currentUser.id) {
+          await NotificationAPI.createNotification(
+            post.userId,
+            "REACTION",
+            currentUser.id
+          );
+        }
       }
       fetchPosts();
     } catch (error) {
@@ -227,7 +262,27 @@ const HomeComponent = () => {
   const handleDeleteComment = async (postId, commentId) => {
     try {
       await PostService.deleteComment(postId, commentId);
-      fetchPosts();
+
+      // Fetch the updated list of posts
+      await fetchPosts();
+
+      // Get the post data after deletion
+      const updatedPost = postsMap[postId];
+      if (updatedPost) {
+        // Check if the deleted comment was the one associated with the user
+        const deletedComment = updatedPost.comments.find(
+          (comment) => comment.id === commentId
+        );
+
+        if (deletedComment && deletedComment.userId !== currentUser.id) {
+          // Create a notification for the post owner
+          await NotificationAPI.createNotification(
+            updatedPost.userId,
+            "COMMENT_DELETION",
+            currentUser.id
+          );
+        }
+      }
     } catch (error) {
       console.error("Error deleting comment:", error);
       alert("Failed to delete comment.");
@@ -243,9 +298,16 @@ const HomeComponent = () => {
       <MDBContainer fluid className="home-container">
         <MDBRow>
           <MDBCol md="4" className="left-column">
-            <ProfileCard currentUser={currentUser} profileImage={profileImage} />
+            <ProfileCard
+              currentUser={currentUser}
+              profileImage={profileImage}
+            />
           </MDBCol>
-          <MDBCol md="6" className="center-column" style={{marginBottom:"1rem"}}>
+          <MDBCol
+            md="6"
+            className="center-column"
+            style={{ marginBottom: "1rem" }}
+          >
             {/* Create Post Section */}
             <MDBCard className="new-post-container shadow-0">
               <MDBCardBody className="pb-2 w-100">
@@ -317,7 +379,10 @@ const HomeComponent = () => {
                     </div>
                   )}
 
-                  <MDBBtn className="submit-post-btn" onClick={handlePostSubmit}>
+                  <MDBBtn
+                    className="submit-post-btn"
+                    onClick={handlePostSubmit}
+                  >
                     POST
                   </MDBBtn>
                 </div>
@@ -337,7 +402,9 @@ const HomeComponent = () => {
                         width="45"
                         alt="Poster Avatar"
                       />
-                      <div className="poster-text"><strong>{post.posterName}</strong></div>
+                      <div className="poster-text">
+                        <strong>{post.posterName}</strong>
+                      </div>
                       {currentUser?.id === post.userId && (
                         <MDBBtn
                           className="btn-sm delete-post-btn"
@@ -349,11 +416,16 @@ const HomeComponent = () => {
                       )}
                     </div>
                     <h5>{post.content}</h5>
-                    <p className="text-muted" 
-                        style={{
-                          display:"flex",
-                          margin:"0",
-                          fontSize: "0.8rem"}}>Posted at: {new Date(post.createdAt).toLocaleString()}</p>
+                    <p
+                      className="text-muted"
+                      style={{
+                        display: "flex",
+                        margin: "0",
+                        fontSize: "0.8rem",
+                      }}
+                    >
+                      Posted at: {new Date(post.createdAt).toLocaleString()}
+                    </p>
                     {post.file && (
                       <img
                         className="feed-post-img"
@@ -364,10 +436,12 @@ const HomeComponent = () => {
                     )}
                     <div className="reaction-button-container">
                       <MDBBtn
-
-                        className={reactedPostIds.includes(post.id) ? "custom-success" : "custom-primary"}
-                        style={{marginTop:'1rem'}}
-
+                        className={
+                          reactedPostIds.includes(post.id)
+                            ? "custom-success"
+                            : "custom-primary"
+                        }
+                        style={{ marginTop: "1rem" }}
                         onClick={() => handleReactionToggle(post.id)}
                       >
                         {reactedPostIds.includes(post.id) ? "Reacted" : "React"}
@@ -378,8 +452,10 @@ const HomeComponent = () => {
                         type="text"
                         className="form-control"
                         placeholder="Add a comment..."
-                        value={commentInputs[post.id] || ""}  // Tie input to the specific post ID
-                        onChange={(e) => handleCommentInputChange(post.id, e.target.value)}
+                        value={commentInputs[post.id] || ""} // Tie input to the specific post ID
+                        onChange={(e) =>
+                          handleCommentInputChange(post.id, e.target.value)
+                        }
                       />
                       <MDBBtn
                         className="submit-post-btn"

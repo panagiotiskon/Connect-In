@@ -5,7 +5,6 @@ const API_URL = "https://localhost:8443/auth";
 axios.defaults.withCredentials = true;
 
 const NotificationAPI = {
-
   createNotification: async (userId, type, connectionUserId) => {
     try {
       const response = await axios.post(
@@ -31,7 +30,7 @@ const NotificationAPI = {
         headers: {
           "Content-Type": "application/json",
         },
-        withCredentials: true, 
+        withCredentials: true,
       });
       return response.data;
     } catch (error) {
@@ -44,12 +43,12 @@ const NotificationAPI = {
     try {
       await axios.put(
         `${API_URL}/notifications/${userId}/accept/${notificationId}`,
-        null, 
+        null,
         {
           headers: {
             "Content-Type": "application/json",
           },
-          withCredentials: true, 
+          withCredentials: true,
         }
       );
     } catch (error) {
@@ -75,8 +74,7 @@ const NotificationAPI = {
     }
   },
 
-
-  deleteNotification: async(userId, connectionUserId)=>{
+  deleteNotification: async (userId, connectionUserId) => {
     try {
       await axios.delete(
         `${API_URL}/notifications/${userId}/delete/${connectionUserId}`,
@@ -84,11 +82,25 @@ const NotificationAPI = {
           headers: {
             "Content-Type": "application/json",
           },
-          withCredentials: true, 
+          withCredentials: true,
         }
       );
     } catch (error) {
-      console.error("Error declining notification:", error);
+      console.error("Error deleting notification:", error);
+      throw error;
+    }
+  },
+
+  deleteNotificationById: async (notificationId) => {
+    try {
+      await axios.delete(`${API_URL}/notifications/delete/${notificationId}`, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+        withCredentials: true,
+      });
+    } catch (error) {
+      console.error("Error deleting notification:", error);
       throw error;
     }
   },
