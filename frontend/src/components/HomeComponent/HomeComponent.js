@@ -82,9 +82,9 @@ const HomeComponent = () => {
 
   const fetchReactedPostIds = async () => {
     try {
-      const response = await PostService.getUserReactions(); // Fetch list of reacted post IDs
-      const userReactedPostIds = response?.data || []; // Ensure data is an array
-      setReactedPostIds(userReactedPostIds); // Store the list of reacted post IDs
+      const response = await PostService.getUserReactions(); 
+      const userReactedPostIds = response?.data || []; 
+      setReactedPostIds(userReactedPostIds); 
     } catch (error) {
       console.error("Error fetching reacted post IDs:", error);
     }
@@ -394,7 +394,7 @@ const HomeComponent = () => {
                     <div className="comments-section">
                       {post.comments && post.comments.length > 0 ? (
                         post.comments.map((comment) => (
-                          <div key={comment.id} className="comment d-flex align-items-center mb-3">
+                          <div key={comment.commentId} className="comment d-flex align-items-center mb-3">
                             <img
                               src={comment.profileImage || "https://via.placeholder.com/40"}
                               className="rounded-circle"
@@ -408,11 +408,11 @@ const HomeComponent = () => {
                             </div>
                             <div className="comment-date text-muted">
                               {new Date(comment.createdAt).toLocaleString()}
-                              {userComments[post.id] && userComments[post.id].includes(comment.id) && (
+                              {userComments[post.id] && userComments[post.id].includes(comment.commentId) && (
                                 <button
                                   className="btn btn-secondary btn-sm "
                                   style={{ fontSize: '12px', padding: '2px 5px', marginLeft:'4px'}}
-                                  onClick={() => handleDeleteComment(post.id, comment.id)}
+                                  onClick={() => handleDeleteComment(post.id, comment.commentId)}
                                 >
                                   &#10005;
                                 </button>
