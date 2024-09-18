@@ -102,4 +102,15 @@ public class JobService {
 
         return jobApplicationDTOS;
     }
+
+    public void deleteJob(long userId,long jobPostId){
+        userService.findUserOrThrow(userId);
+        Optional<JobPost> jobPost = jobPostRepository.findById(jobPostId);
+        if(jobPost.isEmpty()){
+            throw new RuntimeException("Job post not found");
+        }
+        if(jobPost.get().getUserId()==userId){
+            jobPostRepository.delete(jobPost.get());
+        }
+    }
 }

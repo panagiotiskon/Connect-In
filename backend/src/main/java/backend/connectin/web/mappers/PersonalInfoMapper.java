@@ -12,6 +12,7 @@ import org.springframework.stereotype.Component;
 public class PersonalInfoMapper {
     public ExperienceDTO mapToExperienceDTO(Experience experience) {
         return new ExperienceDTO(
+                experience.getId(),
                 experience.getJobTitle(),
                 experience.getCompanyName(),
                 experience.getStartDate(),
@@ -22,6 +23,7 @@ public class PersonalInfoMapper {
 
     public SkillDTO mapToSkillDTO(Skill skill) {
         return new SkillDTO(
+                skill.getId(),
                 skill.getSkillTitle(),
                 skill.getSkillDescription(),
                 skill.getIsPublic()
@@ -30,6 +32,7 @@ public class PersonalInfoMapper {
 
     public EducationDTO mapToEducationDTO(Education education) {
         return new EducationDTO(
+                education.getId(),
                 education.getUniversityName(),
                 education.getFieldOfStudy(),
                 education.getStartDate(),
