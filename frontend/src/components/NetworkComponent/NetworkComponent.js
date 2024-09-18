@@ -26,13 +26,19 @@ const NetworkComponent = () => {
       const currentUserId = currentUser?.id;
 
       if (currentUserId) {
-        const connectionsResponse = await ConnectionAPI.getUserConnections(currentUserId);
-        const pendingConnectionsResponse = await ConnectionAPI.getUserPendingConnections(currentUserId);
+        const connectionsResponse = await ConnectionAPI.getUserConnections(
+          currentUserId
+        );
+        const pendingConnectionsResponse =
+          await ConnectionAPI.getUserPendingConnections(currentUserId);
 
         setConnectedUsers(connectionsResponse);
         setPendingUsers(pendingConnectionsResponse);
 
-        const combinedUsers = [...connectionsResponse, ...pendingConnectionsResponse];
+        const combinedUsers = [
+          ...connectionsResponse,
+          ...pendingConnectionsResponse,
+        ];
         setDisplayedUsers(combinedUsers);
       }
     } catch (error) {
@@ -52,7 +58,10 @@ const NetworkComponent = () => {
       setShowRegisteredUsers(false);
     } else {
       try {
-        const filteredRegisteredUsers = await ConnectionAPI.getRegisteredUsers(searchTerm, currentUserId);
+        const filteredRegisteredUsers = await ConnectionAPI.getRegisteredUsers(
+          searchTerm,
+          currentUserId
+        );
         setDisplayedUsers(filteredRegisteredUsers);
         setShowRegisteredUsers(true);
       } catch (error) {
@@ -88,8 +97,15 @@ const NetworkComponent = () => {
         await ConnectionAPI.requestToConnect(currentUserId, connectionUserId);
         console.log("Connection request sent to user ID:", connectionUserId);
 
-        await NotificationAPI.createNotification(connectionUserId, "CONNECTION", currentUserId);
-        console.log("Notification sent for connection to user ID:", connectionUserId);
+        await NotificationAPI.createNotification(
+          connectionUserId,
+          "CONNECTION",
+          currentUserId
+        );
+        console.log(
+          "Notification sent for connection to user ID:",
+          connectionUserId
+        );
 
         await fetchUserData(); // Refresh user data after the connection request
       }
@@ -105,12 +121,20 @@ const NetworkComponent = () => {
 
       if (currentUserId) {
         await MessagingAPI.createConversation(currentUserId, connectedUserId);
-        console.log("Conversation created between user ID:", currentUserId, "and user ID:", connectedUserId);
+        console.log(
+          "Conversation created between user ID:",
+          currentUserId,
+          "and user ID:",
+          connectedUserId
+        );
 
         navigate(`/messaging`);
       }
     } catch (error) {
-      console.error("Error creating conversation or navigating to messaging page:", error);
+      console.error(
+        "Error creating conversation or navigating to messaging page:",
+        error
+      );
     }
   };
 
@@ -127,7 +151,7 @@ const NetworkComponent = () => {
         await ConnectionAPI.deleteConnection(currentUserId, connectionUserId);
         console.log("Connection deleted for user ID:", connectionUserId);
 
-        await fetchUserData(); 
+        await fetchUserData();
       }
     } catch (error) {
       console.error("Error deleting connection:", error);
@@ -141,14 +165,16 @@ const NetworkComponent = () => {
 
       if (currentUserId) {
         await ConnectionAPI.deleteConnection(currentUserId, connectionUserId);
-        await NotificationAPI.deleteNotification(connectionUserId, currentUserId);
-        await fetchUserData(); 
+        await NotificationAPI.deleteNotification(
+          connectionUserId,
+          currentUserId
+        );
+        await fetchUserData();
       }
     } catch (error) {
       console.error("Error deleting connection:", error);
     }
   };
-
 
   return (
     <div>
@@ -159,13 +185,17 @@ const NetworkComponent = () => {
         ) : (
           <>
             <MDBRow className="mb-5 pt-5">
-              <MDBCol md="6" className="search-bar-ctm d-flex justify-content-center mx-auto"
+              <MDBCol
+                md="6"
+                className="search-bar-ctm d-flex justify-content-center mx-auto"
                 style={{
-                  backgroundColor: 'white',
-                  padding: '0',
-                  boxShadow: '0 2px 5px rgba(0, 0, 0, 0.1)',
-                }}>
-                <MDBInput style={{ marginBottom: '0', padding: '10px' }}
+                  backgroundColor: "white",
+                  padding: "0",
+                  boxShadow: "0 2px 5px rgba(0, 0, 0, 0.1)",
+                }}
+              >
+                <MDBInput
+                  style={{ marginBottom: "0", padding: "10px" }}
                   label="Search users"
                   value={searchTerm}
                   onChange={handleSearchChange}
@@ -202,7 +232,9 @@ const NetworkComponent = () => {
                           companyName: user.companyName,
                         }}
                         onShowProfile={() => handleShowProfile(user.userId)}
-                        onDeletePending={() => handleDeletePendingConnection(user.userId)}
+                        onDeletePending={() =>
+                          handleDeletePendingConnection(user.userId)
+                        }
                       />
                     ) : (
                       <ConnectedUsersCardComponent

@@ -14,6 +14,7 @@ import {
   MDBDropdownToggle,
   MDBDropdownMenu,
   MDBDropdownItem,
+  MDBIcon,
 } from "mdb-react-ui-kit";
 import NavbarComponent from "../common/NavBar";
 import AuthService from "../../api/AuthenticationAPI";
@@ -333,25 +334,18 @@ const JobsComponent = () => {
                                   </MDBCardText>
                                 </>
                               )}
-                            <button
-                              className="btn btn-danger position-absolute"
-                              style={{
-                                top: "0",
-                                right: "0",
-                                margin: "0.5rem",
-                                border: "none",
-                                borderRadius: "50%",
-                                padding: "0.25rem 0.5rem",
-                                backgroundColor: "#dc3545",
-                                color: "#fff",
-                                cursor: "pointer",
-                                fontSize: "1rem",
-                              }}
+                            <MDBBtn
+                              className="d-flex btn-sm delete-connection-btn2"
+                              color="secondary"
                               onClick={() => handleDeleteJob(job.id)}
-                              aria-label="Delete Job"
+                              style={{
+                                position: "absolute",
+                                top: "8px",
+                                left: "1200px",
+                              }}
                             >
-                              <i className="fas fa-times"></i>
-                            </button>
+                              <MDBIcon fas icon="times" />
+                            </MDBBtn>
                           </MDBCardBody>
                         </MDBCard>
                       </MDBCol>
