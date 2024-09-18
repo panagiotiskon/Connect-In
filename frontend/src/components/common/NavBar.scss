@@ -29,6 +29,34 @@
 }
 
 
+.navbar-nav-item {
+  cursor: pointer; /* Make sure it looks clickable */
+
+  /* For the hover effect */
+  &:hover {
+    color: black; /* This affects the text and icons */
+    font-weight: bold;
+  }
+
+  .navbar-link {
+    text-decoration: none;
+  }
+
+  span {
+    &:hover {
+      text-decoration: underline; /* Underline on hover */
+    }
+  }
+}
+
+/* Add a class for active links */
+.active-nav-item {
+  color: black;
+  font-weight: bold;
+  text-decoration: underline; /* Underline for active page */
+}
+
+
 
 @media (max-width: 600px) {
   .navbar-container {
