@@ -378,6 +378,11 @@ const ProfileComponent = () => {
                         <MDBBtn
                           className="d-flex btn-sm delete-connection-btn2"
                           color="secondary"
+                          style={{
+                            position: "absolute",
+                            top: "0px",
+                            left: "810px",
+                          }}
                           onClick={() =>
                             handleDelete(exp.experienceId, "Work Experience")
                           }
@@ -439,6 +444,11 @@ const ProfileComponent = () => {
                         <MDBBtn
                           className="d-flex btn-sm delete-connection-btn2"
                           color="secondary"
+                          style={{
+                            position: "absolute",
+                            top: "0px",
+                            left: "810px",
+                          }}
                           onClick={() =>
                             handleDelete(edu.educationId, "Education")
                           }
@@ -480,7 +490,6 @@ const ProfileComponent = () => {
                 </MDBCardBody>
               </MDBCard>
 
-              {/* Card 3 - Skills */}
               <MDBCard className="new-post-container mt-4">
                 <MDBCardBody className="border-bottom  w-100">
                   <MDBCardTitle className="fs-4 fw-bold">Skills</MDBCardTitle>
@@ -499,6 +508,11 @@ const ProfileComponent = () => {
                         <MDBBtn
                           className="d-flex btn-sm delete-connection-btn2"
                           color="secondary"
+                          style={{
+                            position: "absolute",
+                            top: "0px",
+                            left: "810px",
+                          }}
                           onClick={() => handleDelete(skill.skillId, "Skills")}
                         >
                           <MDBIcon fas icon="times" />

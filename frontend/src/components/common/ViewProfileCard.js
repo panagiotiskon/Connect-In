@@ -9,9 +9,12 @@ import {
   MDBDropdownItem,
 } from "mdb-react-ui-kit";
 import FileService from "../../api/UserFilesApi"; // Adjust the import path as needed
+import AuthService from "../../api/AuthenticationAPI"; // Adjust the import path as needed
 
 const ViewProfileCard = ({ viewedUser, connections, onNavigateToProfile }) => {
   const [profileImage, setProfileImage] = useState(null);
+  const [currentUser, setCurrentUser] = useState(null);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     const fetchProfileImage = async () => {
@@ -30,12 +33,29 @@ const ViewProfileCard = ({ viewedUser, connections, onNavigateToProfile }) => {
       }
     };
 
+    const fetchCurrentUser = async () => {
+      try {
+        const user = await AuthService.getCurrentUser();
+        if (user) {
+          setCurrentUser(user);
+          setIsAdmin(user.role === "ROLE_ADMIN");
+        }
+      } catch (error) {
+        console.error("Error fetching current user:", error);
+      }
+    };
+
     fetchProfileImage();
+    fetchCurrentUser();
   }, [viewedUser]);
 
   if (!viewedUser) {
     return <div>Loading...</div>;
   }
+
+  const isCurrentUserInConnections = connections.some(
+    (connection) => connection.userId === currentUser?.id
+  );
 
   return (
     <MDBCard
@@ -76,7 +96,8 @@ const ViewProfileCard = ({ viewedUser, connections, onNavigateToProfile }) => {
         >
           {`${viewedUser.firstName} ${viewedUser.lastName}`}
         </p>
-        {connections && connections.length > 0 && (
+        {(isAdmin ||
+          (isCurrentUserInConnections && connections.length > 0)) && (
           <div
             style={{
               display: "flex",
@@ -94,7 +115,6 @@ const ViewProfileCard = ({ viewedUser, connections, onNavigateToProfile }) => {
                   textAlign: "center",
                   font: "Segoe UI",
                   backgroundColor: "#35677e",
-
                 }}
               >
                 Connections
@@ -114,19 +134,19 @@ const ViewProfileCard = ({ viewedUser, connections, onNavigateToProfile }) => {
                     }}
                   >
                     <div>
-                    <img
-                      src={`data:${connection.profileType};base64,${connection.profilePic}`}
-                      alt={`${connection.firstName} ${connection.lastName}`}
-                      style={{
-                        width: "30px",
-                        height: "30px",
-                        objectFit: "cover",
-                        borderRadius: "50%",
-                        marginRight: "10px",
-                        backgroundColor: "#35677e",
-                        
-                      }}
-                    /></div>
+                      <img
+                        src={`data:${connection.profileType};base64,${connection.profilePic}`}
+                        alt={`${connection.firstName} ${connection.lastName}`}
+                        style={{
+                          width: "30px",
+                          height: "30px",
+                          objectFit: "cover",
+                          borderRadius: "50%",
+                          marginRight: "10px",
+                          backgroundColor: "#35677e",
+                        }}
+                      />
+                    </div>
                     {`${connection.firstName} ${connection.lastName}`}
                   </MDBDropdownItem>
                 ))}

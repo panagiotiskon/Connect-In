@@ -114,15 +114,19 @@ export default function NotificationComponent() {
             </href>{" "}
             {action} your post.
           </div>
-          <MDBIcon fas icon={icon} size="lg" />
-          <MDBIcon
-            fas
-            icon="times"
-            size="lg"
-            className="position-absolute top-0 end-0 mt-2 me-1"
-            style={{ cursor: "pointer" }}
+          <MDBIcon fas icon={icon} size="md" />
+          <MDBBtn
+            className="d-flex btn-sm delete-connection-btn2"
+            color="secondary"
+            style={{
+              position: "absolute",
+              top: "0px",
+              left: "1205px",
+            }}
             onClick={() => handleDelete(id)}
-          />
+          >
+            <MDBIcon fas icon="times" />
+          </MDBBtn>
         </MDBCardBody>
       </MDBCard>
     );
