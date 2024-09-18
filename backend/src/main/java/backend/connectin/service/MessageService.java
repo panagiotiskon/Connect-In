@@ -64,7 +64,7 @@ public class MessageService {
                     // Get the first image (if any)
                     .findFirst()
                     .orElse(null);
-            MessageDTO messageDTO = new MessageDTO(message.getContent(),profilePicture.get("data"),profilePicture.get("type"),message.getSentAt());
+            MessageDTO messageDTO = new MessageDTO(message.getSenderId(),message.getContent(),profilePicture.get("data"),profilePicture.get("type"),message.getSentAt());
             messageDTOS.add(messageDTO);
         }
         return messageDTOS;
