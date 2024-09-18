@@ -130,7 +130,11 @@ const ViewProfileComponent = () => {
               onNavigateToProfile={handleNavigateToProfile}
             />
           </MDBCol>
-          <MDBCol md="6" className="center-column" style={{marginBottom:"1rem"}}>
+          <MDBCol
+            md="6"
+            className="center-column"
+            style={{ marginBottom: "1rem" }}
+          >
             <MDBRow>
               {["Work Experience", "Education", "Skills"].map(
                 (section, index) => (

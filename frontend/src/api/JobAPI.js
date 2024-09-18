@@ -87,6 +87,24 @@ const JobAPI = {
       throw error;
     }
   },
+  deleteJob: async (userId, jobPostId) => {
+    try {
+      const response = await axios.delete(`${API_URL}/delete`, {
+        params: {
+          userId,
+          jobPostId,
+        },
+        headers: {
+          "Content-Type": "application/json",
+        },
+        withCredentials: true,
+      });
+      return response.data;
+    } catch (error) {
+      console.error("Error deleting job post:", error);
+      throw error;
+    }
+  },
 };
 
 export default JobAPI;

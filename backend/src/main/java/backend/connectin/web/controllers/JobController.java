@@ -40,4 +40,9 @@ public class JobController {
     public List<JobApplicationDTO> getJobApplications(@RequestParam long userId) {
         return jobService.getJobApplications(userId);
     }
+
+    @DeleteMapping("/delete")
+    public void deleteJob(@RequestParam long userId , @RequestParam long jobPostId) {
+        jobService.deleteJob(userId,jobPostId);
+    }
 }

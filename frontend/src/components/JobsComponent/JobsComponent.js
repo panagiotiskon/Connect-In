@@ -14,6 +14,7 @@ import {
   MDBDropdownToggle,
   MDBDropdownMenu,
   MDBDropdownItem,
+  MDBIcon,
 } from "mdb-react-ui-kit";
 import NavbarComponent from "../common/NavBar";
 import AuthService from "../../api/AuthenticationAPI";
@@ -25,7 +26,7 @@ const JobsComponent = () => {
   const [companyName, setCompanyName] = useState("");
   const [jobDescription, setJobDescription] = useState("");
   const [jobs, setJobs] = useState([]);
-  const [applications, setApplications] = useState({}); // Store job applications mapped by jobPostId
+  const [applications, setApplications] = useState({});
   const [errors, setErrors] = useState({
     title: "",
     company: "",
@@ -33,7 +34,7 @@ const JobsComponent = () => {
   });
   const [successMessage, setSuccessMessage] = useState("");
   const [currentUser, setCurrentUser] = useState(null);
-  const navigate = useNavigate(); // Use useNavigate for navigation
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -66,30 +67,22 @@ const JobsComponent = () => {
   const fetchApplications = async () => {
     if (currentUser) {
       try {
-        // Fetch all applications for the jobs created by the current user
         const response = await JobAPI.getJobApplications(currentUser.id);
         const appMap = {};
         console.log(response);
-        // Iterate through each application
         response.forEach((application) => {
           const { jobPostId, userId, fullName } = application;
-
-          // Initialize the jobPostId in the appMap if it doesn't exist
           if (!appMap[jobPostId]) {
-            appMap[jobPostId] = new Map(); // Use Map to prevent duplicate users
+            appMap[jobPostId] = new Map();
           }
-
-          // Add or overwrite the user in the map to avoid duplicate entries
           appMap[jobPostId].set(userId, { userId, fullName });
         });
 
-        // Convert the Map back to an array of unique users for each jobPostId
         const formattedAppMap = {};
         Object.keys(appMap).forEach((jobPostId) => {
           formattedAppMap[jobPostId] = Array.from(appMap[jobPostId].values());
         });
 
-        // Update the state with the mapped applications
         setApplications(formattedAppMap);
       } catch (error) {
         console.error("Error fetching applications:", error);
@@ -105,9 +98,9 @@ const JobsComponent = () => {
       const pollingInterval = setInterval(() => {
         fetchJobs();
         fetchApplications();
-      }, 10000); // Poll every 10 seconds
+      }, 10000);
 
-      return () => clearInterval(pollingInterval); // Cleanup on unmount
+      return () => clearInterval(pollingInterval);
     }
   }, [currentUser]);
 
@@ -180,12 +173,23 @@ const JobsComponent = () => {
     }
   };
 
+  const handleDeleteJob = async (jobId) => {
+    if (currentUser) {
+      try {
+        await JobAPI.deleteJob(currentUser.id, jobId);
+        setJobs((prevJobs) => prevJobs.filter((job) => job.id !== jobId));
+      } catch (error) {
+        console.error("Error deleting job:", error);
+      }
+    } else {
+      console.error("No current user found!");
+    }
+  };
+
   const handleProfileNavigation = (userId) => {
-    // Use useNavigate to navigate to the user's profile by their userId
     navigate(`/profile/${userId}`);
   };
 
-  // Filter jobs to show only those not applied to by the current user
   const yourJobs = jobs.filter((job) => job.userId === currentUser?.id);
   const otherJobs = jobs.filter(
     (job) => job.userId !== currentUser?.id && !job.applied
@@ -271,7 +275,7 @@ const JobsComponent = () => {
                   ) : (
                     yourJobs.map((job) => (
                       <MDBCol md="12" className="mb-4" key={job.id}>
-                        <MDBCard>
+                        <MDBCard className="position-relative">
                           <MDBCardBody>
                             <MDBCardTitle
                               style={{ fontSize: "1.5rem", color: "#333" }}
@@ -330,6 +334,18 @@ const JobsComponent = () => {
                                   </MDBCardText>
                                 </>
                               )}
+                            <MDBBtn
+                              className="d-flex btn-sm delete-connection-btn2"
+                              color="secondary"
+                              onClick={() => handleDeleteJob(job.id)}
+                              style={{
+                                position: "absolute",
+                                top: "8px",
+                                left: "1200px",
+                              }}
+                            >
+                              <MDBIcon fas icon="times" />
+                            </MDBBtn>
                           </MDBCardBody>
                         </MDBCard>
                       </MDBCol>

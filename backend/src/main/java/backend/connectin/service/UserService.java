@@ -334,6 +334,35 @@ public class UserService {
         }
     }
 
+    public void deleteSkill(long userId, long skillId) {
+        PersonalInfo personalInfo = personalInfoRepository.findByUserId(userId);
+        if (personalInfo != null) {
+            List<Skill> skills = personalInfo.getSkills();
+            skills.removeIf(skill -> skill.getId() == skillId);
+            personalInfo.setSkills(skills);
+            personalInfoRepository.save(personalInfo);
+        }
+    }
+
+    public void deleteEducation(long userId, long educationId) {
+        PersonalInfo personalInfo = personalInfoRepository.findByUserId(userId);
+        if (personalInfo != null) {
+            List<Education> educations = personalInfo.getEducations();
+            educations.removeIf(education -> education.getId() == educationId);
+            personalInfo.setEducations(educations);
+            personalInfoRepository.save(personalInfo);
+        }
+    }
+
+    public void deleteExperience(long userId, long experienceId) {
+        PersonalInfo personalInfo = personalInfoRepository.findByUserId(userId);
+        if (personalInfo != null) {
+            List<Experience> experiences = personalInfo.getExperiences();
+            experiences.removeIf(experience -> experience.getId() == experienceId);
+            personalInfo.setExperiences(experiences);
+            personalInfoRepository.save(personalInfo);
+        }
+    }
 
 }
 

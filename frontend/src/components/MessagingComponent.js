@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import NavbarComponent from "./common/NavBar";
 import MessagingAPI from "../api/MessagingAPI";
 import AuthService from "../api/AuthenticationAPI";
-import FileService from "../api/UserFilesApi"; // Import FileService
+import FileService from "../api/UserFilesApi";
 import {
   MDBContainer,
   MDBRow,
@@ -14,7 +14,6 @@ import {
   MDBInputGroup,
 } from "mdb-react-ui-kit";
 
-// Helper function to convert base64 string to data URL with MIME type
 const base64ToDataURL = (base64String, picType) =>
   `data:${picType};base64,${base64String}`;
 
@@ -25,11 +24,10 @@ export default function ChatComponent() {
   const [conversationMessages, setConversationMessages] = useState([]);
   const [messageInput, setMessageInput] = useState("");
   const [selectedUser, setSelectedUser] = useState(null);
-  const [profileImage, setProfileImage] = useState(""); // New state for profile image
+  const [profileImage, setProfileImage] = useState("");
   const [pollingIntervalId, setPollingIntervalId] = useState(null);
-  const [searchTerm, setSearchTerm] = useState(""); // State for search term
+  const [searchTerm, setSearchTerm] = useState("");
 
-  // Fetch current user and conversations when the component mounts
   useEffect(() => {
     const fetchCurrentUserAndConversations = async () => {
       try {
@@ -39,7 +37,7 @@ export default function ChatComponent() {
         if (user) {
           const data = await MessagingAPI.getConversations(user.id);
           setConversations(data);
-          setFilteredConversations(data); // Initialize filtered conversations
+          setFilteredConversations(data);
         }
       } catch (error) {
         console.error("Error fetching current user or conversations:", error);
@@ -49,10 +47,8 @@ export default function ChatComponent() {
     fetchCurrentUserAndConversations();
   }, []);
 
-  // Polling mechanism to fetch new messages
   useEffect(() => {
     if (selectedUser && currentUser) {
-      // Define the polling function
       const fetchMessages = async () => {
         try {
           const messages = await MessagingAPI.getConversation(
@@ -65,23 +61,20 @@ export default function ChatComponent() {
         }
       };
 
-      // Start polling every 3 seconds
-      const intervalId = setInterval(fetchMessages, 3000); // Adjusted interval
+      const intervalId = setInterval(fetchMessages, 3000);
       setPollingIntervalId(intervalId);
 
-      // Clear the polling interval when the component is unmounted or when user changes
       return () => clearInterval(intervalId);
     }
   }, [selectedUser, currentUser]);
 
-  // Fetch profile image when a user is selected
   useEffect(() => {
     const fetchProfileImage = async () => {
       if (selectedUser) {
         try {
-          const images = await FileService.getUserImages(currentUser.id); // Fetch images for selected user
+          const images = await FileService.getUserImages(currentUser.id);
           if (images.length > 0) {
-            const { type, data } = images[0]; // Assume the first image is the profile image
+            const { type, data } = images[0];
             setProfileImage(`data:${type};base64,${data}`);
           }
         } catch (error) {
@@ -93,7 +86,6 @@ export default function ChatComponent() {
     fetchProfileImage();
   }, [selectedUser]);
 
-  // Send message via API
   const sendMessage = async () => {
     if (messageInput.trim() !== "" && currentUser && selectedUser) {
       try {
@@ -104,7 +96,6 @@ export default function ChatComponent() {
           messageInput
         );
 
-        // Clear the input field and fetch the latest messages to update the conversation
         setMessageInput("");
         const updatedMessages = await MessagingAPI.getConversation(
           currentUser.id,
@@ -117,7 +108,6 @@ export default function ChatComponent() {
     }
   };
 
-  // Handle user click to select a conversation
   const handleUserClick = async (user) => {
     setSelectedUser(user);
     if (currentUser) {
@@ -134,7 +124,6 @@ export default function ChatComponent() {
     }
   };
 
-  // Filter conversations based on search input
   useEffect(() => {
     const filterConversations = () => {
       const lowercasedSearchTerm = searchTerm.toLowerCase();
@@ -251,52 +240,77 @@ export default function ChatComponent() {
                           className="pt-3 pe-3"
                         >
                           {conversationMessages.map((message, index) => {
-                            // Check if the message is null or if essential properties are missing
                             if (
                               !message ||
                               !message.message ||
                               !message.profilePicture ||
                               !message.picType
                             ) {
-                              return null; // Skip rendering this message
+                              return null;
                             }
 
-                            // Construct sender's full name
-                            const senderFullName =
-                              currentUser?.firstName +
-                              " " +
-                              currentUser?.lastName;
+                            const isCurrentUser =
+                              message.senderId === currentUser.id;
 
                             return (
                               <div
                                 key={index}
-                                className={`d-flex flex-row justify-content-${
-                                  message.sender === senderFullName
-                                    ? "end"
-                                    : "start"
-                                }`}
+                                className={`d-flex flex-row ${
+                                  isCurrentUser
+                                    ? "justify-content-end"
+                                    : "justify-content-start"
+                                } mb-2`}
+                                style={{ alignItems: "flex-start" }}
                               >
-                                <img
-                                  src={base64ToDataURL(
-                                    message.profilePicture,
-                                    message.picType
-                                  )}
-                                  alt="avatar"
-                                  style={{ width: "45px", height: "100%" }}
-                                />
-                                <div>
-                                  <p
-                                    className="small p-2 ms-3 mb-1 rounded-3"
+                                {!isCurrentUser && (
+                                  <img
+                                    src={base64ToDataURL(
+                                      message.profilePicture,
+                                      message.picType
+                                    )}
+                                    alt="avatar"
                                     style={{
-                                      backgroundColor:
-                                        message.sender === senderFullName
-                                          ? "#d1e7dd"
-                                          : "#f5f6f7",
+                                      width: "45px",
+                                      height: "auto",
+                                      marginRight: "10px",
+                                    }}
+                                  />
+                                )}
+                                <div
+                                  style={{
+                                    maxWidth: "70%",
+                                    wordWrap: "break-word",
+                                    whiteSpace: "pre-wrap",
+                                    display: "flex",
+                                    flexDirection: "column",
+                                    alignItems: isCurrentUser
+                                      ? "flex-end"
+                                      : "flex-start",
+                                  }}
+                                >
+                                  <p
+                                    className={`small p-2 mb-1 rounded-3`}
+                                    style={{
+                                      backgroundColor: isCurrentUser
+                                        ? "#d1e7dd"
+                                        : "#f5f6f7",
+                                      textAlign: isCurrentUser
+                                        ? "left"
+                                        : "right",
+                                      margin: 0,
                                     }}
                                   >
                                     {message.message}
                                   </p>
-                                  <p className="small ms-3 mb-3 rounded-3 text-muted">
+                                  <p
+                                    className="small text-muted"
+                                    style={{
+                                      margin: 0,
+                                      alignSelf: isCurrentUser
+                                        ? "flex-end"
+                                        : "flex-start",
+                                    }}
+                                  >
                                     {new Date(
                                       message.sentAt
                                     ).toLocaleTimeString()}
@@ -310,7 +324,11 @@ export default function ChatComponent() {
                           <img
                             src={profileImage}
                             alt="avatar 3"
-                            style={{ width: "40px", height: "100%" }}
+                            style={{
+                              width: "50px",
+                              padding: "5px",
+                              marginTop: "-15px",
+                            }}
                           />
                           <input
                             type="text"
@@ -324,6 +342,7 @@ export default function ChatComponent() {
                             className="ms-1 text-muted"
                             href="#!"
                             onClick={sendMessage}
+                            style={{ marginTop: "-15px" }}
                           >
                             <MDBIcon fas icon="paper-plane" />
                           </a>

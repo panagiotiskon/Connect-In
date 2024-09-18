@@ -1,7 +1,7 @@
-package backend.connectin.domain.enums;
+    package backend.connectin.domain.enums;
 
-public enum NotificationType {
-    COMMENT,
-    REACTION,
-    CONNECTION
-}
+    public enum NotificationType {
+        COMMENT,
+        REACTION,
+        CONNECTION
+    }
