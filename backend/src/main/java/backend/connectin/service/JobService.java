@@ -2,9 +2,11 @@ package backend.connectin.service;
 
 import backend.connectin.domain.JobApplication;
 import backend.connectin.domain.JobPost;
+import backend.connectin.domain.JobView;
 import backend.connectin.domain.User;
 import backend.connectin.domain.repository.JobApplicationRepository;
 import backend.connectin.domain.repository.JobPostRepository;
+import backend.connectin.domain.repository.JobViewRepository;
 import backend.connectin.web.dto.JobApplicationDTO;
 import backend.connectin.web.dto.JobPostDTO;
 import org.springframework.stereotype.Service;
@@ -19,10 +21,13 @@ public class JobService {
     private final JobPostRepository jobPostRepository;
     private final JobApplicationRepository jobApplicationRepository;
     private final UserService userService;
-    public JobService(JobPostRepository jobPostRepository, JobApplicationRepository jobApplicationRepository, UserService userService) {
+    private final JobViewRepository jobViewRepository;
+
+    public JobService(JobPostRepository jobPostRepository, JobApplicationRepository jobApplicationRepository, UserService userService, JobViewRepository jobViewRepository) {
         this.jobPostRepository = jobPostRepository;
         this.jobApplicationRepository = jobApplicationRepository;
         this.userService = userService;
+        this.jobViewRepository = jobViewRepository;
     }
 
     public JobPost createJobPost(long userId,String jobTitle,String companyName,String jobDescription){
@@ -112,5 +117,22 @@ public class JobService {
         if(jobPost.get().getUserId()==userId){
             jobPostRepository.delete(jobPost.get());
         }
+    }
+
+    public JobView addViewToAJob(long userId,long jobPostId){
+        userService.findUserOrThrow(userId);
+        Optional<JobPost> jobPost = jobPostRepository.findById(jobPostId);
+        if(jobPost.isEmpty()){
+            throw new RuntimeException("Job post not found");
+        }
+        if(jobViewRepository.findJobViewByUserIdAndJobId(userId,jobPostId).isPresent()){
+            return null;
+        };
+        JobView jobView = new JobView();
+        jobView.setUserId(userId);
+        jobView.setJobId(jobPost.get().getId());
+        jobView.setViewedAt(Instant.now());
+        jobViewRepository.save(jobView);
+        return jobView;
     }
 }

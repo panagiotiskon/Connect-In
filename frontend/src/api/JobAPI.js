@@ -105,6 +105,41 @@ const JobAPI = {
       throw error;
     }
   },
+  viewJobPost: async (userId, jobId) => {
+    try {
+      const response = await axios.post(`${API_URL}/view-job`, null, {
+        params: {
+          userId,
+          jobId,
+        },
+        headers: {
+          "Content-Type": "application/json",
+        },
+        withCredentials: true,
+      });
+      return response.data;
+    } catch (error) {
+      console.error("Error recording job post view:", error);
+      throw error;
+    }
+  },
+  getRecommendedJobs: async (userId) => {
+    try {
+      const response = await axios.get(`${API_URL}/recommend-jobs`, {
+        params: {
+          userId,
+        },
+        headers: {
+          "Content-Type": "application/json",
+        },
+        withCredentials: true,
+      });
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching recommended jobs:", error);
+      throw error;
+    }
+  },
 };
 
 export default JobAPI;

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
   MDBContainer,
   MDBRow,
@@ -35,12 +35,14 @@ const JobsComponent = () => {
   const [successMessage, setSuccessMessage] = useState("");
   const [currentUser, setCurrentUser] = useState(null);
   const navigate = useNavigate();
+  const observerRef = useRef(null); // Ref for IntersectionObserver
 
   useEffect(() => {
     const fetchUser = async () => {
       try {
         const user = await AuthService.getCurrentUser();
         setCurrentUser(user);
+        fetchRecommendedJobs(user.id); // Fetch recommended jobs after setting the current user
       } catch (error) {
         console.error("Error fetching user:", error);
       }
@@ -48,6 +50,14 @@ const JobsComponent = () => {
     fetchUser();
   }, []);
 
+  const fetchRecommendedJobs = async (userId) => {
+    try {
+      const recommendedJobs = await JobAPI.getRecommendedJobs(userId);
+      console.log("Recommended jobs for user:", recommendedJobs); // Log recommended jobs
+    } catch (error) {
+      console.error("Error fetching recommended jobs:", error);
+    }
+  };
   const fetchJobs = async () => {
     if (currentUser) {
       try {
@@ -195,6 +205,67 @@ const JobsComponent = () => {
     (job) => job.userId !== currentUser?.id && !job.applied
   );
 
+  useEffect(() => {
+    console.log("useEffect for IntersectionObserver triggered");
+
+    if (currentUser) {
+      console.log("Current user found:", currentUser);
+    } else {
+      console.log("No current user found");
+    }
+
+    if (otherJobs.length > 0) {
+      console.log("Other jobs found:", otherJobs);
+
+      const observerCallback = (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            const jobId = entry.target.getAttribute("data-job-id");
+            console.log(`Job card is intersecting: ${jobId}`);
+            if (jobId) {
+              // Send a request to the API to record the job view
+              JobAPI.viewJobPost(currentUser.id, jobId)
+                .then(() =>
+                  console.log(`Job ${jobId} viewed by user ${currentUser.id}`)
+                )
+                .catch((error) => console.error("Error viewing job:", error));
+            }
+          }
+        });
+      };
+
+      const observerOptions = {
+        root: null,
+        rootMargin: "0px",
+        threshold: 0.5, // Job must be at least 50% visible to be considered viewed
+      };
+
+      observerRef.current = new IntersectionObserver(
+        observerCallback,
+        observerOptions
+      );
+
+      // Observe each other job card
+      otherJobs.forEach((job) => {
+        const jobCard = document.querySelector(`[data-job-id="${job.id}"]`);
+        if (jobCard) {
+          console.log(`Observing job card: ${job.id}`);
+          observerRef.current.observe(jobCard);
+        } else {
+          console.log(`Job card not found for job ID: ${job.id}`);
+        }
+      });
+
+      // Cleanup the observer when component unmounts
+      return () => {
+        console.log("Cleaning up IntersectionObserver");
+        observerRef.current.disconnect();
+      };
+    } else {
+      console.log("No other jobs to observe");
+    }
+  }, [currentUser, otherJobs]);
+
   return (
     <div>
       <NavbarComponent />
@@ -259,10 +330,7 @@ const JobsComponent = () => {
                 <MDBTypography
                   tag="h2"
                   className="text-dark"
-                  style={{
-                    fontSize: "1.5rem",
-                    fontWeight: "bold",
-                  }}
+                  style={{ fontSize: "1.5rem", fontWeight: "bold" }}
                 >
                   Your Jobs
                 </MDBTypography>
@@ -362,10 +430,7 @@ const JobsComponent = () => {
                 <MDBTypography
                   tag="h2"
                   className="text-dark"
-                  style={{
-                    fontSize: "1.5rem",
-                    fontWeight: "bold",
-                  }}
+                  style={{ fontSize: "1.5rem", fontWeight: "bold" }}
                 >
                   Other Jobs
                 </MDBTypography>
@@ -413,8 +478,7 @@ const JobsComponent = () => {
                             {currentUser && (
                               <MDBBtn style={{
                                 backgroundColor:"#35677e"
-                              }}
-                                      onClick={() => handleApply(job.id)}>
+                              }}onClick={() => handleApply(job.id)}>
                                 Apply
                               </MDBBtn>
                             )}
