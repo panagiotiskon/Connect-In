@@ -49,12 +49,10 @@ body {
 
 .sign-in-header {
   color: #35677e;
-  /* Blue color for 'Sign in' */
   font-size: 28px;
   margin-bottom: 5px;
 }
 
-/* Style for the smaller subheading below 'Sign in' */
 .subheading {
   color: #35677e;
   font-size: 25px;
@@ -63,26 +61,20 @@ body {
   margin-bottom: 20px;
 }
 
-/* Wider input fields */
 .wide-input {
   width: 100%;
   max-width: 350px;
-  /* Adjust input width */
   margin-bottom: 20px;
 }
 
-/* Centering the Sign In button */
 .text-center {
   display: flex;
   justify-content: center;
   margin-top: 10px;
 }
 
-/* Style for Sign In button */
 .sign-in-button {
   margin: 5%;
-  border: 100px !important;
-    
   width: 100%;
   max-width: 350px;
   height: 45px;
@@ -94,13 +86,11 @@ body {
 
 
 .sign-in-button:hover {
-  background-color: #2a4d6a; /* Optional: Darker shade on hover for better UX */
+  background-color: #2a4d6a;
 }
 
-/* Styling for links and error message placeholders */
 .link {
   color: #35677e;
-  /* Blue color for links */
   text-decoration: none;
   font-size: 15px;
   margin-top: 15px;
@@ -126,7 +116,6 @@ body {
   text-align: center;
   font-size: 10pt;
   overflow: hidden;
-  text-align: center;
   display: flex;
   align-items: center!important;
   justify-content: center ;

@@ -95,10 +95,10 @@ public class AuthController {
         try {
             userService.validateEmail(email);
             response.put("isValid", true);
-            return ResponseEntity.ok(response); // Send a JSON response with isValid: true
+            return ResponseEntity.ok(response);
         } catch (ResponseStatusException e) {
             response.put("isValid", false);
-            return ResponseEntity.status(HttpStatus.CONFLICT).body(response); // Send a JSON response with isValid: false
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
         }
     }
 

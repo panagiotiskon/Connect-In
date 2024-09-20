@@ -41,7 +41,6 @@ const ProfileComponent = () => {
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
 
-  // Fetch user and education data on component load
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -147,9 +146,7 @@ const ProfileComponent = () => {
         setErrorMessage("Please fill out all required fields.");
         return;
       }
-
       if (!validateDates()) return;
-
       const educationDTO = {
         universityName,
         fieldOfStudy,
@@ -175,11 +172,9 @@ const ProfileComponent = () => {
               endDate,
               isPublic,
             };
-
             if (updatedContent.length < 5) {
               updatedContent.push(educationEntry);
             }
-
             return {
               ...prev,
               [selectedCard]: updatedContent,
@@ -341,11 +336,9 @@ const ProfileComponent = () => {
       setErrorMessage(`Failed to delete ${category.slice(0, -1)}.`);
     }
   };
-
   if (!currentUser) {
     return <div>Loading...</div>;
   }
-
   return (
     <div>
       <NavbarComponent />
