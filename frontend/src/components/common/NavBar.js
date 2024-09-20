@@ -35,21 +35,6 @@ const NavbarComponent = () => {
     fetchCurrentUser();
   }, []);
 
-  useEffect(() => {
-    const fetchNotificationCount = async () => {
-      try {
-        if (currentUser && currentUser.id) {
-          const count = await NotificationAPI.getNumberOfNotifications(
-            currentUser.id
-          );
-          setNotificationCount(count);
-        }
-      } catch (error) {
-        console.error("Error fetching notification count:", error);
-      }
-    };
-    fetchNotificationCount();
-  }, [currentUser]);
 
   // Define the function for determining if the icon should be active (black) or inactive (gray)
   const isActivePage = (path) => location.pathname === path;
@@ -167,6 +152,8 @@ const NavbarComponent = () => {
             </MDBNavbarItem>
             <MDBNavbarItem className="d-flex flex-column align-items-center navbar-nav-item">
               <MDBNavbarLink onClick={handleNotificationsClick}>
+              <div style={{ position: "relative", display: "inline-block" }}>
+
                 <MDBIcon
                   fas
                   icon="bell"
@@ -175,22 +162,7 @@ const NavbarComponent = () => {
                     color: isActivePage("/notifications") ? "black" : "gray",
                   }}
                 />
-                {notificationCount > 0 && (
-                  <MDBBadge
-                    pill
-                    color="danger"
-                    style={{
-                      position: "absolute",
-                      top: "-6px",
-                      right: "-10px",
-                      fontSize: "0.8rem",
-                      minWidth: "20px",
-                      textAlign: "center",
-                    }}
-                  >
-                    {notificationCount}
-                  </MDBBadge>
-                )}
+              </div>
               </MDBNavbarLink>
               <span
                 style={{

@@ -245,7 +245,10 @@ const JobsComponent = () => {
                   className="mb-3"
                   invalid={!!errors.description}
                 />
-                <MDBBtn onClick={handleCreateJob}>Create Job</MDBBtn>
+                <MDBBtn style={{
+                  backgroundColor:"#35677e"
+                }}
+                onClick={handleCreateJob}>Create Job</MDBBtn>
               </MDBCardBody>
             </MDBCard>
           </MDBCol>
@@ -274,7 +277,7 @@ const JobsComponent = () => {
                     </MDBCol>
                   ) : (
                     yourJobs.map((job) => (
-                      <MDBCol md="12" className="mb-4" key={job.id}>
+                      <MDBCol md="12" className="mb-" key={job.id}>
                         <MDBCard className="position-relative">
                           <MDBCardBody>
                             <MDBCardTitle
@@ -340,8 +343,9 @@ const JobsComponent = () => {
                               onClick={() => handleDeleteJob(job.id)}
                               style={{
                                 position: "absolute",
-                                top: "8px",
-                                left: "1200px",
+                                top: "10px",
+                                left: "94%",
+                                marginRight: "10px"
                               }}
                             >
                               <MDBIcon fas icon="times" />
@@ -376,7 +380,7 @@ const JobsComponent = () => {
                     </MDBCol>
                   ) : (
                     otherJobs.map((job) => (
-                      <MDBCol md="12" className="mb-4" key={job.id}>
+                      <MDBCol md="12" className="mb-5" key={job.id}>
                         <MDBCard
                           className={job.applied ? "bg-success text-white" : ""}
                         >
@@ -407,7 +411,9 @@ const JobsComponent = () => {
                               </small>
                             </MDBCardText>
                             {currentUser && (
-                              <MDBBtn onClick={() => handleApply(job.id)}>
+                              <MDBBtn style={{
+                                backgroundColor:"#35677e"
+                              }}onClick={() => handleApply(job.id)}>
                                 Apply
                               </MDBBtn>
                             )}

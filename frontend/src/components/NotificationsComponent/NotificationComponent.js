@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import NavbarComponent from "./common/NavBar";
-import AuthService from "../api/AuthenticationAPI"; // Adjust the import path as needed
-import NotificationAPI from "../api/NotificationAPI"; // Import the Notification API
-import FooterComponent from "./common/FooterComponent";
-import ConnectionRequest from "./ConnectionRequest"; // Import the ConnectionRequest component
+import NavbarComponent from "../common/NavBar";
+import AuthService from "../../api/AuthenticationAPI";
+import NotificationAPI from "../../api/NotificationAPI";
+import ConnectionRequest from "../ConnectionRequest";
 import {
   MDBContainer,
   MDBRow,
@@ -12,12 +11,13 @@ import {
   MDBCard,
   MDBCardBody,
   MDBIcon,
-  MDBBtn, // Import MDBBtn for the delete button
-} from "mdb-react-ui-kit"; // Import MDBCard and MDBIcon
+  MDBBtn,
+} from "mdb-react-ui-kit";
+import './NotificationsComponent.scss'; // Import the SCSS file
 
 export default function NotificationComponent() {
   const [connectionRequests, setConnectionRequests] = useState([]);
-  const [commentsAndReactions, setCommentsAndReactions] = useState([]); // New state for comments and reactions
+  const [commentsAndReactions, setCommentsAndReactions] = useState([]);
   const [currentUser, setCurrentUser] = useState(null);
 
   const navigate = useNavigate();
@@ -31,19 +31,17 @@ export default function NotificationComponent() {
         if (user) {
           const notifications = await NotificationAPI.getNotifications(user.id);
 
-          // Filter for connection requests
           const connectionRequests = notifications.filter(
             (notification) => notification.notificationType === "CONNECTION"
           );
           setConnectionRequests(connectionRequests);
 
-          // Filter for comments and reactions
           const commentsAndReactions = notifications.filter(
             (notification) =>
               notification.notificationType === "COMMENT" ||
               notification.notificationType === "REACTION"
           );
-          setCommentsAndReactions(commentsAndReactions); // Set comments and reactions in state
+          setCommentsAndReactions(commentsAndReactions);
         }
       } catch (error) {
         console.error("Error fetching notifications:", error);
@@ -57,7 +55,6 @@ export default function NotificationComponent() {
     try {
       await NotificationAPI.acceptNotification(currentUser.id, notificationId);
       console.log("Accepted:", userId);
-      // Optionally, remove the accepted notification from the state
       setConnectionRequests((prev) =>
         prev.filter((notification) => notification.id !== notificationId)
       );
@@ -70,7 +67,6 @@ export default function NotificationComponent() {
     try {
       await NotificationAPI.declineNotification(currentUser.id, notificationId);
       console.log("Declined:", userId);
-      // Optionally, remove the declined notification from the state
       setConnectionRequests((prev) =>
         prev.filter((notification) => notification.id !== notificationId)
       );
@@ -83,7 +79,6 @@ export default function NotificationComponent() {
     try {
       await NotificationAPI.deleteNotificationById(notificationId);
       console.log("Deleted:", notificationId);
-      // Optionally, remove the deleted notification from the state
       setCommentsAndReactions((prev) =>
         prev.filter((notification) => notification.id !== notificationId)
       );
@@ -99,34 +94,27 @@ export default function NotificationComponent() {
     const icon = notificationType === "REACTION" ? "thumbs-up" : "comment";
 
     return (
-      <MDBCard className="mt-3 position-relative">
-        <MDBCardBody className="d-flex align-items-center justify-content-between">
+      <MDBCard className="notification-card">
+        <MDBCardBody className="notification-card-body d-flex justify-content-between align-items-center">
           <div>
-            <href
+            <a
               onClick={() => navigate(`/profile/${userId}`)}
-              style={{
-                cursor: "pointer",
-                fontWeight: "bold",
-                textDecoration: "none", // Ensure no underline
-              }}
+              className="notification-link"
             >
               {firstName} {lastName}
-            </href>{" "}
+            </a>{" "}
             {action} your post.
           </div>
-          <MDBIcon fas icon={icon} size="md" />
-          <MDBBtn
-            className="d-flex btn-sm delete-connection-btn2"
-            color="secondary"
-            style={{
-              position: "absolute",
-              top: "0px",
-              left: "1205px",
-            }}
-            onClick={() => handleDelete(id)}
-          >
-            <MDBIcon fas icon="times" />
-          </MDBBtn>
+          <div className="d-flex">
+            <MDBIcon fas icon={icon} size="md" className="me-3" />
+            <MDBBtn
+              className="btn-sm delete-button"
+              color="secondary"
+              onClick={() => handleDelete(id)}
+            >
+              <MDBIcon fas icon="times" />
+            </MDBBtn>
+          </div>
         </MDBCardBody>
       </MDBCard>
     );
@@ -138,37 +126,62 @@ export default function NotificationComponent() {
       <MDBContainer fluid className="mt-5">
         <MDBRow>
           <MDBCol md="8" className="mx-auto">
-            {/* Connection Requests */}
             <h2>Connection Requests</h2>
             {connectionRequests.length > 0 ? (
               connectionRequests.map((notification) => (
-                <ConnectionRequest
-                  key={notification.id} // Use notification id as a unique key
-                  notification={notification}
-                  onAccept={() =>
-                    handleAccept(notification.userId, notification.id)
-                  }
-                  onDecline={() =>
-                    handleDecline(notification.userId, notification.id)
-                  }
-                />
+                <MDBCard key={notification.id} className="my-3 ">
+                  <MDBCardBody className="d-flex justify-content-between align-items-center">
+                    <div>
+                      <a
+                        onClick={() => navigate(`/profile/${notification.userId}`)}
+                        className="notification-link"
+                      >
+                        <p style={{ display: "inline", fontWeight: "bold" }}>
+                          {notification.firstName} {notification.lastName}
+                        </p>
+                      </a>{" "}
+                      <span>wants to connect</span>
+                    </div>
+                    <div className="d-flex">
+                      <MDBBtn
+                        className="btn-sm accept-btn me-2"
+                        style={{
+                          backgroundColor: "#35677e"
+                        }}
+                        onClick={() =>
+                          handleAccept(notification.userId, notification.id)
+                        }
+                      >
+                        <MDBIcon fas icon="check" />
+                      </MDBBtn>
+                      <MDBBtn
+                        className="btn-sm decline-btn"
+                        color="danger"
+                        onClick={() =>
+                          handleDecline(notification.userId, notification.id)
+                        }
+                      >
+                        <MDBIcon fas icon="times" />
+                      </MDBBtn>
+                    </div>
+                  </MDBCardBody>
+                </MDBCard>
               ))
             ) : (
-              <p style={{ padding: "20px", textAlign: "center" }}>
+              <p className="connection-requests-message">
                 No new connection requests
               </p>
             )}
 
-            {/* Section for Comments and Reactions */}
             <h2 className="mt-5">Reactions and Comments</h2>
             {commentsAndReactions.length > 0 ? (
               commentsAndReactions.map((notification) => (
-                <div key={notification.id} style={{ padding: "10px 0" }}>
+                <div key={notification.id} className="comments-reactions-section">
                   {renderCommentOrReactionMessage(notification)}
                 </div>
               ))
             ) : (
-              <p style={{ padding: "20px", textAlign: "center" }}>
+              <p className="comments-reactions-message">
                 No new reactions or comments
               </p>
             )}
