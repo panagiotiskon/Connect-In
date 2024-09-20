@@ -206,65 +206,58 @@ const JobsComponent = () => {
   );
 
   useEffect(() => {
-    console.log("useEffect for IntersectionObserver triggered");
-
-    if (currentUser) {
-      console.log("Current user found:", currentUser);
-    } else {
-      console.log("No current user found");
-    }
-
     if (otherJobs.length > 0) {
       console.log("Other jobs found:", otherJobs);
+    }
 
-      const observerCallback = (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            const jobId = entry.target.getAttribute("data-job-id");
-            console.log(`Job card is intersecting: ${jobId}`);
-            if (jobId) {
-              // Send a request to the API to record the job view
-              JobAPI.viewJobPost(currentUser.id, jobId)
-                .then(() =>
-                  console.log(`Job ${jobId} viewed by user ${currentUser.id}`)
-                )
-                .catch((error) => console.error("Error viewing job:", error));
-            }
+    const observerCallback = (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          const jobId = entry.target.getAttribute("data-job-id");
+          console.log(`Job card is intersecting: ${jobId}`);
+          if (jobId) {
+            // Send a request to the API to record the job view
+            JobAPI.viewJobPost(currentUser.id, jobId)
+              .then(() =>
+                console.log(`Job ${jobId} viewed by user ${currentUser.id}`)
+              )
+              .catch((error) => console.error("Error viewing job:", error));
           }
-        });
-      };
-
-      const observerOptions = {
-        root: null,
-        rootMargin: "0px",
-        threshold: 0.5, // Job must be at least 50% visible to be considered viewed
-      };
-
-      observerRef.current = new IntersectionObserver(
-        observerCallback,
-        observerOptions
-      );
-
-      // Observe each other job card
-      otherJobs.forEach((job) => {
-        const jobCard = document.querySelector(`[data-job-id="${job.id}"]`);
-        if (jobCard) {
-          console.log(`Observing job card: ${job.id}`);
-          observerRef.current.observe(jobCard);
-        } else {
-          console.log(`Job card not found for job ID: ${job.id}`);
         }
       });
+    };
 
-      // Cleanup the observer when component unmounts
-      return () => {
-        console.log("Cleaning up IntersectionObserver");
-        observerRef.current.disconnect();
-      };
-    } else {
-      console.log("No other jobs to observe");
+    const observerOptions = {
+      root: null,
+      rootMargin: "0px",
+      threshold: 0.5, // Job must be at least 50% visible to be considered viewed
+    };
+
+    observerRef.current = new IntersectionObserver(
+      observerCallback,
+      observerOptions
+    );
+
+    // Wait for the job cards to render before observing them
+    const jobCards = document.querySelectorAll("[data-job-id]");
+    console.log("Job cards found:", jobCards); // Debugging log
+
+    if (jobCards.length === 0) {
+      console.log("No job cards found in the DOM");
     }
-  }, [currentUser, otherJobs]);
+
+    jobCards.forEach((jobCard) => {
+      console.log(`Observing job card: ${jobCard.getAttribute("data-job-id")}`);
+      observerRef.current.observe(jobCard);
+    });
+
+    // Cleanup the observer when the component unmounts or jobs change
+    return () => {
+      if (observerRef.current) {
+        observerRef.current.disconnect();
+      }
+    };
+  }, [currentUser, otherJobs]); // Depend on currentUser and otherJobs
 
   return (
     <div>
@@ -316,10 +309,42 @@ const JobsComponent = () => {
                   className="mb-3"
                   invalid={!!errors.description}
                 />
-                <MDBBtn style={{
-                  backgroundColor:"#35677e"
-                }}
-                onClick={handleCreateJob}>Create Job</MDBBtn>
+                <MDBBtn
+                  style={{
+                    backgroundColor: "#35677e",
+                  }}
+                  onClick={handleCreateJob}
+                >
+                  Create Job
+                </MDBBtn>
+                <div className="mt-4">
+                  <MDBTypography tag="h6" className="mb-2">
+                    Sort By:
+                  </MDBTypography>
+                  <div className="d-flex align-items-center mb-2">
+                    <input
+                      type="radio"
+                      id="date"
+                      name="sorting"
+                      className="me-2"
+                      disabled // Disable for now
+                    />
+                    <label htmlFor="date" className="mb-0">
+                      Date Created
+                    </label>
+                  </div>
+                  <div className="d-flex align-items-center">
+                    <input
+                      type="radio"
+                      id="relevance"
+                      name="sorting"
+                      disabled // Disable for now
+                    />
+                    <label htmlFor="relevance" className="mb-0">
+                      Relevance
+                    </label>
+                  </div>
+                </div>
               </MDBCardBody>
             </MDBCard>
           </MDBCol>
@@ -413,7 +438,7 @@ const JobsComponent = () => {
                                 position: "absolute",
                                 top: "10px",
                                 left: "94%",
-                                marginRight: "10px"
+                                marginRight: "10px",
                               }}
                             >
                               <MDBIcon fas icon="times" />
@@ -445,7 +470,12 @@ const JobsComponent = () => {
                     </MDBCol>
                   ) : (
                     otherJobs.map((job) => (
-                      <MDBCol md="12" className="mb-5" key={job.id}>
+                      <MDBCol
+                        md="12"
+                        className="mb-4"
+                        key={job.id}
+                        data-job-id={job.id}
+                      >
                         <MDBCard
                           className={job.applied ? "bg-success text-white" : ""}
                         >
@@ -476,9 +506,12 @@ const JobsComponent = () => {
                               </small>
                             </MDBCardText>
                             {currentUser && (
-                              <MDBBtn style={{
-                                backgroundColor:"#35677e"
-                              }}onClick={() => handleApply(job.id)}>
+                              <MDBBtn
+                                style={{
+                                  backgroundColor: "#35677e",
+                                }}
+                                onClick={() => handleApply(job.id)}
+                              >
                                 Apply
                               </MDBBtn>
                             )}

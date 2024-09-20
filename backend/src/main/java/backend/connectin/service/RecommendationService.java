@@ -2,6 +2,7 @@ package backend.connectin.service;
 
 import backend.connectin.domain.*;
 import backend.connectin.domain.repository.*;
+import backend.connectin.recommendation.Algortithm.MatrixFactorization;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -25,10 +26,12 @@ public class RecommendationService {
     }
 
     public List<JobPost> findRecommendJobsForUser(long userId) {
-        List<JobRecommendation> jobPosts = jobRecommendationRepository.findByUserId(userId);
-        List<Long> jobIds = jobPosts.stream().map(JobRecommendation::getJobId).toList();
+        List<JobRecommendation> jobRecommendations = jobRecommendationRepository.findByUserId(userId);
+        List<Long> jobIds = jobRecommendations.stream().map(JobRecommendation::getJobId).toList();
         List<JobPost> recommendedJobs = new ArrayList<>();
-        jobIds.stream().map(jobId -> jobPostRepository.findById(jobId).orElse(null)).filter(Objects::nonNull).forEach(recommendedJobs::add);
+        jobIds.stream().map(jobId -> jobPostRepository.findById(jobId).orElse(null))
+                .filter(Objects::nonNull)
+                .forEach(recommendedJobs::add);
         return recommendedJobs;
     }
 
@@ -36,238 +39,178 @@ public class RecommendationService {
         List<User> users = userService.fetchAll();
         List<JobPost> jobPosts = jobPostRepository.findAll();
 
-        System.out.println("Fetched users: " + users.size());
-        System.out.println("Fetched job posts: " + jobPosts.size());
-
         if (users.isEmpty() || jobPosts.isEmpty()) {
             System.out.println("No users or job posts available for recommendation.");
             return;
         }
 
         double[][] matrix = new double[users.size()][jobPosts.size()];
-        int userIndex = 0;
 
-        for (var user : users) {
-            if (user.getId() == 1) { // Skip the admin user
+        for (int userIndex = 0; userIndex < users.size(); userIndex++) {
+            User user = users.get(userIndex);
+            if (user.getId() == 1) { // Skip admin user
                 continue;
             }
 
             List<JobView> jobViews = jobViewRepository.findByUserId(user.getId());
             PersonalInfo personalInfo = personalInfoRepository.findByUserId(user.getId());
-            List<Skill> skills = new ArrayList<>();
-
-            if (personalInfo != null) {
-                skills = personalInfo.getSkills();
-            } else {
-                System.out.println("No personal info found for user ID: " + user.getId());
+            if(personalInfo==null){
                 continue;
             }
+            List<Skill> skills = personalInfo.getSkills();
 
-            System.out.println("Processing user ID: " + user.getId() + " with skills: " + skills.size() + " skills");
-
-            int jobPostIndex = 0;
-            for (var job : jobPosts) {
-                int skillMatchScore = calculateSkillMatch(skills, job);
-                if (jobViews.stream().anyMatch(view -> view.getJobId() == job.getId())) {
-                    skillMatchScore += 10;
-                }
+            for (int jobPostIndex = 0; jobPostIndex < jobPosts.size(); jobPostIndex++) {
+                JobPost job = jobPosts.get(jobPostIndex);
+                int skillMatchScore = calculateSkillMatch(skills, job, jobViews);
+                System.out.println("MATCH SCORE FOR USER "+user.getFirstName()+" TOTAL SCORE "+skillMatchScore+" JOB TITLE "+job.getJobTitle());
+                // LOWER MATCHING SCORE MEANING MORE RELEVANCE
                 matrix[userIndex][jobPostIndex] = skillMatchScore > 0 ? skillMatchScore : -1;
-                System.out.println("User ID: " + user.getId() + ", Job ID: " + job.getId() + ", Skill Match Score: " + skillMatchScore);
-                jobPostIndex++;
             }
-            userIndex++;
         }
-
-        System.out.println("Matrix for factorization: ");
-        for (double[] row : matrix) {
-            System.out.println(Arrays.toString(row));
-        }
-
-        double[][] results = matrixFactorization(matrix, 2, 0.0002, 0.0);
-        System.out.println("Results from matrix factorization: ");
-        for (double[] row : results) {
-            System.out.println(Arrays.toString(row));
-        }
-
-        userIndex = 0;
-        for (var user : users) {
-            if (user.getId() == 1) { // Skip the admin user
-                continue;
-            }
-
-            List<JobPost> recommendedJobs = new ArrayList<>();
-            List<Pair> pairs = new ArrayList<>();
-            int jobPostIndex = 0;
-
-            // Ensure results and matrix dimensions match
-            if (userIndex >= results.length) {
-                System.out.println("Warning: userIndex out of bounds for results array.");
-                continue;
-            }
-
-            for (var job : jobPosts) {
-                if (jobPostIndex >= results[userIndex].length) {
-                    System.out.println("Warning: jobPostIndex out of bounds for results array.");
-                    break;
-                }
-
-                if (matrix[userIndex][jobPostIndex] != -1) {
-                    pairs.add(new Pair(jobPostIndex, results[userIndex][jobPostIndex]));
-                    System.out.println("User ID: " + user.getId() + ", Job ID: " + job.getId() + ", Score: " + results[userIndex][jobPostIndex]);
-                }
-
-                jobPostIndex++;
-            }
-
-            pairs.sort((p1, p2) -> Double.compare(p2.value, p1.value));
-            System.out.println("Recommended jobs for user ID: " + user.getId() + ":");
-
-            for (Pair pair : pairs) {
-                JobPost job = jobPosts.get(pair.getIndex());
-                recommendedJobs.add(job);
-                System.out.println("Recommended Job ID: " + job.getId() + ", Score: " + pair.value);
-            }
-
-            for (var job : recommendedJobs) {
-                JobRecommendation jobRecommendation = new JobRecommendation();
-                jobRecommendation.setJobId(job.getId());
-                jobRecommendation.setUserId(user.getId());
-                jobRecommendationRepository.save(jobRecommendation);
-                System.out.println("Saved job recommendation for User ID: " + user.getId() + ", Job ID: " + job.getId());
-            }
-            userIndex++;
-        }
+        System.out.println("MATRIX BEFORE FACTORIZATION");
+        System.out.println(Arrays.deepToString(matrix));
+        MatrixFactorization matrixFactorization = new MatrixFactorization(matrix, 2, 0.0002, 0.02, 5000);
+        double[][] results = matrixFactorization.trainAndPredict();
+        System.out.println("MATRIX AFTER FACTORIZATION"+ Arrays.deepToString(results));
+        saveRecommendations(users, jobPosts, results, matrix);
     }
 
-    private int calculateSkillMatch(List<Skill> skills, JobPost jobPost) {
+    private int calculateSkillMatch(List<Skill> skills, JobPost jobPost, List<JobView> jobViews) {
         int totalDistance = 0;
-        int count = 0;
+        int skillCount = 0;
+
         for (Skill skill : skills) {
             int distance = calculateLevenshteinDistance(skill.getSkillTitle().toLowerCase(), jobPost.getJobTitle().toLowerCase());
             if (distance >= 0) {
                 totalDistance += distance;
-                count++;
+                skillCount++;
+            }
+        }   //here in levenshtein distance if the total distance is smaller we have more relevance
+        int skillMatchScore = skillCount > 0 ? totalDistance / skillCount : -1;
+        int viewBonus = calculateViewedJobBonus(jobPost, jobViews);
+        if(viewBonus==0){
+            skillMatchScore+=2;
+        }
+        else if(viewBonus<0) {
+            skillMatchScore += 4;
+        }
+        else if(viewBonus>5 && viewBonus<10){
+            skillMatchScore -= 2;
+        }
+        else if(viewBonus>10 && viewBonus<20) {
+            skillMatchScore -= 4;
+        }
+        else if(viewBonus>20){
+            skillMatchScore -= 6;
+        }
+
+
+        return skillMatchScore;
+    }
+
+    private int calculateViewedJobBonus(JobPost currentJob, List<JobView> jobViews) {
+        int bonusScore = 0;
+
+        for (JobView jobView : jobViews) {
+            Optional<JobPost> viewedJobOpt = jobPostRepository.findById(jobView.getJobId()); //we need to know what job the user has seen ,find their titles
+            if (viewedJobOpt.isPresent()) {                                                  //and see the relevance with each other job
+                JobPost viewedJob = viewedJobOpt.get();
+                int titleDistance = calculateLevenshteinDistance(viewedJob.getJobTitle().toLowerCase(), currentJob.getJobTitle().toLowerCase());
+                System.out.println("title distance "+titleDistance);
+                // Invert the distance to create a "bonus" (lower distance = higher bonus)
+                int similarityBonus = Math.max(0, 10 - titleDistance);  // Bonus: 10 points minus title distance
+                System.out.println("similarity Bonus "+similarityBonus);
+                bonusScore += similarityBonus;
             }
         }
-        return count > 0 ? totalDistance / count : -1;
+
+        return bonusScore;
     }
 
     private int calculateLevenshteinDistance(String word1, String word2) {
-        int m = word1.length();
-        int n = word2.length();
-        int[][] dp = new int[m + 1][n + 1];
-        for (int i = 0; i <= m; i++) {
-            dp[i][0] = i;
-        }
-        for (int j = 0; j <= n; j++) {
-            dp[0][j] = j;
-        }
-        for (int i = 1; i <= m; i++) {
-            for (int j = 1; j <= n; j++) {
-                if (word1.charAt(i - 1) == word2.charAt(j - 1)) {
-                    dp[i][j] = dp[i - 1][j - 1];
-                } else {
-                    dp[i][j] = Math.min(Math.min(
-                                    dp[i - 1][j] + 1,
-                                    dp[i][j - 1] + 1),
-                            dp[i - 1][j - 1] + 1
-                    );
+        int[][] dp = new int[word1.length() + 1][word2.length() + 1];
+
+        for (int i = 0; i <= word1.length(); i++) {
+            for (int j = 0; j <= word2.length(); j++) {
+                if (i == 0) {
+                    dp[i][j] = j;
+                }
+                else if (j == 0) {
+                    dp[i][j] = i;
+                }
+                else {
+                    dp[i][j] = min(dp[i - 1][j - 1]
+                                    + costOfSubstitution(word1.charAt(i - 1), word2.charAt(j - 1)),
+                            dp[i - 1][j] + 1,
+                            dp[i][j - 1] + 1);
                 }
             }
         }
-        return dp[m][n];
+
+        return dp[word1.length()][word2.length()];
     }
-    public double[][] matrixFactorization(double[][] R, int K, double alpha, double beta) {
-        int users = R.length;
-        int items = R[0].length;
 
-        double[][] V = new double[users][K];
-        double[][] FTr = new double[K][items];
-        Random rand = new Random();
+    public static int costOfSubstitution(char a, char b) {
+        return a == b ? 0 : 1;
+    }
 
-        initializeMatrix(V, rand);
-        initializeMatrix(FTr, rand);
+    public static int min(int... numbers) {
+        return Arrays.stream(numbers)
+                .min().orElse(Integer.MAX_VALUE);
+    }
 
-        for (int step = 0; step < 5000; step++) {
-            double errorSquared = 0;
-            for (int u = 0; u < users; u++) {
-                for (int i = 0; i < items; i++) {
-                    if (R[u][i] != -1) {
-                        double[] row = V[u];
-                        double[] col = new double[K];
-                        for (int k = 0; k < K; k++) {
-                            col[k] = FTr[k][i];
+    private void saveRecommendations(List<User> users, List<JobPost> jobPosts, double[][] results, double[][] matrix) {
+        for (int userIndex = 0; userIndex < users.size(); userIndex++) {
+            User user = users.get(userIndex);
+            if (user.getId() == 1) continue; // Skip admin user
+
+            List<Pair> pairs = new ArrayList<>();
+            for (int jobPostIndex = 0; jobPostIndex < jobPosts.size(); jobPostIndex++) {
+                if (matrix[userIndex][jobPostIndex] != -1) {
+                    pairs.add(new Pair(jobPostIndex, results[userIndex][jobPostIndex]));
+                }
+            }
+
+            pairs.sort(Comparator.comparingDouble(p -> p.value)); // Sort by descending score
+
+            System.out.println("Recommendations for user: " + user.getFirstName());
+            for (Pair pair : pairs) {
+                JobPost job = jobPosts.get(pair.getIndex());
+                System.out.println("Job: " + job.getJobTitle() + " | Score: " + pair.getValue());
+
+                // Check if the recommendation already exists to avoid duplicates
+                List<JobRecommendation> jobRecommendations = jobRecommendationRepository.findByUserId(user.getId());
+                if (jobRecommendations != null) {
+                    for (var jobRecommendation : jobRecommendations) {
+                        if (jobRecommendation.getJobId() == job.getId()) {
+                            jobRecommendationRepository.delete(jobRecommendation);
                         }
-
-                        double prediction = dot(row, col, K);
-                        double error = R[u][i] - prediction;
-                        for (int k = 0; k < K; k++) {
-                            V[u][k] += alpha * (2 * error * col[k] - beta * V[u][k]);
-                            FTr[k][i] += alpha * (2 * error * row[k] - beta * FTr[k][i]);
-                        }
-
-                        errorSquared += error * error;
                     }
                 }
-            }
-            for (int u = 0; u < users; u++) {
-                for (int k = 0; k < K; k++) {
-                    errorSquared += (beta / 2) * (V[u][k] * V[u][k]);
-                }
-            }
-            for (int i = 0; i < items; i++) {
-                for (int k = 0; k < K; k++) {
-                    errorSquared += (beta / 2) * (FTr[k][i] * FTr[k][i]);
-                }
-            }
 
-            if (errorSquared <= 0.001) {
-                break;
-            }
-        }
-        return predictRatings(V, FTr, users, items, K);
-    }
-
-
-    private void initializeMatrix(double[][] matrix, Random rand) {
-        for (int i = 0; i < matrix.length; i++) {
-            for (int j = 0; j < matrix[i].length; j++) {
-                matrix[i][j] = rand.nextDouble();
+                // Save the recommendation to the database
+                JobRecommendation jobRecommendation = new JobRecommendation();
+                jobRecommendation.setJobId(job.getId());
+                jobRecommendation.setUserId(user.getId());
+                jobRecommendationRepository.save(jobRecommendation);
             }
         }
     }
+    private static class Pair {
+        private final int index;
+        private final double value;
 
-    private double dot(double[] row, double[] col, int K) {
-        double product = 0;
-        for (int i = 0; i < K; i++) {
-            product += row[i] * col[i];
+        public Pair(int index, double value) {
+            this.index = index;
+            this.value = value;
         }
-        return product;
-    }
 
-    private double[][] predictRatings(double[][] V, double[][] FTr, int users, int items, int K) {
-        double[][] newR = new double[users][items];
-        for (int u = 0; u < users; u++) {
-            for (int i = 0; i < items; i++) {
-                double[] col = new double[K];
-                for (int k = 0; k < K; k++) {
-                    col[k] = FTr[k][i];
-                }
-                newR[u][i] = dot(V[u], col, K);
-            }
+        public int getIndex() {
+            return index;
         }
-        return newR;
-    }
 
-    public void print(double[][] R) {
-        for (double[] row : R) {
-            StringJoiner sj = new StringJoiner(" | ");
-            for (double col : row) {
-                sj.add(String.format("%.2f", col));
-            }
-            System.out.println(sj.toString());
+        public double getValue() {
+            return value;
         }
     }
-
-
 }
