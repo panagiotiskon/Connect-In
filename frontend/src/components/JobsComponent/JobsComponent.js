@@ -300,7 +300,7 @@ const JobsComponent = () => {
                               applications[job.id].length > 0 && (
                                 <>
                                   <MDBDropdown>
-                                    <MDBDropdownToggle color="primary">
+                                    <MDBDropdownToggle style={{backgroundColor:"#35677e"}}>
                                       View Applicants
                                     </MDBDropdownToggle>
                                     <MDBDropdownMenu>
@@ -413,7 +413,8 @@ const JobsComponent = () => {
                             {currentUser && (
                               <MDBBtn style={{
                                 backgroundColor:"#35677e"
-                              }}onClick={() => handleApply(job.id)}>
+                              }}
+                                      onClick={() => handleApply(job.id)}>
                                 Apply
                               </MDBBtn>
                             )}

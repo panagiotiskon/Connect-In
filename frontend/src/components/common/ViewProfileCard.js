@@ -8,8 +8,8 @@ import {
   MDBDropdownMenu,
   MDBDropdownItem,
 } from "mdb-react-ui-kit";
-import FileService from "../../api/UserFilesApi"; // Adjust the import path as needed
-import AuthService from "../../api/AuthenticationAPI"; // Adjust the import path as needed
+import FileService from "../../api/UserFilesApi";
+import AuthService from "../../api/AuthenticationAPI";
 
 const ViewProfileCard = ({ viewedUser, connections, onNavigateToProfile }) => {
   const [profileImage, setProfileImage] = useState(null);
@@ -25,7 +25,7 @@ const ViewProfileCard = ({ viewedUser, connections, onNavigateToProfile }) => {
             const { type, data } = images[0];
             setProfileImage(`data:${type};base64,${data}`);
           } else {
-            setProfileImage("/path/to/default-image.png"); // Fallback to default if no image
+            setProfileImage("/path/to/default-image.png");
           }
         } catch (error) {
           console.error("Error fetching profile image:", error);

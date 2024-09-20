@@ -29,16 +29,16 @@ public class PostService {
     private final UserService userService;
     private final ConnectionService connectionService;
     private final ReactionRepository reactionRepository;
-    private final ConnectionRepository connectionRepository;
 
-    public PostService(PostRepository postRepository, FileService fileService, PostMapper postMapper, UserService userService, ConnectionService connectionService, ReactionRepository reactionRepository, ConnectionRepository connectionRepository) {
+    public PostService(PostRepository postRepository, FileService fileService,
+                       PostMapper postMapper, UserService userService,
+                       ConnectionService connectionService, ReactionRepository reactionRepository) {
         this.postRepository = postRepository;
         this.fileService = fileService;
         this.postMapper = postMapper;
         this.userService = userService;
         this.connectionService = connectionService;
         this.reactionRepository = reactionRepository;
-        this.connectionRepository = connectionRepository;
     }
 
 

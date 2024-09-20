@@ -42,8 +42,7 @@ public class AdminController {
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
     public Map<Long,UserDetailDTO> getUsersDetails(@RequestParam List<Long> userIds) {
-        Map<Long,UserDetailDTO> userDetailDTOMap = userService.getUsersDetails(userIds);
-        return userDetailDTOMap;
+        return userService.getUsersDetails(userIds);
     }
 
 }

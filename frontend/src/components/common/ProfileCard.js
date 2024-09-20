@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { MDBCard, MDBCardBody, MDBCardImage } from "mdb-react-ui-kit";
 import { useNavigate } from "react-router-dom";
-import FileService from "../../api/UserFilesApi"; // Adjust the import path as needed
+import FileService from "../../api/UserFilesApi";
 
 const ProfileCard = ({ currentUser }) => {
   const navigate = useNavigate();
@@ -28,12 +28,9 @@ const ProfileCard = ({ currentUser }) => {
     fetchProfileImage();
   }, [currentUser]);
 
-  // Redirect to profile page
   const handleProfileClick = () => navigate(`/profile`);
-  // Redirect to connections page
   const handleConnectionsClick = () => navigate("/network");
 
-  // Return early if currentUser is not yet loaded
   if (!currentUser) {
     return (
       <div style={{ textAlign: "center", padding: "2rem" }}>
@@ -55,18 +52,18 @@ const ProfileCard = ({ currentUser }) => {
       <MDBCardBody
       >
         <MDBCardImage
-          src={profileImage || "/path/to/default-image.png"} // Fallback image
+          src={profileImage || "/path/to/default-image.png"}
           alt="avatar"
           className="rounded-circle"
           style={{
-            width: 150, // Increase width to make the circle larger
-            height: 150, // Set height to match width for a perfect circle
-            objectFit: "cover", // Ensure the image covers the circle
+            width: 150,
+            height: 150,
+            objectFit: "cover",
             display: "block",
             alignSelf: "center",
-            margin: "0 auto", // Center the image horizontally
+            margin: "0 auto",
             marginTop: "3rem",
-            marginBottom: "3rem", // Adjust bottom margin as needed
+            marginBottom: "3rem",
           }}
           fluid
         />
@@ -76,7 +73,7 @@ const ProfileCard = ({ currentUser }) => {
             fontWeight: "bold",
             fontSize: "1.8rem",
             cursor: "pointer",
-            textAlign: "center", // Center the text horizontally
+            textAlign: "center",
             font: "Segoe UI",
             marginBottom:"2rem",
           }}
@@ -89,8 +86,8 @@ const ProfileCard = ({ currentUser }) => {
             fontWeight: "bold",
             fontSize: "1.3rem",
             cursor: "pointer",
-            textAlign: "center", // Center the text horizontally
-            marginBottom: "1rem", // Adjust margin if needed
+            textAlign: "center",
+            marginBottom: "1rem",
             font: "Segoe UI",
           }}
         >

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import "./NavBar.scss";
 import {
@@ -10,7 +10,6 @@ import {
   MDBCollapse,
   MDBContainer,
   MDBNavbarToggler,
-  MDBBadge,
 } from "mdb-react-ui-kit";
 import ConnectInLogo from "../../assets/ConnectIn.png";
 import AuthService from "../../api/AuthenticationAPI";
@@ -19,21 +18,6 @@ const NavbarComponent = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [openNavSecond, setOpenNavSecond] = useState(false);
-  const [notificationCount, setNotificationCount] = useState(0);
-  const [currentUser, setCurrentUser] = useState(null);
-
-  useEffect(() => {
-    const fetchCurrentUser = async () => {
-      try {
-        const user = await AuthService.getCurrentUser();
-        setCurrentUser(user);
-      } catch (error) {
-        console.error("Error fetching current user:", error);
-      }
-    };
-    fetchCurrentUser();
-  }, []);
-
 
   const isActivePage = (path) => location.pathname === path;
   const handleHomeClick = () => navigate("/home");
@@ -219,11 +203,11 @@ const NavbarComponent = () => {
                   icon="sign-out-alt"
                   style={{
                     fontSize: "1.4rem",
-                    color: "danger", // Keep logout icon red
+                    color: "red",
                   }}
                 />
               </MDBNavbarLink>
-              <span style={{ fontSize: "0.9rem", color: "danger" }}>Logout</span>
+              <span style={{ fontSize: "0.9rem", color: "red" }}>Logout</span>
             </MDBNavbarItem>
           </MDBNavbarNav>
         </MDBCollapse>

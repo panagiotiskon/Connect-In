@@ -1,14 +1,6 @@
 package backend.connectin.web.controllers;
 
 import backend.connectin.domain.*;
-import backend.connectin.service.CommentService;
-import backend.connectin.domain.Education;
-import backend.connectin.domain.Experience;
-import backend.connectin.domain.Skill;
-import backend.connectin.domain.User;
-import backend.connectin.service.JWTService;
-import backend.connectin.service.PostService;
-import backend.connectin.service.UserService;
 import backend.connectin.service.*;
 import backend.connectin.web.dto.EducationDTO;
 import backend.connectin.web.dto.ExperienceDTO;
@@ -137,7 +129,7 @@ public class UserController {
     public void deleteSkill(
             @PathVariable long userId,
             @PathVariable long skillId) {
-            userService.deleteSkill(userId, skillId);
+        userService.deleteSkill(userId, skillId);
     }
 
     @DeleteMapping("/{userId}/personal-info/experiences/{experienceId}")
@@ -210,15 +202,15 @@ public class UserController {
 
     @PostMapping("/{userId}/{postId}/create-comment")
     public ResponseEntity<Long> createComment(@PathVariable long userId,
-                                                @PathVariable long postId,
-                                                @RequestBody CommentRequest commentRequest) {
+                                              @PathVariable long postId,
+                                              @RequestBody CommentRequest commentRequest) {
         return new ResponseEntity<>(commentService.createComment(userId, postId, commentRequest), HttpStatus.OK);
     }
 
     // this returns a map to post id -> list of comment ids of the user
 
     @GetMapping("/{userId}/comments")
-    public ResponseEntity<Map<Long, List<Long>>> getUserComments(@PathVariable long userId){
+    public ResponseEntity<Map<Long, List<Long>>> getUserComments(@PathVariable long userId) {
         Map<Long, List<Long>> userComments = commentService.fetchUserComments(userId);
         return new ResponseEntity<>(userComments, HttpStatus.OK);
     }
@@ -236,7 +228,7 @@ public class UserController {
 
     @PostMapping("/{userId}/{postId}/create-reaction")
     public ResponseEntity<Long> createReaction(@PathVariable long userId,
-                                                 @PathVariable long postId){
+                                               @PathVariable long postId) {
 
         return new ResponseEntity<>(reactionService.createReaction(userId, postId), HttpStatus.OK);
     }
@@ -252,7 +244,7 @@ public class UserController {
 
     @DeleteMapping("/{userId}/{postId}/reaction")
     public ResponseEntity<String> deleteReaction(@PathVariable long userId,
-                                                 @PathVariable long postId){
+                                                 @PathVariable long postId) {
         reactionService.deleteReaction(userId, postId);
         return new ResponseEntity<>("Reaction Deleted", HttpStatus.OK);
     }
