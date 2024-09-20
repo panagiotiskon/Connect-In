@@ -206,12 +206,13 @@ public class UserController {
     // --------COMMENTS-----------
 
 
+    // returns newly created comment id
+
     @PostMapping("/{userId}/{postId}/create-comment")
-    public ResponseEntity<String> createComment(@PathVariable long userId,
+    public ResponseEntity<Long> createComment(@PathVariable long userId,
                                                 @PathVariable long postId,
                                                 @RequestBody CommentRequest commentRequest) {
-        commentService.createComment(userId, postId, commentRequest);
-        return new ResponseEntity<>("Comment Created", HttpStatus.OK);
+        return new ResponseEntity<>(commentService.createComment(userId, postId, commentRequest), HttpStatus.OK);
     }
 
     // this returns a map to post id -> list of comment ids of the user
@@ -234,10 +235,10 @@ public class UserController {
 
 
     @PostMapping("/{userId}/{postId}/create-reaction")
-    public ResponseEntity<String> createReaction(@PathVariable long userId,
+    public ResponseEntity<Long> createReaction(@PathVariable long userId,
                                                  @PathVariable long postId){
-        reactionService.createReaction(userId, postId);
-        return new ResponseEntity<>("Reaction Created", HttpStatus.OK);
+
+        return new ResponseEntity<>(reactionService.createReaction(userId, postId), HttpStatus.OK);
     }
 
     // returns a list of users reacted posts

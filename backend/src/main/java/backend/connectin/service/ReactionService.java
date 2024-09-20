@@ -1,11 +1,11 @@
 package backend.connectin.service;
-import backend.connectin.web.resources.*;
 
 import backend.connectin.domain.Post;
 import backend.connectin.domain.Reaction;
 import backend.connectin.domain.User;
 import backend.connectin.domain.repository.ReactionRepository;
 import backend.connectin.web.mappers.ReactionMapper;
+import backend.connectin.web.resources.ReactionResource;
 import jakarta.transaction.Transactional;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -30,15 +30,16 @@ public class ReactionService {
     }
 
     @Transactional
-    public void createReaction(Long userId, Long postId) {
+    public Long createReaction(Long userId, Long postId) {
         User user = userService.findUserOrThrow(userId);
         Post post = postService.findPostOrThrow(postId);
         // check if the reaction to this post already exists
-        if(reactionRepository.findByUserIdPostId(userId, postId).isPresent()) {
+        if (reactionRepository.findByUserIdPostId(userId, postId).isPresent()) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "User already reacted to this Post");
         }
         Reaction reaction = reactionMapper.mapToReaction(user, post);
         reactionRepository.save(reaction);
+        return reaction.getId();
     }
 
     @Transactional
@@ -69,10 +70,14 @@ public class ReactionService {
     public List<ReactionResource> fetchUserReactions(Long userId) {
         User user = userService.findUserOrThrow(userId);
         List<Reaction> reactions = reactionRepository.findAllByUserId(userId);
-        return  reactions.stream()
+        return reactions.stream()
                 .map(reactionMapper::mapToReactionResource)
                 .toList();
     }
 
+
+    public Reaction findReactionOrThrow(Long reactionId) {
+        return reactionRepository.findById(reactionId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+    }
 
 }

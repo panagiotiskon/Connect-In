@@ -4,34 +4,38 @@ import backend.connectin.domain.enums.NotificationType;
 import jakarta.persistence.*;
 
 import java.time.Instant;
-import java.time.LocalDate;
 
 @Entity
 @Table(name = "notification")
 public class Notification {
-    private long id;
-    private long userId;
+
+    private Long id;
+    // this is the id of the user made who made the notification
+    private Long userId;
     private NotificationType type;
-    private long connectionUserId;
+    // this is the id of the user that the notification goes to
+    private Long connectionUserId;
+    // if the notification is comment or react keep the id of it
+    private Long objectId;
     private Instant createdAt;
 
     @Id
     @Column(name = "id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    public long getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(long id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
     @Column(name = "user_id")
-    public long getUserId() {
+    public Long getUserId() {
         return userId;
     }
 
-    public void setUserId(long userId) {
+    public void setUserId(Long userId) {
         this.userId = userId;
     }
     @Column(name = "created_at")
@@ -43,11 +47,11 @@ public class Notification {
         this.createdAt = createdAt;
     }
     @Column(name = "connection_user_id")
-    public long getConnectionUserId() {
+    public Long getConnectionUserId() {
         return connectionUserId;
     }
 
-    public void setConnectionUserId(long connectionUserId) {
+    public void setConnectionUserId(Long connectionUserId) {
         this.connectionUserId = connectionUserId;
     }
     @Column(name = "type")
@@ -58,5 +62,14 @@ public class Notification {
 
     public void setType(NotificationType type) {
         this.type = type;
+    }
+
+    @Column(name = "object_id")
+    public Long getObjectId() {
+        return objectId;
+    }
+
+    public void setObjectId(Long notificationObjectId) {
+        this.objectId = notificationObjectId;
     }
 }
