@@ -5,16 +5,22 @@ const API_URL = "https://localhost:8443/auth";
 axios.defaults.withCredentials = true;
 
 const NotificationAPI = {
-  createNotification: async (userId, type, connectionUserId) => {
+  createNotification: async (userId, type, connectionUserId, objectId) => {
     try {
+      console.log(userId, type, connectionUserId, objectId);
       const response = await axios.post(
-        `${API_URL}/notifications/${userId}/${type}/${connectionUserId}`,
-        null, // No request body in this case
+        `${API_URL}/notifications/create`,
+        {
+            userId: userId,
+            type: type,
+            connectionUserId: connectionUserId,
+            objectId: objectId
+        },
         {
           headers: {
             "Content-Type": "application/json",
           },
-          withCredentials: true, // Send cookies with the request
+          withCredentials: true,
         }
       );
       return response.data;
@@ -76,24 +82,11 @@ const NotificationAPI = {
 
   deleteNotification: async (userId, connectionUserId) => {
     try {
-      await axios.delete(
-        `${API_URL}/notifications/${userId}/delete/${connectionUserId}`,
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
-          withCredentials: true,
-        }
-      );
-    } catch (error) {
-      console.error("Error deleting notification:", error);
-      throw error;
-    }
-  },
-
-  deleteNotificationById: async (notificationId) => {
-    try {
-      await axios.delete(`${API_URL}/notifications/delete/${notificationId}`, {
+      await axios.delete(`${API_URL}/notifications/delete`, {
+        params: {
+          userId: userId,
+          connectedUserId: connectionUserId
+        },
         headers: {
           "Content-Type": "application/json",
         },
@@ -105,7 +98,41 @@ const NotificationAPI = {
     }
   },
 
-  // Method to get the number of notifications for a specific user
+  deleteNotificationById: async (notificationId) => {
+    try {
+      await axios.delete(`${API_URL}/notifications/delete`, {
+        params: {
+          notificationId: notificationId
+        },
+        headers: {
+          "Content-Type": "application/json",
+        },
+        withCredentials: true,
+      });
+    } catch (error) {
+      console.error("Error deleting notification:", error);
+      throw error;
+    }
+  },
+
+  deleteNotificationByObjectId: async (objectId) => {
+    try {
+      await axios.delete(`${API_URL}/notifications/delete`, {
+        params: {
+          objectId: objectId
+        },
+        headers: {
+          "Content-Type": "application/json",
+        },
+        withCredentials: true,
+      });
+    } catch (error) {
+      console.error("Error deleting notification:", error);
+      throw error;
+    }
+  },
+
+
   getNumberOfNotifications: async (userId) => {
     try {
       const response = await axios.get(

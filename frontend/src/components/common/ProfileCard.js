@@ -47,7 +47,7 @@ const ProfileCard = ({ currentUser }) => {
       className="mb-4"
       style={{
         width: "70%",
-        height: "450px",
+        height: "500px",
         margin: "5%",
         display: "flex",
       }}

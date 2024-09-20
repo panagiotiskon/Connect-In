@@ -180,7 +180,8 @@ const HomeComponent = () => {
       const post = postsMap[postId];
 
       if (post) {
-        await PostService.createComment(postId, comment);
+        const commentId = await PostService.createComment(postId, comment);
+        console.log(commentId.data ,"eeeeee");
         setCommentInputs((prev) => ({
           ...prev,
           [postId]: "",
@@ -192,7 +193,8 @@ const HomeComponent = () => {
           await NotificationAPI.createNotification(
             post.userId,
             "COMMENT",
-            currentUser.id
+            currentUser.id, 
+            commentId.data
           );
         }
       } else {
@@ -224,32 +226,17 @@ const HomeComponent = () => {
       if (hasReacted) {
         await PostService.deleteReaction(postId);
         setReactedPostIds((prev) => prev.filter((id) => id !== postId)); // Remove from reacted post IDs
+        await NotificationAPI.deleteNotificationByObjectId(postId);
 
-        const notifications = await NotificationAPI.getNotifications(
-          post.userId
-        );
-        if (notifications.length > 0) {
-          for (const notification of notifications) {
-            console.log(notification);
-            if (notification.notificationType === "REACTION") {
-              try {
-                await NotificationAPI.deleteNotificationById(notification.id);
-              } catch (error) {
-                console.error("Error deleting notification:", error);
-              }
-            }
-          }
-        }
       } else {
         await PostService.createReaction(postId);
-        setReactedPostIds((prev) => [...prev, postId]); // Add to reacted post IDs
-
-        // Create a new notification
+        setReactedPostIds((prev) => [...prev, postId]); 
         if (post.userId !== currentUser.id) {
           await NotificationAPI.createNotification(
             post.userId,
             "REACTION",
-            currentUser.id
+            currentUser.id,
+            postId
           );
         }
       }
@@ -262,27 +249,9 @@ const HomeComponent = () => {
   const handleDeleteComment = async (postId, commentId) => {
     try {
       await PostService.deleteComment(postId, commentId);
-
-      // Fetch the updated list of posts
+      await NotificationAPI.deleteNotificationByObjectId(commentId);
       await fetchPosts();
-
-      // Get the post data after deletion
-      const updatedPost = postsMap[postId];
-      if (updatedPost) {
-        // Check if the deleted comment was the one associated with the user
-        const deletedComment = updatedPost.comments.find(
-          (comment) => comment.id === commentId
-        );
-
-        if (deletedComment && deletedComment.userId !== currentUser.id) {
-          // Create a notification for the post owner
-          await NotificationAPI.createNotification(
-            updatedPost.userId,
-            "COMMENT_DELETION",
-            currentUser.id
-          );
-        }
-      }
+      
     } catch (error) {
       console.error("Error deleting comment:", error);
       alert("Failed to delete comment.");

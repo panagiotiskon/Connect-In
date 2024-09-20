@@ -380,8 +380,8 @@ const ProfileComponent = () => {
                           color="secondary"
                           style={{
                             position: "absolute",
-                            top: "0px",
-                            left: "810px",
+                            top: "10px",
+                            left: "94%",
                           }}
                           onClick={() =>
                             handleDelete(exp.experienceId, "Work Experience")
@@ -446,8 +446,8 @@ const ProfileComponent = () => {
                           color="secondary"
                           style={{
                             position: "absolute",
-                            top: "0px",
-                            left: "810px",
+                            top: "10px",
+                            left: "94%",
                           }}
                           onClick={() =>
                             handleDelete(edu.educationId, "Education")
@@ -510,8 +510,8 @@ const ProfileComponent = () => {
                           color="secondary"
                           style={{
                             position: "absolute",
-                            top: "0px",
-                            left: "810px",
+                            top: "10px",
+                            left: "94%",
                           }}
                           onClick={() => handleDelete(skill.skillId, "Skills")}
                         >
