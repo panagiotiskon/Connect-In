@@ -1,9 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import AdminAPI from "../../api/AdminAPI"; // Adjust the import path as needed
-import FileService from "../../api/UserFilesApi"; // Adjust the import path as needed
+import AdminAPI from "../../api/AdminAPI";
+import FileService from "../../api/UserFilesApi";
 import NavBarAdminComponent from "./NavBarAdminComponent";
-import FooterComponent from "../common/FooterComponent";
 import json2xml from "json2xml";
 import {
   MDBContainer,
@@ -22,10 +21,9 @@ export default function AdminComponent() {
   const [users, setUsers] = useState([]);
   const [selectedUsers, setSelectedUsers] = useState([]);
   const [profileImages, setProfileImages] = useState({}); // Map to store profile images
-  const adminId = 1; // Set the admin user's ID or some condition to identify admin
-  const navigate = useNavigate(); // Initialize useNavigate hook
+  const adminId = 1; // admin user's ID
+  const navigate = useNavigate();
 
-  // Fetch users on component mount
   useEffect(() => {
     const fetchUsers = async () => {
       try {
@@ -86,7 +84,7 @@ export default function AdminComponent() {
     );
   };
 
-  // Extract selected users' details in either JSON or XML format
+  // Extract selected users' details
   const extractUsers = async (format) => {
     if (selectedUsers.length === 0) {
       alert("Please Select Users");
@@ -109,7 +107,6 @@ export default function AdminComponent() {
     }
   };
 
-  // Convert user details to XML
   // Convert user details to XML
   const convertToXML = (data) => {
     try {
@@ -217,8 +214,6 @@ export default function AdminComponent() {
     }
   };
 
-
-
   // Helper function to download the file
   const downloadFile = (filename, content, mimeType) => {
     try {
@@ -236,7 +231,6 @@ export default function AdminComponent() {
     }
   };
 
-  // Navigate to the selected user's profile
   const handleShowProfile = (userId) => {
     navigate(`/profile/${userId}`);
   };
@@ -293,7 +287,6 @@ export default function AdminComponent() {
             ))}
         </div>
       </MDBContainer>
-      <FooterComponent />
     </div>
   );
 }

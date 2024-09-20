@@ -1,9 +1,7 @@
 import axios from "axios";
 
-// Set your API URL
 const API_URL = "https://localhost:8443/auth";
 
-// Set default configuration for axios
 axios.defaults.withCredentials = true;
 
 // Fetch all registered users
@@ -88,7 +86,7 @@ const requestToConnect = async (userId, connectionUserId) => {
   try {
     const response = await axios.post(
       `${API_URL}/connections/${userId}`,
-      null, // No request body needed as we're using query parameters
+      null,
       {
         params: {
           connectionUserId: connectionUserId,
@@ -98,7 +96,7 @@ const requestToConnect = async (userId, connectionUserId) => {
         },
       }
     );
-    return response.data; // Assuming the backend returns a list of connections
+    return response.data;
   } catch (error) {
     console.error("Error requesting connection:", error);
     throw error;

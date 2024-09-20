@@ -14,11 +14,10 @@ import {
 } from "mdb-react-ui-kit";
 import ConnectInLogo from "../../assets/ConnectIn.png";
 import AuthService from "../../api/AuthenticationAPI";
-import NotificationAPI from "../../api/NotificationAPI";
 
 const NavbarComponent = () => {
   const navigate = useNavigate();
-  const location = useLocation(); // Get current location
+  const location = useLocation();
   const [openNavSecond, setOpenNavSecond] = useState(false);
   const [notificationCount, setNotificationCount] = useState(0);
   const [currentUser, setCurrentUser] = useState(null);
@@ -36,9 +35,7 @@ const NavbarComponent = () => {
   }, []);
 
 
-  // Define the function for determining if the icon should be active (black) or inactive (gray)
   const isActivePage = (path) => location.pathname === path;
-
   const handleHomeClick = () => navigate("/home");
   const handleNetworkClick = () => navigate("/network");
   const handleJobsClick = () => navigate("/jobs");
@@ -84,7 +81,7 @@ const NavbarComponent = () => {
               <span
                 style={{
                   fontSize: "0.9rem",
-                  fontWeight: isActivePage("/home") ? "bold" : "normal", // Bold text if active
+                  fontWeight: isActivePage("/home") ? "bold" : "normal",
                 }}
               >
                 Home
@@ -104,7 +101,7 @@ const NavbarComponent = () => {
               <span
                 style={{
                   fontSize: "0.9rem",
-                  fontWeight: isActivePage("/network") ? "bold" : "normal", // Bold text if active
+                  fontWeight: isActivePage("/network") ? "bold" : "normal",
                 }}
               >
                 Network
@@ -124,7 +121,7 @@ const NavbarComponent = () => {
               <span
                 style={{
                   fontSize: "0.9rem",
-                  fontWeight: isActivePage("/jobs") ? "bold" : "normal", // Bold text if active
+                  fontWeight: isActivePage("/jobs") ? "bold" : "normal",
                 }}
               >
                 Jobs
@@ -144,7 +141,7 @@ const NavbarComponent = () => {
               <span
                 style={{
                   fontSize: "0.9rem",
-                  fontWeight: isActivePage("/messaging") ? "bold" : "normal", // Bold text if active
+                  fontWeight: isActivePage("/messaging") ? "bold" : "normal",
                 }}
               >
                 Messaging
@@ -169,7 +166,7 @@ const NavbarComponent = () => {
                   fontSize: "0.9rem",
                   fontWeight: isActivePage("/notifications")
                     ? "bold"
-                    : "normal", // Bold text if active
+                    : "normal",
                 }}
               >
                 Notifications
@@ -209,7 +206,7 @@ const NavbarComponent = () => {
               <span
                 style={{
                   fontSize: "0.9rem",
-                  fontWeight: isActivePage("/settings") ? "bold" : "normal", // Bold text if active
+                  fontWeight: isActivePage("/settings") ? "bold" : "normal",
                 }}
               >
                 Settings
@@ -222,11 +219,11 @@ const NavbarComponent = () => {
                   icon="sign-out-alt"
                   style={{
                     fontSize: "1.4rem",
-                    color: "red", // Keep logout icon red
+                    color: "danger", // Keep logout icon red
                   }}
                 />
               </MDBNavbarLink>
-              <span style={{ fontSize: "0.9rem", color: "red" }}>Logout</span>
+              <span style={{ fontSize: "0.9rem", color: "danger" }}>Logout</span>
             </MDBNavbarItem>
           </MDBNavbarNav>
         </MDBCollapse>
