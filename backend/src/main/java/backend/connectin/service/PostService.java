@@ -3,7 +3,9 @@ package backend.connectin.service;
 import backend.connectin.domain.FileDB;
 import backend.connectin.domain.Post;
 import backend.connectin.domain.User;
+import backend.connectin.domain.repository.ConnectionRepository;
 import backend.connectin.domain.repository.PostRepository;
+import backend.connectin.domain.repository.ReactionRepository;
 import backend.connectin.web.mappers.PostMapper;
 import backend.connectin.web.requests.PostRequest;
 import jakarta.transaction.Transactional;
@@ -14,6 +16,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -25,19 +28,24 @@ public class PostService {
     private final PostMapper postMapper;
     private final UserService userService;
     private final ConnectionService connectionService;
+    private final ReactionRepository reactionRepository;
+    private final ConnectionRepository connectionRepository;
 
-    public PostService(PostRepository postRepository, FileService fileService, PostMapper postMapper, UserService userService, ConnectionService connectionService) {
+    public PostService(PostRepository postRepository, FileService fileService, PostMapper postMapper, UserService userService, ConnectionService connectionService, ReactionRepository reactionRepository, ConnectionRepository connectionRepository) {
         this.postRepository = postRepository;
         this.fileService = fileService;
         this.postMapper = postMapper;
         this.userService = userService;
         this.connectionService = connectionService;
+        this.reactionRepository = reactionRepository;
+        this.connectionRepository = connectionRepository;
     }
 
 
     public Post findPostOrThrow(Long postId) {
         return postRepository.findById(postId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
     }
+
 
     @Transactional
     public void createPost(Long userId, PostRequest postRequest) {
@@ -58,9 +66,15 @@ public class PostService {
     }
 
     public List<Post> fetchFeed(Long userId) {
-
+        // first find the connection Ids
         List<Long> connectionIds = new ArrayList<>(connectionService.getConnectedUserIds(userId));
+        // find the posts which the connections reacted to
+        List<Long> postIdsFromReactions = reactionRepository.findPostIdsByUserIds(connectionIds);
+        // find the user ids who wrote these posts
+        List<Long> userIdsFromPosts = postRepository.findUserIdsByPostIds(postIdsFromReactions);
+        connectionIds.addAll(userIdsFromPosts);
         connectionIds.add(userId);
+        connectionIds = new ArrayList<>(new HashSet<>(connectionIds));
         Set<Post> userPostsSet = postRepository.findAllByUserIdIn(connectionIds);
         return userPostsSet.stream().toList();
     }

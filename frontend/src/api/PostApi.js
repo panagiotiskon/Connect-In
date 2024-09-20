@@ -103,8 +103,6 @@ const deleteReaction = async(postId) => {
 
 }
 
-
-
 const PostService = {
   getFeed,
   createPost,

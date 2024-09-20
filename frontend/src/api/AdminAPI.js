@@ -2,7 +2,6 @@ import axios from "axios";
 
 const API_URL = "https://localhost:8443/admin";
 
-// Set default configuration for axios
 axios.defaults.withCredentials = true;
 
 // Fetch all users without role filtering or pagination
@@ -29,7 +28,6 @@ const getUserDetails = async (userIds) => {
         "Content-Type": "application/json",
       },
     });
-    console.log(response.data);
     return response.data;
   } catch (error) {
     console.error("Error fetching user details:", error);
@@ -37,7 +35,6 @@ const getUserDetails = async (userIds) => {
   }
 };
 
-// Export the AdminAPI functions
 const AdminAPI = {
   getUsers,
   getUserDetails,

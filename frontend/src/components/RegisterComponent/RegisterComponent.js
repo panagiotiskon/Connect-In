@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import AuthService from "../../api/AuthenticationAPI";
 import ConnectInLogo from "../../assets/ConnectIn.png";
-import PhotoUpload from "../PhotoUpload";
+import PhotoUpload from "./PhotoUpload";
 import FooterComponent from "../common/FooterComponent";
 import "./RegisterComponent.scss";
 

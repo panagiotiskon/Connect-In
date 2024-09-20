@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
-import NavbarComponent from "./common/NavBar";
-import MessagingAPI from "../api/MessagingAPI";
-import AuthService from "../api/AuthenticationAPI";
-import FileService from "../api/UserFilesApi";
+import NavbarComponent from "../common/NavBar";
+import MessagingAPI from "../../api/MessagingAPI";
+import AuthService from "../../api/AuthenticationAPI";
+import FileService from "../../api/UserFilesApi";
 import {
   MDBContainer,
   MDBRow,

@@ -1,11 +1,9 @@
 import axios from "axios";
 
-// Set your API URL
 const API_URL = "https://localhost:8443/auth";
 
 axios.defaults.withCredentials = true;
 
-// Fetch user's details (GET request)
 const getUser = async (userId) => {
   try {
     const response = await axios.get(`${API_URL}/${userId}`, {
@@ -13,14 +11,13 @@ const getUser = async (userId) => {
         "Content-Type": "application/json",
       },
     });
-    return response.data; // UserDTO object
+    return response.data;
   } catch (error) {
     console.error("Error fetching user data:", error);
     throw error;
   }
 };
 
-// Fetch user's education details (GET request)
 const getEducation = async (userId) => {
   try {
     const response = await axios.get(
@@ -31,14 +28,13 @@ const getEducation = async (userId) => {
         },
       }
     );
-    return response.data; // List of EducationDTO objects
+    return response.data;
   } catch (error) {
     console.error("Error fetching education data:", error);
     return [];
   }
 };
 
-// Add new education details (POST request)
 const addEducation = async (userId, educationDTO) => {
   try {
     console.log("Starting addEducation process...");
@@ -79,7 +75,6 @@ const addEducation = async (userId, educationDTO) => {
   }
 };
 
-// Fetch user's experience details (GET request)
 const getExperience = async (userId) => {
   try {
     const response = await axios.get(
@@ -90,7 +85,7 @@ const getExperience = async (userId) => {
         },
       }
     );
-    return response.data; // List of ExperienceDTO objects
+    return response.data;
   } catch (error) {
     console.error("Error fetching experience data:", error);
     return [];
@@ -150,7 +145,7 @@ const getSkills = async (userId) => {
         },
       }
     );
-    return response.data; // List of SkillDTO objects
+    return response.data;
   } catch (error) {
     console.error("Error fetching skills data:", error);
     return [];
