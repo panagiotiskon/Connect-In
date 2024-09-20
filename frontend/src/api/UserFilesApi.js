@@ -11,7 +11,7 @@ const getUserImages = async (userId) => {
       },
     });
 
-    return response.data; // This will be a list of Base64 strings
+    return response.data;
   } catch (error) {
     console.error("Error fetching user images:", error);
     return [];

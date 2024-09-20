@@ -1,19 +1,16 @@
 import axios from "axios";
 
-// Set your API URL
 const API_URL = "https://localhost:8443/auth/messages";
 
-// Set default configuration for axios
 axios.defaults.withCredentials = true;
 
-// Create the Messaging API object
 const MessagingAPI = {
-  // Method to send a message
+
   sendMessage: async (senderId, receiverId, content) => {
     try {
       const response = await axios.post(
         `${API_URL}/send`,
-        null, // No request body in this case
+        null,
         {
           params: {
             senderId,
@@ -23,7 +20,7 @@ const MessagingAPI = {
           headers: {
             "Content-Type": "application/json",
           },
-          withCredentials: true, // Send cookies with the request
+          withCredentials: true,
         }
       );
       return response.data;
@@ -44,7 +41,7 @@ const MessagingAPI = {
         headers: {
           "Content-Type": "application/json",
         },
-        withCredentials: true, // Send cookies with the request
+        withCredentials: true,
       });
       return response.data;
     } catch (error) {
@@ -63,7 +60,7 @@ const MessagingAPI = {
         headers: {
           "Content-Type": "application/json",
         },
-        withCredentials: true, // Send cookies with the request
+        withCredentials: true,
       });
       return response.data;
     } catch (error) {
@@ -75,7 +72,7 @@ const MessagingAPI = {
     try {
       const response = await axios.post(
         `${API_URL}/conversation`,
-        null, // No request body in this case
+        null,
         {
           params: {
             userId1,
@@ -84,7 +81,7 @@ const MessagingAPI = {
           headers: {
             "Content-Type": "application/json",
           },
-          withCredentials: true, // Send cookies with the request
+          withCredentials: true,
         }
       );
       return response.data;

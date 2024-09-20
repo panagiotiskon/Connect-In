@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import NavbarComponent from "../common/NavBar";
 import AuthService from "../../api/AuthenticationAPI";
 import NotificationAPI from "../../api/NotificationAPI";
-import ConnectionRequest from "../ConnectionRequest";
+
 import {
   MDBContainer,
   MDBRow,

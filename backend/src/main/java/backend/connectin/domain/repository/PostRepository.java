@@ -23,5 +23,11 @@ public interface PostRepository extends JpaRepository<Post, Long> {
             """, nativeQuery = true)
     Set<Post> findAllByUserIdIn(@Param("userIds") Collection<Long> userIds);
 
+    @Query(value = """
+                SELECT DISTINCT p.user_id
+                FROM posts p
+                WHERE p.id IN :postIds
+            """, nativeQuery = true)
+    List<Long> findUserIdsByPostIds(List<Long> postIds);
 
 }

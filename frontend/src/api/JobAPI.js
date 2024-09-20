@@ -2,19 +2,19 @@ import axios from "axios";
 
 const API_URL = "https://localhost:8443/auth/jobs";
 
-// Set default configuration for axios
 axios.defaults.withCredentials = true;
+
 const JobAPI = {
   getJobPosts: async (currentUserId) => {
     try {
       const response = await axios.get(`${API_URL}/posts`, {
         params: {
-          currentUserId: currentUserId, // Use 'currentUserId' as the query parameter key
+          currentUserId: currentUserId,
         },
         headers: {
           "Content-Type": "application/json",
         },
-        withCredentials: true, // Send cookies with the request
+        withCredentials: true,
       });
       return response.data;
     } catch (error) {
@@ -27,10 +27,10 @@ const JobAPI = {
     try {
       const response = await axios.post(
         `${API_URL}/post`,
-        null, // No request body needed
+        null,
         {
           params: {
-            userId, // Send as query parameters
+            userId,
             jobTitle,
             companyName,
             jobDescription,
@@ -52,10 +52,10 @@ const JobAPI = {
     try {
       const response = await axios.post(
         `${API_URL}/apply`,
-        null, // No request body needed
+        null,
         {
           params: {
-            userId, // Send as query parameters
+            userId,
             jobPostId,
           },
           headers: {
@@ -74,7 +74,7 @@ const JobAPI = {
     try {
       const response = await axios.get(`${API_URL}/applications`, {
         params: {
-          userId, // Send as query parameter
+          userId,
         },
         headers: {
           "Content-Type": "application/json",
