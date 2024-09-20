@@ -13,7 +13,7 @@ import NavbarComponent from "../common/NavBar";
 import AuthService from "../../api/AuthenticationAPI";
 import ProfileCard from "../common/ProfileCard";
 import PostService from "../../api/PostApi";
-import FileService from "../../api/UserFilesApi"; // Import the service to fetch the images
+import FileService from "../../api/UserFilesApi";
 import PersonalInfoService from "../../api/UserPersonalInformationAPI";
 import NotificationAPI from "../../api/NotificationAPI";
 import "./HomeComponent.scss";
@@ -23,7 +23,7 @@ const HomeComponent = () => {
   const [profileImage, setProfileImage] = useState(null);
   const [postContent, setPostContent] = useState("");
   const [uploadedFile, setUploadedFile] = useState(null);
-  const [posts, setPosts] = useState([]); // State to hold the posts
+  const [posts, setPosts] = useState([]);
   const [commentInputs, setCommentInputs] = useState({}); // Track comment input for each post
   const [postsMap, setPostsMap] = useState({});
   const [reactedPostIds, setReactedPostIds] = useState([]);
@@ -74,8 +74,8 @@ const HomeComponent = () => {
         })
       );
 
-      setPosts(postsWithUserPhotos); // Still set the array of posts for UI rendering
-      setPostsMap(postsById); // Set the dictionary mapping post IDs to posts
+      setPosts(postsWithUserPhotos);
+      setPostsMap(postsById);
     } catch (error) {
       console.error("Error fetching posts:", error);
       setPosts([]);
@@ -112,9 +112,9 @@ const HomeComponent = () => {
         const userImages = await FileService.getUserImages(user.id);
         if (userImages.length > 0) {
           const profileImageData = `data:${userImages[0].type};base64,${userImages[0].data}`;
-          setProfileImage(profileImageData); // Set profile image for the user
+          setProfileImage(profileImageData);
         } else {
-          setProfileImage(null); // Fallback if no image is found
+          setProfileImage(null);
         }
       }
     };
@@ -209,7 +209,6 @@ const HomeComponent = () => {
 
   const handleDeletePost = async (postId) => {
     try {
-      // Call the deletePost function with the postId
       await PostService.deletePost(postId);
       fetchPosts();
     } catch (error) {
@@ -258,9 +257,6 @@ const HomeComponent = () => {
     }
   };
 
-
-
-
   return (
     <>
       <NavbarComponent />
@@ -277,7 +273,6 @@ const HomeComponent = () => {
             className="center-column"
             style={{ marginBottom: "1rem" }}
           >
-            {/* Create Post Section */}
             <MDBCard className="new-post-container shadow-0">
               <MDBCardBody className="pb-2 w-100">
                 <div className="d-flex new-post-input-container">
@@ -357,8 +352,6 @@ const HomeComponent = () => {
                 </div>
               </MDBCardBody>
             </MDBCard>
-
-            {/* Display Posts Section */}
             {posts.length > 0 ? (
               posts.map((post) => (
                 <MDBCard key={post.id} className="mt-3 shadow-0 feed-post">
@@ -421,7 +414,7 @@ const HomeComponent = () => {
                         type="text"
                         className="form-control"
                         placeholder="Add a comment..."
-                        value={commentInputs[post.id] || ""} // Tie input to the specific post ID
+                        value={commentInputs[post.id] || ""}
                         onChange={(e) =>
                           handleCommentInputChange(post.id, e.target.value)
                         }

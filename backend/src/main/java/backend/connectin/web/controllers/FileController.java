@@ -11,7 +11,6 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/auth")
@@ -24,6 +23,7 @@ public class FileController {
     public FileController(FileService fileService) {
         this.fileService = fileService;
     }
+
     @PostMapping("/pre-upload")
     public ResponseEntity<Map<String, String>> preStageUpload(@RequestParam("file") MultipartFile file) {
         try {
@@ -46,35 +46,6 @@ public class FileController {
             return new ResponseEntity<>(HttpStatus.EXPECTATION_FAILED);
         }
     }
-
-//    @PostMapping("/upload")
-//    public ResponseEntity<String> uploadFile(
-//            //@RequestParam("preUploadId") String preUploadId,
-//            @RequestParam("isProfilePicture") Boolean isProfilePicture,
-//            @RequestParam("userEmail") String userEmail) {
-//        String message = "";
-//        try {
-//            // Retrieve the pre-uploaded file from temp storage
-//            FileDB preUploadedFile = tempStorage.get(preUploadId);
-//            if (preUploadedFile == null) {
-//                return new ResponseEntity<>("Pre-uploaded file not found!", HttpStatus.BAD_REQUEST);
-//            }
-//
-//            // Store the file permanently
-//            FileDB fileToSave = new FileDB(preUploadedFile.getName(), preUploadedFile.getType(), preUploadedFile.getData(), isProfilePicture, userEmail);
-//            fileService.save(fileToSave);
-//
-//            // Remove the file from temporary storage
-//            tempStorage.remove(preUploadId);
-//
-//            message = "Uploaded the file successfully: " + preUploadedFile.getName();
-//            return new ResponseEntity<>(message, HttpStatus.OK);
-//        } catch (Exception e) {
-//            message = "Could not upload the file!";
-//            return new ResponseEntity<>(message, HttpStatus.EXPECTATION_FAILED);
-//        }
-//    }
-
 
     @PostMapping("/upload")
     public ResponseEntity<?> uploadFile(@RequestParam("file") MultipartFile file,

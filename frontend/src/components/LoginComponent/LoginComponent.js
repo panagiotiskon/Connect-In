@@ -37,7 +37,6 @@ const LoginComponent = () => {
         let resMessage = "";
 
         if (error.response && error.response.status === 401) {
-          // Customize the message for a 401 error
           resMessage = "Invalid email or password. Please try again.";
         } else {
           resMessage =
@@ -83,8 +82,6 @@ const LoginComponent = () => {
               {...register("password", { required: "Password is required" })}
               className={errors.password ? "is-invalid" : ""}
             />
-
-            {/* Centered Button Container */}
             <div className="text-center">
               <MDBBtn
                 type="submit"

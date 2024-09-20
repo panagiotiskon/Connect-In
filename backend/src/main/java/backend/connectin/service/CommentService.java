@@ -91,8 +91,8 @@ public class CommentService {
         return comments.stream().map(commentMapper::mapToCommentResource).toList();
     }
 
-    public Comment findCommentOrThrow(Long commentId){
-        return commentRepository.findById(commentId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+    public void findCommentOrThrow(Long commentId){
+        commentRepository.findById(commentId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
     }
 
 }

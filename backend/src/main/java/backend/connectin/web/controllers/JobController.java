@@ -1,6 +1,5 @@
 package backend.connectin.web.controllers;
 
-import backend.connectin.domain.JobApplication;
 import backend.connectin.domain.JobPost;
 import backend.connectin.service.JobService;
 import backend.connectin.web.dto.JobApplicationDTO;
@@ -20,15 +19,13 @@ public class JobController {
     }
 
     @PostMapping("/post")
-    public JobPost createJobPost(@RequestParam long userId , @RequestParam String jobTitle, @RequestParam String companyName, @RequestParam String jobDescription) {
-        return jobService.createJobPost(userId,jobTitle,companyName,jobDescription);
+    public JobPost createJobPost(@RequestParam long userId, @RequestParam String jobTitle, @RequestParam String companyName, @RequestParam String jobDescription) {
+        return jobService.createJobPost(userId, jobTitle, companyName, jobDescription);
     }
 
     @PostMapping("/apply")
-    public void applyToAJob(@RequestParam long userId , @RequestParam long jobPostId) {
-        System.out.println("Received userId: " + userId);
-        System.out.println("Received jobPostId: " + jobPostId);
-         jobService.applyToAJob(userId,jobPostId);
+    public void applyToAJob(@RequestParam long userId, @RequestParam long jobPostId) {
+        jobService.applyToAJob(userId, jobPostId);
     }
 
     @GetMapping("/posts")
@@ -42,7 +39,7 @@ public class JobController {
     }
 
     @DeleteMapping("/delete")
-    public void deleteJob(@RequestParam long userId , @RequestParam long jobPostId) {
-        jobService.deleteJob(userId,jobPostId);
+    public void deleteJob(@RequestParam long userId, @RequestParam long jobPostId) {
+        jobService.deleteJob(userId, jobPostId);
     }
 }

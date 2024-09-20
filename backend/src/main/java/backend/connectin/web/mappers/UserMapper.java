@@ -26,7 +26,7 @@ public class UserMapper {
         this.roleRepository = roleRepository;
     }
 
-    public User mapToUser(UserRegisterRequest userRegisterRequest){
+    public User mapToUser(UserRegisterRequest userRegisterRequest) {
 
         Role userRole = roleRepository.findByName("ROLE_USER");
 
@@ -42,10 +42,10 @@ public class UserMapper {
         return user;
     }
 
-    public UserDTO mapToUserDTO(User user){
+    public UserDTO mapToUserDTO(User user) {
         Optional<FileDB> fileDB = fileRepository.findProfilePicture(user.getId());
         byte[] profilePicture = null;
-        if(fileDB.isPresent()){
+        if (fileDB.isPresent()) {
             profilePicture = fileDB.get().getData();
         }
         return new UserDTO(

@@ -1,4 +1,3 @@
-/* Grid layout for user cards */
 .card-container-network {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -15,7 +14,7 @@
 }
 
 .search-bar input{
-  width: 100%; /* Make the search input span the full width of the column */
+  width: 100%;
   height: auto; 
 }
 

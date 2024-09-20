@@ -13,7 +13,7 @@ import {
   MDBIcon,
   MDBBtn,
 } from "mdb-react-ui-kit";
-import './NotificationsComponent.scss'; // Import the SCSS file
+import './NotificationsComponent.scss';
 
 export default function NotificationComponent() {
   const [connectionRequests, setConnectionRequests] = useState([]);

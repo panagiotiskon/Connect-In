@@ -19,12 +19,10 @@ import java.util.List;
 public class ConnectionController {
     private final ConnectionService connectionService;
     private final UserService userService;
-    private final UserMapper userMapper;
 
-    public ConnectionController(ConnectionService connectionService, UserService userService, UserMapper userMapper) {
+    public ConnectionController(ConnectionService connectionService, UserService userService) {
         this.connectionService = connectionService;
         this.userService = userService;
-        this.userMapper = userMapper;
     }
 
     @GetMapping("/connections/{userId}")

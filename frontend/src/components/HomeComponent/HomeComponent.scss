@@ -2,16 +2,12 @@
     font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
 
 }
-
-/* Main container for posts and the new post input */
 .MDBContainer {
     width: 100%;
     max-width: 1200px;
     margin: 0 auto;
     padding: 0 1rem;
 }
-
-/* New post input section */
 .new-post-container {
     display: flex;
     margin-top: 5%;
@@ -130,7 +126,6 @@
 .media-options {
     display: flex;
     justify-content: center;
-    /* Center the items horizontally */
     align-items: center;
 
 }
@@ -205,7 +200,6 @@
     width: 60%;
 }
 
-/* Ensure the layout is responsive */
 @media (min-width: 768px) {
     .new-post-container {
         flex-direction: row;
@@ -234,7 +228,6 @@
     }
 }
 
-/* Adjust icon size and post button on smaller screens */
 @media (max-width: 576px) {
     .post-buttons .icon {
         font-size: 1.2rem;

@@ -24,7 +24,7 @@ public class NotificationMapper {
         notification.setUserId(userId);
         notification.setConnectionUserId(connectedUserId);
         notification.setType(notificationType);
-        if(ObjectId != null) {
+        if (ObjectId != null) {
             notification.setObjectId(ObjectId);
         }
         notification.setCreatedAt(Instant.now());
@@ -40,7 +40,7 @@ public class NotificationMapper {
                 connectedUser.getLastName(),
                 notification.getType(),
                 notification.getCreatedAt()
-                );
+        );
     }
 
 }
