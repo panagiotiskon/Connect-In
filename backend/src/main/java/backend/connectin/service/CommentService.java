@@ -34,20 +34,18 @@ public class CommentService {
     }
 
     @Transactional
-    public void createComment(Long userId, Long postId, CommentRequest commentRequest) {
+    public Long createComment(Long userId, Long postId, CommentRequest commentRequest) {
         User user = userService.findUserOrThrow(userId);
         Post post = postService.findPostOrThrow(postId);
         Comment comment = commentMapper.mapToComment(user, post, commentRequest);
         commentRepository.save(comment);
+        return comment.getId();
     }
 
     @Transactional
     public void deleteComment(Long userId, Long postId, long commentId) {
         Post post = postService.findPostOrThrow(postId);
 
-        if (!post.getUserId().equals(userId)) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Post does not belong to the user");
-        }
         List<Comment> comments = post.getComments();
 
         boolean commentExists = comments.stream()
@@ -93,5 +91,8 @@ public class CommentService {
         return comments.stream().map(commentMapper::mapToCommentResource).toList();
     }
 
+    public Comment findCommentOrThrow(Long commentId){
+        return commentRepository.findById(commentId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+    }
 
 }
