@@ -70,13 +70,15 @@ public class PostService {
         List<Long> connectionIds = new ArrayList<>(connectionService.getConnectedUserIds(userId));
         // find the posts which the connections reacted to
         List<Long> postIdsFromReactions = reactionRepository.findPostIdsByUserIds(connectionIds);
-        // find the user ids who wrote these posts
-        List<Long> userIdsFromPosts = postRepository.findUserIdsByPostIds(postIdsFromReactions);
-        connectionIds.addAll(userIdsFromPosts);
+        // find the posts with the postsIds fetched before
+        List<Post> postsFromReactions= postRepository.findPostsByIdIn(postIdsFromReactions);
+
         connectionIds.add(userId);
         connectionIds = new ArrayList<>(new HashSet<>(connectionIds));
         Set<Post> userPostsSet = postRepository.findAllByUserIdIn(connectionIds);
-        return userPostsSet.stream().toList();
+        userPostsSet.addAll(postsFromReactions);
+        return new ArrayList<>(userPostsSet);
+
     }
 
     public List<Post> fetchAll() {
