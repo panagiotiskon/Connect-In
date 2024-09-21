@@ -396,7 +396,6 @@ const HomeComponent = () => {
 
                     {post.file && (
                       <div className="post-media-container">
-                        {/* Check if it's an image */}
                         {post.file.type.startsWith("image/") && (
                           <img
                             src={`data:${post.file.type};base64,${post.file.data}`}
@@ -405,7 +404,6 @@ const HomeComponent = () => {
                           />
                         )}
 
-                        {/* Check if it's a video */}
                         {post.file.type.startsWith("video/") && (
                           <video controls width="100%" className="post-video">
                             <source
@@ -416,7 +414,6 @@ const HomeComponent = () => {
                           </video>
                         )}
 
-                        {/* Check if it's an audio file */}
                         {post.file.type.startsWith("audio/") && (
                           <audio controls className="post-audio">
                             <source
