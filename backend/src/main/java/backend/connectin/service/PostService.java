@@ -1,10 +1,9 @@
 package backend.connectin.service;
 
-import backend.connectin.domain.FileDB;
-import backend.connectin.domain.Post;
-import backend.connectin.domain.User;
+import backend.connectin.domain.*;
 import backend.connectin.domain.repository.ConnectionRepository;
 import backend.connectin.domain.repository.PostRepository;
+import backend.connectin.domain.repository.PostViewRepository;
 import backend.connectin.domain.repository.ReactionRepository;
 import backend.connectin.web.mappers.PostMapper;
 import backend.connectin.web.requests.PostRequest;
@@ -15,10 +14,8 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.time.Instant;
+import java.util.*;
 
 @Service
 public class PostService {
@@ -29,16 +26,18 @@ public class PostService {
     private final UserService userService;
     private final ConnectionService connectionService;
     private final ReactionRepository reactionRepository;
+    private final PostViewRepository postViewRepository;
 
     public PostService(PostRepository postRepository, FileService fileService,
                        PostMapper postMapper, UserService userService,
-                       ConnectionService connectionService, ReactionRepository reactionRepository) {
+                       ConnectionService connectionService, ReactionRepository reactionRepository, PostViewRepository postViewRepository) {
         this.postRepository = postRepository;
         this.fileService = fileService;
         this.postMapper = postMapper;
         this.userService = userService;
         this.connectionService = connectionService;
         this.reactionRepository = reactionRepository;
+        this.postViewRepository = postViewRepository;
     }
 
 
@@ -90,6 +89,23 @@ public class PostService {
         User user = userService.findUserOrThrow(userId);
         Post post = findPostOrThrow(postId);
         postRepository.delete(post);
+    }
+
+    public PostView addViewToAPost(long userId, Long postId){
+        userService.findUserOrThrow(userId);
+        Optional<Post> post = postRepository.findById(postId);
+        if(post.isEmpty()){
+            throw new RuntimeException("Post not found");
+        }
+        if(postViewRepository.findPostViewByUserIdAndJobId(userId,postId).isPresent()){
+            return null;
+        };
+        PostView postView = new PostView();
+        postView.setUserId(userId);
+        postView.setPostId(post.get().getId());
+        postView.setViewedAt(Instant.now());
+        postViewRepository.save(postView);
+        return postView;
     }
 
 

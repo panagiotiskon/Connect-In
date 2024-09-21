@@ -42,4 +42,5 @@ public class JobController {
     public void deleteJob(@RequestParam long userId, @RequestParam long jobPostId) {
         jobService.deleteJob(userId, jobPostId);
     }
+
 }

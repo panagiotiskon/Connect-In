@@ -1,0 +1,8 @@
+CREATE TABLE IF NOT EXISTS job_recommendation (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    user_id BIGINT NOT NULL,
+    job_id BIGINT NOT NULL,
+    job_score DECIMAL(10, 2),
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (job_id) REFERENCES job_post(id) ON DELETE CASCADE
+);
