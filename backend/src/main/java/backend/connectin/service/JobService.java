@@ -22,12 +22,14 @@ public class JobService {
     private final JobApplicationRepository jobApplicationRepository;
     private final UserService userService;
     private final JobViewRepository jobViewRepository;
+    private final ConnectionService connectionService;
 
-    public JobService(JobPostRepository jobPostRepository, JobApplicationRepository jobApplicationRepository, UserService userService, JobViewRepository jobViewRepository) {
+    public JobService(JobPostRepository jobPostRepository, JobApplicationRepository jobApplicationRepository, UserService userService, JobViewRepository jobViewRepository, ConnectionService connectionService) {
         this.jobPostRepository = jobPostRepository;
         this.jobApplicationRepository = jobApplicationRepository;
         this.userService = userService;
         this.jobViewRepository = jobViewRepository;
+        this.connectionService = connectionService;
     }
 
     public JobPost createJobPost(long userId,String jobTitle,String companyName,String jobDescription){
@@ -69,8 +71,10 @@ public class JobService {
         if(jobPosts.isEmpty()){
             return List.of();
         }
+        List<Long> connectedUserIds = connectionService.getConnectedUserIds(currentUserId);
+        List<JobPost> connectedJobPosts = jobPosts.stream().filter(jobPost -> connectedUserIds.contains(jobPost.getUserId()) || jobPost.getUserId()==currentUserId).toList();
         List<JobPostDTO> jobPostDTOS = new ArrayList<>();
-        for(var jobPost : jobPosts){
+        for(var jobPost : connectedJobPosts){
             User user = userService.findUserOrThrow(jobPost.getUserId());
             String fullName = user.getFirstName() + " " + user.getLastName();
             List<JobApplication> jobApplications = jobApplicationRepository.findAll();
@@ -86,7 +90,7 @@ public class JobService {
 
     public List<JobApplicationDTO> getJobApplications(long userId){
         userService.findUserOrThrow(userId);
-        List<Long> jobPosts = jobPostRepository.findJobPostByUserId(userId).stream().map(jobPost -> jobPost.getId()).toList();
+        List<Long> jobPosts = jobPostRepository.findJobPostByUserId(userId).stream().map(JobPost::getId).toList();
         if(jobPosts.isEmpty()){
             return List.of();
         }

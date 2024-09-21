@@ -1,6 +1,5 @@
 package backend.connectin.web.controllers;
 
-import backend.connectin.domain.JobPost;
 import backend.connectin.domain.JobView;
 import backend.connectin.service.JobService;
 import backend.connectin.service.RecommendationService;
@@ -29,6 +28,6 @@ public class JobRecommendationController {
     @GetMapping("/recommend-jobs")
     public List<JobPostDTO> getRecommendedJobs(@RequestParam long userId) {
         recommendationService.recommendJobs();
-        return recommendationService.findRecommendJobsForUser(userId);
+        return recommendationService.findRecommendedJobsForUser(userId);
     }
 }

@@ -4,6 +4,8 @@ import backend.connectin.domain.*;
 import backend.connectin.domain.repository.*;
 import backend.connectin.recommendation.Algortithm.MatrixFactorization;
 import backend.connectin.web.dto.JobPostDTO;
+import backend.connectin.web.mappers.PostMapper;
+import backend.connectin.web.resources.PostResourceDetailed;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -12,23 +14,36 @@ import java.util.stream.Collectors;
 @Service
 public class RecommendationService {
     private final JobPostRepository jobPostRepository;
-    private final UserRepository userRepository;
     private final UserService userService;
     private final JobViewRepository jobViewRepository;
     private final PersonalInfoRepository personalInfoRepository;
     private final JobRecommendationRepository jobRecommendationRepository;
     private final JobApplicationRepository jobApplicationRepository;
-    public RecommendationService(JobPostRepository jobPostRepository, UserRepository userRepository, UserService userService, JobViewRepository jobViewRepository, PersonalInfoRepository personalInfoRepository, JobRecommendationRepository jobRecommendationRepository, JobApplicationRepository jobApplicationRepository) {
+    private final PostService postService;
+    private final ConnectionService connectionService;
+    private final ReactionRepository reactionRepository;
+    private final PostRepository postRepository;
+    private final PostRecommendationRepository postRecommendationRepository;
+    private final PostMapper postMapper;
+    private final PostViewRepository postViewRepository;
+
+    public RecommendationService(JobPostRepository jobPostRepository, UserService userService, JobViewRepository jobViewRepository, PersonalInfoRepository personalInfoRepository, JobRecommendationRepository jobRecommendationRepository, JobApplicationRepository jobApplicationRepository, PostService postService, ConnectionService connectionService, ReactionRepository reactionRepository, PostRepository postRepository, PostRecommendationRepository postRecommendationRepository, PostMapper postMapper, PostViewRepository postViewRepository) {
         this.jobPostRepository = jobPostRepository;
-        this.userRepository = userRepository;
         this.userService = userService;
         this.jobViewRepository = jobViewRepository;
         this.personalInfoRepository = personalInfoRepository;
         this.jobRecommendationRepository = jobRecommendationRepository;
         this.jobApplicationRepository = jobApplicationRepository;
+        this.postService = postService;
+        this.connectionService = connectionService;
+        this.reactionRepository = reactionRepository;
+        this.postRepository = postRepository;
+        this.postRecommendationRepository = postRecommendationRepository;
+        this.postMapper = postMapper;
+        this.postViewRepository = postViewRepository;
     }
 
-    public List<JobPostDTO> findRecommendJobsForUser(long userId) {
+    public List<JobPostDTO> findRecommendedJobsForUser(long userId) {
         List<JobRecommendation> jobRecommendations = jobRecommendationRepository.findByUserId(userId);
         List<JobRecommendation> sortedRecommendations = jobRecommendations.stream()
                 .sorted(Comparator.comparing(JobRecommendation::getJobScore))
@@ -39,8 +54,10 @@ public class RecommendationService {
         jobIds.stream().map(jobId -> jobPostRepository.findById(jobId).orElse(null))
                 .filter(Objects::nonNull)
                 .forEach(recommendedJobs::add);
+        List<Long> connectedUserIds = connectionService.getConnectedUserIds(userId);
+        List<JobPost> connectedJobPosts = recommendedJobs.stream().filter(jobPost -> connectedUserIds.contains(jobPost.getUserId()) || jobPost.getUserId()==userId).toList();
         List<JobPostDTO> jobPostDTOS = new ArrayList<>();
-        for(var jobPost : recommendedJobs){
+        for(var jobPost : connectedJobPosts){
             User user = userService.findUserOrThrow(jobPost.getUserId());
             String fullName = user.getFirstName() + " " + user.getLastName();
             List<JobApplication> jobApplications = jobApplicationRepository.findAll();
@@ -54,12 +71,42 @@ public class RecommendationService {
         return jobPostDTOS;
     }
 
+    public List<PostResourceDetailed> findRecommendedPostsForUser(long userId) {
+        List<PostRecommendation> postRecommendations = postRecommendationRepository.findByUserId(userId);
+        List<PostRecommendation> sortedRecommendations = postRecommendations.stream()
+                .sorted(Comparator.comparing(PostRecommendation::getPostScore).reversed())
+                .toList();
+
+        //store by descending order
+        List<Post> postsThatMustBeFetched = postService.fetchFeed(userId);
+
+        Set<Long> fetchedPostIds = postsThatMustBeFetched.stream()
+                .map(Post::getId)
+                .collect(Collectors.toSet());
+
+        List<PostRecommendation> filteredRecommendations = sortedRecommendations.stream()
+                .filter(rec -> fetchedPostIds.contains(rec.getPostId()))
+                .toList();
+
+        List<Post> orderedPosts = postsThatMustBeFetched.stream()
+                .filter(post -> filteredRecommendations.stream()
+                        .anyMatch(rec -> rec.getPostId() == post.getId()))
+                .sorted(Comparator.comparing(post -> filteredRecommendations.stream()
+                        .map(PostRecommendation::getPostId)
+                        .toList()
+                        .indexOf(post.getId())))
+                .toList();
+
+        return orderedPosts.stream()
+                .map(postMapper::mapToPostResourceDetailed).toList();
+    }
+
     public void recommendJobs() {
+        recommendPosts();
         List<User> users = userService.fetchAll();
         List<JobPost> jobPosts = jobPostRepository.findAll();
 
         if (users.isEmpty() || jobPosts.isEmpty()) {
-            System.out.println("No users or job posts available for recommendation.");
             return;
         }
 
@@ -80,21 +127,100 @@ public class RecommendationService {
 
             for (int jobPostIndex = 0; jobPostIndex < jobPosts.size(); jobPostIndex++) {
                 JobPost job = jobPosts.get(jobPostIndex);
-                int skillMatchScore = calculateSkillMatch(skills, job, jobViews);
-                System.out.println("MATCH SCORE FOR USER "+user.getFirstName()+" TOTAL SCORE "+skillMatchScore+" JOB TITLE "+job.getJobTitle());
+                int skillMatchScore = calculateSkillMatchForJobs(skills, job, jobViews);
                 // LOWER MATCHING SCORE MEANING MORE RELEVANCE
                 matrix[userIndex][jobPostIndex] = skillMatchScore > 0 ? skillMatchScore : -1;
             }
         }
-        System.out.println("MATRIX BEFORE FACTORIZATION");
-        System.out.println(Arrays.deepToString(matrix));
         MatrixFactorization matrixFactorization = new MatrixFactorization(matrix, 2, 0.0002, 0.02, 5000);
         double[][] results = matrixFactorization.trainAndPredict();
-        System.out.println("MATRIX AFTER FACTORIZATION"+ Arrays.deepToString(results));
-        saveRecommendations(users, jobPosts, results, matrix);
+        saveJobRecommendations(users, jobPosts, results, matrix);
     }
 
-    private int calculateSkillMatch(List<Skill> skills, JobPost jobPost, List<JobView> jobViews) {
+    public void recommendPosts(){
+        List<User> users = userService.fetchAll();
+        List<Post> posts = postService.fetchAll();
+        if (users.isEmpty() || posts.isEmpty()) {
+            return;
+        }
+        double[][] matrix = new double[users.size()][posts.size()];
+
+        for (int userIndex = 0; userIndex < users.size(); userIndex++) {
+            User user = users.get(userIndex);
+            if (user.getId() == 1) { // Skip admin user
+                continue;
+            }
+
+            //List<JobView> jobViews = jobViewRepository.findByUserId(user.getId());
+            List<Long> connectionIds = new ArrayList<>(connectionService.getConnectedUserIds(user.getId()));
+            List<Long> postIdsFromReactions = reactionRepository.findPostIdsByUserIds(connectionIds);
+            // find the posts with the postsIds fetched before
+            List<Post> postsFromReactions= postRepository.findPostsByIdIn(postIdsFromReactions);
+            connectionIds.add(user.getId());
+            connectionIds = new ArrayList<>(new HashSet<>(connectionIds));
+            List<Reaction> userReactions = reactionRepository.findAllByUserId(user.getId());
+            List<PostView> postViews = postViewRepository.findByUserId(user.getId());
+            for (int postIndex = 0; postIndex < posts.size(); postIndex++) {
+                int postScore = 0;
+                Post post = posts.get(postIndex);
+                if(connectionIds.contains(post.getUserId())){   //if the post is user post or connection post add score
+                    postScore+= 10;
+                    if(!Objects.equals(post.getUserId(), user.getId())){
+                        List<Reaction> reactions = reactionRepository.findAllByUserId(user.getId());
+                        Long whoPosted = post.getUserId();
+                        long howManyReactions = reactions.stream().filter(reaction -> reaction.getPost().getUserId().equals(whoPosted)).count();
+                        postScore += (int) howManyReactions;
+                         // depending on how many likes or comments current user has done to this user add score
+                    }
+                }
+                else if(postsFromReactions.contains(post)){ //if not connected but connections have like this post
+                    postScore+= 3;
+                    List<Reaction> connectionReactions = new ArrayList<>();
+                    for(var connection : connectionIds){
+                        if(!Objects.equals(connection, user.getId())) {
+                            List<Reaction> reactions = reactionRepository.findAllByUserId(connection);
+                            connectionReactions.addAll(reactions);
+                        }
+                    }
+                    long reactionCount = connectionReactions.stream().filter(reaction -> reaction.getPost().getId().equals(post.getId())).count();
+                    if(reactionCount>6){
+                        reactionCount = 6;
+                    }
+                    postScore+= (int) reactionCount;
+                }
+                if(!userReactions.isEmpty()) {
+                    if (userReactions.stream().anyMatch(reaction -> reaction.getPost().getId().equals(post.getId()))) {
+                        postScore += 4;
+                    }
+                }
+                else {
+                    List<Long> viewedPostIds = postViews.stream().map(PostView::getPostId).toList(); //here if no reactions or likes from user then depending on his post views,
+                    Map<Long, Integer> postCountByUser = new HashMap<>();                            //if he liked 3 posts from a user and the post is from that user add 3 to the score of that post
+                    viewedPostIds.stream()
+                            .map(postRepository::findById)
+                            .filter(Optional::isPresent)
+                            .map(Optional::get)
+                            .forEach(viewedPost -> {
+                                long userId = viewedPost.getUserId();
+                                postCountByUser.put(userId, postCountByUser.getOrDefault(userId, 0) + 1);
+                            });
+                    for (Map.Entry<Long, Integer> entry : postCountByUser.entrySet()) {
+                        if(entry.getKey()==post.getUserId()){
+                            postScore+= entry.getValue();
+                        }
+                    }
+                }
+                matrix[userIndex][postIndex] = postScore > 0 ? postScore : -1;
+            }
+
+        }
+        MatrixFactorization matrixFactorization = new MatrixFactorization(matrix, 2, 0.0002, 0.02, 5000);
+        double[][] results = matrixFactorization.trainAndPredict();
+        savePostRecommendations(users, posts, results, matrix);
+
+    }
+
+    private int calculateSkillMatchForJobs(List<Skill> skills, JobPost jobPost, List<JobView> jobViews) {
         int totalDistance = 0;
         int skillCount = 0;
 
@@ -135,10 +261,8 @@ public class RecommendationService {
             if (viewedJobOpt.isPresent()) {                                                  //and see the relevance with each other job
                 JobPost viewedJob = viewedJobOpt.get();
                 int titleDistance = calculateLevenshteinDistance(viewedJob.getJobTitle().toLowerCase(), currentJob.getJobTitle().toLowerCase());
-                System.out.println("title distance "+titleDistance);
                 // Invert the distance to create a "bonus" (lower distance = higher bonus)
                 int similarityBonus = Math.max(0, 10 - titleDistance);  // Bonus: 10 points minus title distance
-                System.out.println("similarity Bonus "+similarityBonus);
                 bonusScore += similarityBonus;
             }
         }
@@ -178,23 +302,20 @@ public class RecommendationService {
                 .min().orElse(Integer.MAX_VALUE);
     }
 
-    private void saveRecommendations(List<User> users, List<JobPost> jobPosts, double[][] results, double[][] matrix) {
+    private void saveJobRecommendations(List<User> users, List<JobPost> jobPosts, double[][] results, double[][] matrix) {
         for (int userIndex = 0; userIndex < users.size(); userIndex++) {
             User user = users.get(userIndex);
             if (user.getId() == 1) continue; // Skip admin user
 
-            List<Pair> pairs = new ArrayList<>();
+            List<Recommendation> recommendations = new ArrayList<>();
             for (int jobPostIndex = 0; jobPostIndex < jobPosts.size(); jobPostIndex++) {
                 if (matrix[userIndex][jobPostIndex] != -1) {
-                    pairs.add(new Pair(jobPostIndex, results[userIndex][jobPostIndex]));
+                    recommendations.add(new Recommendation(jobPostIndex, results[userIndex][jobPostIndex]));
                 }
             }
 
-            System.out.println("Recommendations for user: " + user.getFirstName());
-            for (Pair pair : pairs) {
-                JobPost job = jobPosts.get(pair.getIndex());
-                System.out.println("Job: " + job.getJobTitle() + " | Score: " + pair.getValue());
-
+            for (Recommendation recommendation : recommendations) {
+                JobPost job = jobPosts.get(recommendation.getIndex());
                 // Check if the recommendation already exists to avoid duplicates
                 List<JobRecommendation> jobRecommendations = jobRecommendationRepository.findByUserId(user.getId());
                 if (jobRecommendations != null) {
@@ -204,30 +325,44 @@ public class RecommendationService {
                         }
                     }
                 }
-
                 JobRecommendation jobRecommendation = new JobRecommendation();
                 jobRecommendation.setJobId(job.getId());
                 jobRecommendation.setUserId(user.getId());
-                jobRecommendation.setJobScore(pair.getValue());
+                jobRecommendation.setJobScore(recommendation.getScore());
                 jobRecommendationRepository.save(jobRecommendation);
             }
         }
     }
-    private static class Pair {
-        private final int index;
-        private final double value;
 
-        public Pair(int index, double value) {
-            this.index = index;
-            this.value = value;
-        }
+    private void savePostRecommendations(List<User> users, List<Post> posts, double[][] results, double[][] matrix) {
+        for (int userIndex = 0; userIndex < users.size(); userIndex++) {
+            User user = users.get(userIndex);
+            if (user.getId() == 1) continue; // Skip admin user
 
-        public int getIndex() {
-            return index;
-        }
+            List<Recommendation> recommendations = new ArrayList<>();
+            for (int postIndex = 0; postIndex < posts.size(); postIndex++) {
+                if (matrix[userIndex][postIndex] != -1) {
+                    recommendations.add(new Recommendation(postIndex, results[userIndex][postIndex]));
+                }
+            }
 
-        public double getValue() {
-            return value;
+            for (Recommendation recommendation : recommendations) {
+                Post post = posts.get(recommendation.getIndex());
+                // Check if the recommendation already exists to avoid duplicates
+                List<PostRecommendation> postRecommendations = postRecommendationRepository.findByUserId(user.getId());
+                if (postRecommendations != null) {
+                    for (var postRecommendation : postRecommendations) {
+                        if (postRecommendation.getPostId() == post.getId()) {
+                            postRecommendationRepository.delete(postRecommendation);
+                        }
+                    }
+                }
+                PostRecommendation postRecommendation = new PostRecommendation();
+                postRecommendation.setPostId(post.getId());
+                postRecommendation.setUserId(user.getId());
+                postRecommendation.setPostScore(recommendation.getScore());
+                postRecommendationRepository.save(postRecommendation);
+            }
         }
     }
 }
