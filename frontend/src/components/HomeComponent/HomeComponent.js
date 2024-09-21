@@ -84,9 +84,9 @@ const HomeComponent = () => {
 
   const fetchReactedPostIds = async () => {
     try {
-      const response = await PostService.getUserReactions(); 
-      const userReactedPostIds = response?.data || []; 
-      setReactedPostIds(userReactedPostIds); 
+      const response = await PostService.getUserReactions();
+      const userReactedPostIds = response?.data || [];
+      setReactedPostIds(userReactedPostIds);
     } catch (error) {
       console.error("Error fetching reacted post IDs:", error);
     }
@@ -137,7 +137,7 @@ const HomeComponent = () => {
     const file = event.target.files ? event.target.files[0] : null;
     if (file) {
       const fileUrl = URL.createObjectURL(file);
-      setUploadedFile({ file, previewUrl: fileUrl });
+      setUploadedFile({ file, previewUrl: fileUrl, type: file.type });
     }
   };
 
@@ -181,7 +181,7 @@ const HomeComponent = () => {
 
       if (post) {
         const commentId = await PostService.createComment(postId, comment);
-        console.log(commentId.data ,"eeeeee");
+        console.log(commentId.data, "eeeeee");
         setCommentInputs((prev) => ({
           ...prev,
           [postId]: "",
@@ -193,7 +193,7 @@ const HomeComponent = () => {
           await NotificationAPI.createNotification(
             post.userId,
             "COMMENT",
-            currentUser.id, 
+            currentUser.id,
             commentId.data
           );
         }
@@ -229,7 +229,7 @@ const HomeComponent = () => {
 
       } else {
         await PostService.createReaction(postId);
-        setReactedPostIds((prev) => [...prev, postId]); 
+        setReactedPostIds((prev) => [...prev, postId]);
         if (post.userId !== currentUser.id) {
           await NotificationAPI.createNotification(
             post.userId,
@@ -250,7 +250,7 @@ const HomeComponent = () => {
       await PostService.deleteComment(postId, commentId);
       await NotificationAPI.deleteNotificationByObjectId(commentId);
       await fetchPosts();
-      
+
     } catch (error) {
       console.error("Error deleting comment:", error);
       alert("Failed to delete comment.");
@@ -307,11 +307,15 @@ const HomeComponent = () => {
                       <MDBIcon far icon="image" className="me-2" />
                       <span>Image</span>
                     </MDBBtn>
-                    <MDBBtn className="d-flex align-items-center me-4 video-btn">
+                    <MDBBtn className="d-flex align-items-center me-4 video-btn"
+                      onClick={handleImageClick}
+                    >
                       <MDBIcon fas icon="video" className="me-2" />
                       <span>Video</span>
                     </MDBBtn>
-                    <MDBBtn className="d-flex align-items-center audio-btn">
+                    <MDBBtn className="d-flex align-items-center audio-btn"
+                      onClick={handleImageClick}
+                    >
                       <MDBIcon fas icon="microphone" className="me-2" />
                       <span>Audio</span>
                     </MDBBtn>
@@ -319,29 +323,40 @@ const HomeComponent = () => {
 
                   <input
                     type="file"
-                    accept="image/*"
+                    accept="image/*,video/*,audio/*"
                     ref={fileInputRef}
                     style={{ display: "none" }}
                     onChange={handleFileChange}
                   />
-
                   {uploadedFile && (
-                    <div className="image-preview-container">
-                      <img
-                        src={uploadedFile.previewUrl}
-                        alt="Preview"
-                        className="img-thumbnail mt-2"
-                        width={120}
-                      />
-                      <MDBBtn
-                        className="remove-image-btn"
-                        color="danger"
-                        onClick={handleRemoveImage}
-                      >
-                        <MDBIcon fas icon="times" />
+                    <div className="media-preview-container">
+                      {uploadedFile.type.startsWith("image/") && (
+                        <img src={uploadedFile.previewUrl} alt="Preview" className="img-thumbnail mt-2" width={120} />
+                      )}
+                      {uploadedFile.type.startsWith("video/") && (
+                        <video controls width="100%">
+                          <source src={uploadedFile.previewUrl} type={uploadedFile.type} />
+                          Your browser does not support the video tag.
+                        </video>
+                      )}
+                      {uploadedFile.type.startsWith("audio/") && (
+                        <audio controls>
+                          <source src={uploadedFile.previewUrl} type={uploadedFile.type} />
+                          Your browser does not support the audio element.
+                        </audio>
+                      )}
+                      <MDBBtn style={{
+                        padding:"10px",
+                        maxHeight:"1.9rem",
+                        textAlign:"center",
+                        marginLeft: "0.6rem"
+                        }}
+                      className="remove-media-btn" color="danger" onClick={handleRemoveImage}>
+                        <MDBIcon style={{display:"flex"}}fas icon="times" />
                       </MDBBtn>
                     </div>
                   )}
+
 
                   <MDBBtn
                     className="submit-post-btn"
@@ -378,6 +393,41 @@ const HomeComponent = () => {
                       )}
                     </div>
                     <h5>{post.content}</h5>
+
+                    {post.file && (
+                      <div className="post-media-container">
+                        {/* Check if it's an image */}
+                        {post.file.type.startsWith("image/") && (
+                          <img
+                            src={`data:${post.file.type};base64,${post.file.data}`}
+                            alt="Post Image"
+                            style={{ width: "100%", height: "auto", border: "1px solid #ddd" }}
+                          />
+                        )}
+
+                        {/* Check if it's a video */}
+                        {post.file.type.startsWith("video/") && (
+                          <video controls width="100%" className="post-video">
+                            <source
+                              src={`data:${post.file.type};base64,${post.file.data}`}
+                              type={post.file.type}
+                            />
+                            Your browser does not support the video tag.
+                          </video>
+                        )}
+
+                        {/* Check if it's an audio file */}
+                        {post.file.type.startsWith("audio/") && (
+                          <audio controls className="post-audio">
+                            <source
+                              src={`data:${post.file.type};base64,${post.file.data}`}
+                              type={post.file.type}
+                            />
+                            Your browser does not support the audio element.
+                          </audio>
+                        )}
+                      </div>
+                    )}
                     <p
                       className="text-muted"
                       style={{
@@ -388,14 +438,6 @@ const HomeComponent = () => {
                     >
                       Posted at: {new Date(post.createdAt).toLocaleString()}
                     </p>
-                    {post.file && (
-                      <img
-                        className="feed-post-img"
-                        src={`data:${post.file.type};base64,${post.file.data}`}
-                        alt="Post Media"
-                        style={{ width: "100%", height: "auto", border: "1px" }}
-                      />
-                    )}
                     <div className="reaction-button-container">
                       <MDBBtn
                         className={
@@ -449,7 +491,7 @@ const HomeComponent = () => {
                               {userComments[post.id] && userComments[post.id].includes(comment.commentId) && (
                                 <button
                                   className="btn btn-secondary btn-sm "
-                                  style={{ fontSize: '12px', padding: '2px 5px', marginLeft:'4px'}}
+                                  style={{ fontSize: '12px', padding: '2px 5px', marginLeft: '4px' }}
                                   onClick={() => handleDeleteComment(post.id, comment.commentId)}
                                 >
                                   &#10005;
