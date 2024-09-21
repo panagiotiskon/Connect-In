@@ -19,7 +19,6 @@ public class User {
     private String firstName;
     private String lastName;
     private String phoneNumber;
-    private String photoPath;
     private Instant createdAt;
     private Instant updatedAt;
     private List<Role> roles = new ArrayList<>();
@@ -83,15 +82,6 @@ public class User {
 
     public void setPhoneNumber(String phoneNumber) {
         this.phoneNumber = phoneNumber;
-    }
-
-    @Column(name = "photo_path")
-    public String getPhotoPath() {
-        return photoPath;
-    }
-
-    public void setPhotoPath(String photoPath) {
-        this.photoPath = photoPath;
     }
 
 
