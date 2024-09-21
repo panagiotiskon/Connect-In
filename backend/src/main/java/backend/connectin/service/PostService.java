@@ -2,6 +2,7 @@ package backend.connectin.service;
 
 import backend.connectin.domain.*;
 import backend.connectin.domain.repository.ConnectionRepository;
+import backend.connectin.domain.repository.FileRepository;
 import backend.connectin.domain.repository.PostRepository;
 import backend.connectin.domain.repository.PostViewRepository;
 import backend.connectin.domain.repository.ReactionRepository;
@@ -26,10 +27,12 @@ public class PostService {
     private final UserService userService;
     private final ConnectionService connectionService;
     private final ReactionRepository reactionRepository;
+    private final FileRepository fileRepository;
     private final PostViewRepository postViewRepository;
 
     public PostService(PostRepository postRepository, FileService fileService,
                        PostMapper postMapper, UserService userService,
+                       ConnectionService connectionService, ReactionRepository reactionRepository, FileRepository fileRepository) {
                        ConnectionService connectionService, ReactionRepository reactionRepository, PostViewRepository postViewRepository) {
         this.postRepository = postRepository;
         this.fileService = fileService;
@@ -38,6 +41,7 @@ public class PostService {
         this.connectionService = connectionService;
         this.reactionRepository = reactionRepository;
         this.postViewRepository = postViewRepository;
+        this.fileRepository = fileRepository;
     }
 
 
@@ -88,6 +92,9 @@ public class PostService {
     public void deletePost(Long userId, Long postId) {
         User user = userService.findUserOrThrow(userId);
         Post post = findPostOrThrow(postId);
+        if(post.getFileId()!=null){
+            fileRepository.deleteById(post.getFileId());
+        }
         postRepository.delete(post);
     }
 
