@@ -34,15 +34,15 @@ const JobsComponent = () => {
   });
   const [successMessage, setSuccessMessage] = useState("");
   const [currentUser, setCurrentUser] = useState(null);
+  const [sortingMethod, setSortingMethod] = useState("date"); // new state for sorting
   const navigate = useNavigate();
-  const observerRef = useRef(null); // Ref for IntersectionObserver
+  const observerRef = useRef(null);
 
   useEffect(() => {
     const fetchUser = async () => {
       try {
         const user = await AuthService.getCurrentUser();
         setCurrentUser(user);
-        fetchRecommendedJobs(user.id); // Fetch recommended jobs after setting the current user
       } catch (error) {
         console.error("Error fetching user:", error);
       }
@@ -50,15 +50,7 @@ const JobsComponent = () => {
     fetchUser();
   }, []);
 
-  const fetchRecommendedJobs = async (userId) => {
-    try {
-      const recommendedJobs = await JobAPI.getRecommendedJobs(userId);
-      console.log("Recommended jobs for user:", recommendedJobs); // Log recommended jobs
-    } catch (error) {
-      console.error("Error fetching recommended jobs:", error);
-    }
-  };
-  const fetchJobs = async () => {
+  const fetchJobsByDate = async () => {
     if (currentUser) {
       try {
         const response = await JobAPI.getJobPosts(currentUser.id);
@@ -74,12 +66,27 @@ const JobsComponent = () => {
     }
   };
 
+  const fetchJobsByRelevance = async () => {
+    if (currentUser) {
+      try {
+        const response = await JobAPI.getRecommendedJobs(currentUser.id);
+        if (response) {
+          setJobs(response);
+        } else {
+          setJobs([]);
+        }
+      } catch (error) {
+        console.error("Error fetching recommended jobs:", error);
+        setJobs([]);
+      }
+    }
+  };
+
   const fetchApplications = async () => {
     if (currentUser) {
       try {
         const response = await JobAPI.getJobApplications(currentUser.id);
         const appMap = {};
-        console.log(response);
         response.forEach((application) => {
           const { jobPostId, userId, fullName } = application;
           if (!appMap[jobPostId]) {
@@ -98,41 +105,6 @@ const JobsComponent = () => {
         console.error("Error fetching applications:", error);
       }
     }
-  };
-
-  useEffect(() => {
-    if (currentUser) {
-      fetchJobs();
-      fetchApplications();
-
-      const pollingInterval = setInterval(() => {
-        fetchJobs();
-        fetchApplications();
-      }, 10000);
-
-      return () => clearInterval(pollingInterval);
-    }
-  }, [currentUser]);
-
-  const validateForm = () => {
-    let valid = true;
-    const newErrors = { title: "", company: "", description: "" };
-
-    if (!jobTitle.trim()) {
-      newErrors.title = "Job title is required";
-      valid = false;
-    }
-    if (!companyName.trim()) {
-      newErrors.company = "Company name is required";
-      valid = false;
-    }
-    if (!jobDescription.trim()) {
-      newErrors.description = "Job description is required";
-      valid = false;
-    }
-
-    setErrors(newErrors);
-    return valid;
   };
 
   const handleCreateJob = async () => {
@@ -157,7 +129,7 @@ const JobsComponent = () => {
           setSuccessMessage("");
         }, 1000);
 
-        fetchJobs();
+        fetchJobsByDate(); // Refresh jobs after creating a new one
       } catch (error) {
         console.error("Error creating job:", error);
       }
@@ -200,6 +172,16 @@ const JobsComponent = () => {
     navigate(`/profile/${userId}`);
   };
 
+  // New function to switch sorting method
+  const handleSortChange = (method) => {
+    setSortingMethod(method);
+    if (method === "relevance") {
+      fetchJobsByRelevance();
+    } else if (method === "date") {
+      fetchJobsByDate();
+    }
+  };
+
   const yourJobs = jobs.filter((job) => job.userId === currentUser?.id);
   const otherJobs = jobs.filter(
     (job) => job.userId !== currentUser?.id && !job.applied
@@ -207,57 +189,65 @@ const JobsComponent = () => {
 
   useEffect(() => {
     if (otherJobs.length > 0) {
-      console.log("Other jobs found:", otherJobs);
-    }
-
-    const observerCallback = (entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          const jobId = entry.target.getAttribute("data-job-id");
-          console.log(`Job card is intersecting: ${jobId}`);
-          if (jobId) {
-            // Send a request to the API to record the job view
-            JobAPI.viewJobPost(currentUser.id, jobId)
-              .then(() =>
-                console.log(`Job ${jobId} viewed by user ${currentUser.id}`)
-              )
-              .catch((error) => console.error("Error viewing job:", error));
+      const observerCallback = (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            const jobId = entry.target.getAttribute("data-job-id");
+            if (jobId) {
+              JobAPI.viewJobPost(currentUser.id, jobId)
+                .then(() =>
+                  console.log(`Job ${jobId} viewed by user ${currentUser.id}`)
+                )
+                .catch((error) => console.error("Error viewing job:", error));
+            }
           }
-        }
+        });
+      };
+
+      const observerOptions = {
+        root: null,
+        rootMargin: "0px",
+        threshold: 0.5,
+      };
+
+      observerRef.current = new IntersectionObserver(
+        observerCallback,
+        observerOptions
+      );
+
+      const jobCards = document.querySelectorAll("[data-job-id]");
+      jobCards.forEach((jobCard) => {
+        observerRef.current.observe(jobCard);
       });
-    };
 
-    const observerOptions = {
-      root: null,
-      rootMargin: "0px",
-      threshold: 0.5, // Job must be at least 50% visible to be considered viewed
-    };
+      return () => {
+        if (observerRef.current) {
+          observerRef.current.disconnect();
+        }
+      };
+    }
+  }, [currentUser, otherJobs]);
 
-    observerRef.current = new IntersectionObserver(
-      observerCallback,
-      observerOptions
-    );
+  const validateForm = () => {
+    let valid = true;
+    const newErrors = { title: "", company: "", description: "" };
 
-    // Wait for the job cards to render before observing them
-    const jobCards = document.querySelectorAll("[data-job-id]");
-    console.log("Job cards found:", jobCards); // Debugging log
-
-    if (jobCards.length === 0) {
-      console.log("No job cards found in the DOM");
+    if (!jobTitle.trim()) {
+      newErrors.title = "Job title is required";
+      valid = false;
+    }
+    if (!companyName.trim()) {
+      newErrors.company = "Company name is required";
+      valid = false;
+    }
+    if (!jobDescription.trim()) {
+      newErrors.description = "Job description is required";
+      valid = false;
     }
 
-    jobCards.forEach((jobCard) => {
-      console.log(`Observing job card: ${jobCard.getAttribute("data-job-id")}`);
-      observerRef.current.observe(jobCard);
-    });
-
-    // Cleanup the observer when the component unmounts or jobs change
-    return () => {
-      if (observerRef.current) {
-        observerRef.current.disconnect();
-      }
-    };
-  }, [currentUser, otherJobs]); // Depend on currentUser and otherJobs
+    setErrors(newErrors);
+    return valid;
+  };
 
   return (
     <div>
@@ -327,7 +317,7 @@ const JobsComponent = () => {
                       id="date"
                       name="sorting"
                       className="me-2"
-                      disabled // Disable for now
+                      onClick={() => handleSortChange("date")}
                     />
                     <label htmlFor="date" className="mb-0">
                       Date Created
@@ -338,7 +328,7 @@ const JobsComponent = () => {
                       type="radio"
                       id="relevance"
                       name="sorting"
-                      disabled // Disable for now
+                      onClick={() => handleSortChange("relevance")}
                     />
                     <label htmlFor="relevance" className="mb-0">
                       Relevance
