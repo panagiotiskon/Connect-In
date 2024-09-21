@@ -30,4 +30,6 @@ public interface PostRepository extends JpaRepository<Post, Long> {
             """, nativeQuery = true)
     List<Long> findUserIdsByPostIds(List<Long> postIds);
 
+    List<Post> findPostsByIdIn(List<Long> postIds);
+
 }
