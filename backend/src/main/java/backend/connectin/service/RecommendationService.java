@@ -3,9 +3,11 @@ package backend.connectin.service;
 import backend.connectin.domain.*;
 import backend.connectin.domain.repository.*;
 import backend.connectin.recommendation.Algortithm.MatrixFactorization;
+import backend.connectin.web.dto.JobPostDTO;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class RecommendationService {
@@ -15,24 +17,41 @@ public class RecommendationService {
     private final JobViewRepository jobViewRepository;
     private final PersonalInfoRepository personalInfoRepository;
     private final JobRecommendationRepository jobRecommendationRepository;
-
-    public RecommendationService(JobPostRepository jobPostRepository, UserRepository userRepository, UserService userService, JobViewRepository jobViewRepository, PersonalInfoRepository personalInfoRepository, JobRecommendationRepository jobRecommendationRepository) {
+    private final JobApplicationRepository jobApplicationRepository;
+    public RecommendationService(JobPostRepository jobPostRepository, UserRepository userRepository, UserService userService, JobViewRepository jobViewRepository, PersonalInfoRepository personalInfoRepository, JobRecommendationRepository jobRecommendationRepository, JobApplicationRepository jobApplicationRepository) {
         this.jobPostRepository = jobPostRepository;
         this.userRepository = userRepository;
         this.userService = userService;
         this.jobViewRepository = jobViewRepository;
         this.personalInfoRepository = personalInfoRepository;
         this.jobRecommendationRepository = jobRecommendationRepository;
+        this.jobApplicationRepository = jobApplicationRepository;
     }
 
-    public List<JobPost> findRecommendJobsForUser(long userId) {
+    public List<JobPostDTO> findRecommendJobsForUser(long userId) {
         List<JobRecommendation> jobRecommendations = jobRecommendationRepository.findByUserId(userId);
-        List<Long> jobIds = jobRecommendations.stream().map(JobRecommendation::getJobId).toList();
+        List<JobRecommendation> sortedRecommendations = jobRecommendations.stream()
+                .sorted(Comparator.comparing(JobRecommendation::getJobScore))
+                .toList();
+        //store by ascending order
+        List<Long> jobIds = sortedRecommendations.stream().map(JobRecommendation::getJobId).toList();
         List<JobPost> recommendedJobs = new ArrayList<>();
         jobIds.stream().map(jobId -> jobPostRepository.findById(jobId).orElse(null))
                 .filter(Objects::nonNull)
                 .forEach(recommendedJobs::add);
-        return recommendedJobs;
+        List<JobPostDTO> jobPostDTOS = new ArrayList<>();
+        for(var jobPost : recommendedJobs){
+            User user = userService.findUserOrThrow(jobPost.getUserId());
+            String fullName = user.getFirstName() + " " + user.getLastName();
+            List<JobApplication> jobApplications = jobApplicationRepository.findAll();
+            boolean hasApplied = false;
+            if(jobApplications.stream().anyMatch(jobApplication -> jobApplication.getJobPostId()==jobPost.getId() && jobApplication.getUserId() == userId)){
+                hasApplied = true;
+            }
+            JobPostDTO jobPostDTO = new JobPostDTO(jobPost.getId(),user.getId(),jobPost.getJobTitle(),jobPost.getCompanyName(),jobPost.getJobDescription(),jobPost.getCreatedAt(),fullName,hasApplied);
+            jobPostDTOS.add(jobPostDTO);
+        }
+        return jobPostDTOS;
     }
 
     public void recommendJobs() {
@@ -171,8 +190,6 @@ public class RecommendationService {
                 }
             }
 
-            pairs.sort(Comparator.comparingDouble(p -> p.value)); // Sort by descending score
-
             System.out.println("Recommendations for user: " + user.getFirstName());
             for (Pair pair : pairs) {
                 JobPost job = jobPosts.get(pair.getIndex());
@@ -188,10 +205,10 @@ public class RecommendationService {
                     }
                 }
 
-                // Save the recommendation to the database
                 JobRecommendation jobRecommendation = new JobRecommendation();
                 jobRecommendation.setJobId(job.getId());
                 jobRecommendation.setUserId(user.getId());
+                jobRecommendation.setJobScore(pair.getValue());
                 jobRecommendationRepository.save(jobRecommendation);
             }
         }

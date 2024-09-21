@@ -8,6 +8,7 @@ public class JobRecommendation {
     private long id;
     private long userId;
     private long jobId;
+    private double jobScore;
 
     @Id
     @Column(name = "id")
@@ -36,6 +37,15 @@ public class JobRecommendation {
 
     public void setJobId(long jobId) {
         this.jobId = jobId;
+    }
+
+    @Column(name = "job_score")
+    public double getJobScore() {
+        return jobScore;
+    }
+
+    public void setJobScore(double jobScore) {
+        this.jobScore = jobScore;
     }
 
 }
