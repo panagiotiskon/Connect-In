@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
   MDBContainer,
   MDBRow,
@@ -34,7 +34,9 @@ const JobsComponent = () => {
   });
   const [successMessage, setSuccessMessage] = useState("");
   const [currentUser, setCurrentUser] = useState(null);
+  const [sortingMethod, setSortingMethod] = useState("date"); // new state for sorting
   const navigate = useNavigate();
+  const observerRef = useRef(null);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -48,7 +50,7 @@ const JobsComponent = () => {
     fetchUser();
   }, []);
 
-  const fetchJobs = async () => {
+  const fetchJobsByDate = async () => {
     if (currentUser) {
       try {
         const response = await JobAPI.getJobPosts(currentUser.id);
@@ -64,12 +66,26 @@ const JobsComponent = () => {
     }
   };
 
+  useEffect(() => {
+    const fetchJobs = async () => {
+      if (currentUser) {
+        if (sortingMethod === "date") {
+          const response = await JobAPI.getJobPosts(currentUser.id);
+          setJobs(response || []);
+        } else if (sortingMethod === "relevance") {
+          const response = await JobAPI.getRecommendedJobs(currentUser.id);
+          setJobs(response || []);
+        }
+      }
+    };
+    fetchJobs();
+  }, [currentUser, sortingMethod]);
+
   const fetchApplications = async () => {
     if (currentUser) {
       try {
         const response = await JobAPI.getJobApplications(currentUser.id);
         const appMap = {};
-        console.log(response);
         response.forEach((application) => {
           const { jobPostId, userId, fullName } = application;
           if (!appMap[jobPostId]) {
@@ -89,41 +105,9 @@ const JobsComponent = () => {
       }
     }
   };
-
   useEffect(() => {
-    if (currentUser) {
-      fetchJobs();
-      fetchApplications();
-
-      const pollingInterval = setInterval(() => {
-        fetchJobs();
-        fetchApplications();
-      }, 10000);
-
-      return () => clearInterval(pollingInterval);
-    }
+    fetchApplications(); // Fetch applications whenever currentUser changes
   }, [currentUser]);
-
-  const validateForm = () => {
-    let valid = true;
-    const newErrors = { title: "", company: "", description: "" };
-
-    if (!jobTitle.trim()) {
-      newErrors.title = "Job title is required";
-      valid = false;
-    }
-    if (!companyName.trim()) {
-      newErrors.company = "Company name is required";
-      valid = false;
-    }
-    if (!jobDescription.trim()) {
-      newErrors.description = "Job description is required";
-      valid = false;
-    }
-
-    setErrors(newErrors);
-    return valid;
-  };
 
   const handleCreateJob = async () => {
     if (!validateForm()) return;
@@ -147,7 +131,7 @@ const JobsComponent = () => {
           setSuccessMessage("");
         }, 1000);
 
-        fetchJobs();
+        fetchJobsByDate(); // Refresh jobs after creating a new one
       } catch (error) {
         console.error("Error creating job:", error);
       }
@@ -190,10 +174,85 @@ const JobsComponent = () => {
     navigate(`/profile/${userId}`);
   };
 
+  useEffect(() => {
+    const fetchJobs = async () => {
+      await fetchJobsByDate(); // Default to fetching jobs by date
+      await fetchApplications(); // Fetch applications right after
+    };
+
+    fetchJobs();
+  }, [currentUser]);
+
+  const handleSortChange = (method) => {
+    setSortingMethod(method);
+  };
+
   const yourJobs = jobs.filter((job) => job.userId === currentUser?.id);
   const otherJobs = jobs.filter(
     (job) => job.userId !== currentUser?.id && !job.applied
   );
+
+  useEffect(() => {
+    if (otherJobs.length > 0) {
+      const observerCallback = (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            const jobId = entry.target.getAttribute("data-job-id");
+            if (jobId) {
+              JobAPI.viewJobPost(currentUser.id, jobId)
+                .then(() =>
+                  console.log(`Job ${jobId} viewed by user ${currentUser.id}`)
+                )
+                .catch((error) => console.error("Error viewing job:", error));
+            }
+          }
+        });
+      };
+
+      const observerOptions = {
+        root: null,
+        rootMargin: "0px",
+        threshold: 0.5,
+      };
+
+      observerRef.current = new IntersectionObserver(
+        observerCallback,
+        observerOptions
+      );
+
+      const jobCards = document.querySelectorAll("[data-job-id]");
+      jobCards.forEach((jobCard) => {
+        observerRef.current.observe(jobCard);
+      });
+
+      return () => {
+        if (observerRef.current) {
+          observerRef.current.disconnect();
+        }
+      };
+    }
+  }, [currentUser, otherJobs]);
+
+  const validateForm = () => {
+    let valid = true;
+    const newErrors = { title: "", company: "", description: "" };
+
+    if (!jobTitle.trim()) {
+      newErrors.title = "Job title is required";
+      valid = false;
+    }
+    if (!companyName.trim()) {
+      newErrors.company = "Company name is required";
+      valid = false;
+    }
+    if (!jobDescription.trim()) {
+      newErrors.description = "Job description is required";
+      valid = false;
+    }
+
+    setErrors(newErrors);
+    return valid;
+  };
 
   return (
     <div>
@@ -245,10 +304,43 @@ const JobsComponent = () => {
                   className="mb-3"
                   invalid={!!errors.description}
                 />
-                <MDBBtn style={{
-                  backgroundColor:"#35677e"
-                }}
-                onClick={handleCreateJob}>Create Job</MDBBtn>
+                <MDBBtn
+                  style={{
+                    backgroundColor: "#35677e",
+                  }}
+                  onClick={handleCreateJob}
+                >
+                  Create Job
+                </MDBBtn>
+                <div className="mt-4">
+                  <MDBTypography tag="h6" className="mb-2">
+                    Sort By:
+                  </MDBTypography>
+                  <div className="d-flex align-items-center mb-2">
+                    <input
+                      type="radio"
+                      id="date"
+                      name="sorting"
+                      className="me-2"
+                      onClick={() => handleSortChange("date")}
+                    />
+                    <label htmlFor="date" className="mb-0">
+                      Date Created
+                    </label>
+                  </div>
+                  <div className="d-flex align-items-center">
+                    <input
+                      type="radio"
+                      id="relevance"
+                      name="sorting"
+                      className="me-2"
+                      onClick={() => handleSortChange("relevance")}
+                    />
+                    <label htmlFor="relevance" className="mb-0">
+                      Relevance
+                    </label>
+                  </div>
+                </div>
               </MDBCardBody>
             </MDBCard>
           </MDBCol>
@@ -259,10 +351,7 @@ const JobsComponent = () => {
                 <MDBTypography
                   tag="h2"
                   className="text-dark"
-                  style={{
-                    fontSize: "1.5rem",
-                    fontWeight: "bold",
-                  }}
+                  style={{ fontSize: "1.5rem", fontWeight: "bold" }}
                 >
                   Your Jobs
                 </MDBTypography>
@@ -292,7 +381,7 @@ const JobsComponent = () => {
                               </small>
                               <br />
                               <small className="text-muted">
-                                Date Created:{" "}
+                                Date Created:
                                 {new Date(job.createdAt).toLocaleDateString()}
                               </small>
                             </MDBCardText>
@@ -300,7 +389,9 @@ const JobsComponent = () => {
                               applications[job.id].length > 0 && (
                                 <>
                                   <MDBDropdown>
-                                    <MDBDropdownToggle style={{backgroundColor:"#35677e"}}>
+                                    <MDBDropdownToggle
+                                      style={{ backgroundColor: "#35677e" }}
+                                    >
                                       View Applicants
                                     </MDBDropdownToggle>
                                     <MDBDropdownMenu>
@@ -345,7 +436,7 @@ const JobsComponent = () => {
                                 position: "absolute",
                                 top: "10px",
                                 left: "94%",
-                                marginRight: "10px"
+                                marginRight: "10px",
                               }}
                             >
                               <MDBIcon fas icon="times" />
@@ -362,10 +453,7 @@ const JobsComponent = () => {
                 <MDBTypography
                   tag="h2"
                   className="text-dark"
-                  style={{
-                    fontSize: "1.5rem",
-                    fontWeight: "bold",
-                  }}
+                  style={{ fontSize: "1.5rem", fontWeight: "bold" }}
                 >
                   Other Jobs
                 </MDBTypography>
@@ -380,7 +468,12 @@ const JobsComponent = () => {
                     </MDBCol>
                   ) : (
                     otherJobs.map((job) => (
-                      <MDBCol md="12" className="mb-5" key={job.id}>
+                      <MDBCol
+                        md="12"
+                        className="mb-4"
+                        key={job.id}
+                        data-job-id={job.id}
+                      >
                         <MDBCard
                           className={job.applied ? "bg-success text-white" : ""}
                         >
@@ -411,10 +504,12 @@ const JobsComponent = () => {
                               </small>
                             </MDBCardText>
                             {currentUser && (
-                              <MDBBtn style={{
-                                backgroundColor:"#35677e"
-                              }}
-                                      onClick={() => handleApply(job.id)}>
+                              <MDBBtn
+                                style={{
+                                  backgroundColor: "#35677e",
+                                }}
+                                onClick={() => handleApply(job.id)}
+                              >
                                 Apply
                               </MDBBtn>
                             )}
