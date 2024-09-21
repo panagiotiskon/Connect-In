@@ -2,12 +2,14 @@
     font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
 
 }
+
 .MDBContainer {
     width: 100%;
     max-width: 1200px;
     margin: 0 auto;
     padding: 0 1rem;
 }
+
 .new-post-container {
     display: flex;
     margin-top: 5%;
@@ -88,6 +90,10 @@
 }
 
 
+.post-video,
+.post-audio {
+    width: 100%;
+}
 
 
 .poster-info {
