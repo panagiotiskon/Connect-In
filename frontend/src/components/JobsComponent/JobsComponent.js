@@ -66,21 +66,20 @@ const JobsComponent = () => {
     }
   };
 
-  const fetchJobsByRelevance = async () => {
-    if (currentUser) {
-      try {
-        const response = await JobAPI.getRecommendedJobs(currentUser.id);
-        if (response) {
-          setJobs(response);
-        } else {
-          setJobs([]);
+  useEffect(() => {
+    const fetchJobs = async () => {
+      if (currentUser) {
+        if (sortingMethod === "date") {
+          const response = await JobAPI.getJobPosts(currentUser.id);
+          setJobs(response || []);
+        } else if (sortingMethod === "relevance") {
+          const response = await JobAPI.getRecommendedJobs(currentUser.id);
+          setJobs(response || []);
         }
-      } catch (error) {
-        console.error("Error fetching recommended jobs:", error);
-        setJobs([]);
       }
-    }
-  };
+    };
+    fetchJobs();
+  }, [currentUser, sortingMethod]);
 
   const fetchApplications = async () => {
     if (currentUser) {
@@ -106,6 +105,9 @@ const JobsComponent = () => {
       }
     }
   };
+  useEffect(() => {
+    fetchApplications(); // Fetch applications whenever currentUser changes
+  }, [currentUser]);
 
   const handleCreateJob = async () => {
     if (!validateForm()) return;
@@ -172,14 +174,17 @@ const JobsComponent = () => {
     navigate(`/profile/${userId}`);
   };
 
-  // New function to switch sorting method
+  useEffect(() => {
+    const fetchJobs = async () => {
+      await fetchJobsByDate(); // Default to fetching jobs by date
+      await fetchApplications(); // Fetch applications right after
+    };
+
+    fetchJobs();
+  }, [currentUser]);
+
   const handleSortChange = (method) => {
     setSortingMethod(method);
-    if (method === "relevance") {
-      fetchJobsByRelevance();
-    } else if (method === "date") {
-      fetchJobsByDate();
-    }
   };
 
   const yourJobs = jobs.filter((job) => job.userId === currentUser?.id);
@@ -328,6 +333,7 @@ const JobsComponent = () => {
                       type="radio"
                       id="relevance"
                       name="sorting"
+                      className="me-2"
                       onClick={() => handleSortChange("relevance")}
                     />
                     <label htmlFor="relevance" className="mb-0">
@@ -375,7 +381,7 @@ const JobsComponent = () => {
                               </small>
                               <br />
                               <small className="text-muted">
-                                Date Created:{" "}
+                                Date Created:
                                 {new Date(job.createdAt).toLocaleDateString()}
                               </small>
                             </MDBCardText>
@@ -383,7 +389,9 @@ const JobsComponent = () => {
                               applications[job.id].length > 0 && (
                                 <>
                                   <MDBDropdown>
-                                    <MDBDropdownToggle style={{backgroundColor:"#35677e"}}>
+                                    <MDBDropdownToggle
+                                      style={{ backgroundColor: "#35677e" }}
+                                    >
                                       View Applicants
                                     </MDBDropdownToggle>
                                     <MDBDropdownMenu>
