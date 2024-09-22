@@ -21,7 +21,6 @@ export default function AdminComponent() {
   const [users, setUsers] = useState([]);
   const [selectedUsers, setSelectedUsers] = useState([]);
   const [profileImages, setProfileImages] = useState({}); // Map to store profile images
-  const adminId = 1; // admin user's ID
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -256,7 +255,6 @@ export default function AdminComponent() {
         {/* User cards layout */}
         <div className="card-container-admin">
           {users
-            .filter((user) => user.id !== adminId) // Skip the admin user
             .map((user) => (
               <MDBCard key={user.id} className="m-3 card-admin">
                 <MDBCardBody>
