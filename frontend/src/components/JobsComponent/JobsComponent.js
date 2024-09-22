@@ -366,7 +366,7 @@ const JobsComponent = () => {
                     </MDBCol>
                   ) : (
                     yourJobs.map((job) => (
-                      <MDBCol md="12" className="mb-" key={job.id}>
+                      <MDBCol md="12" className="mb-3" key={job.id}>
                         <MDBCard className="position-relative">
                           <MDBCardBody>
                             <MDBCardTitle
