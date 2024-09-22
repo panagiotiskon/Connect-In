@@ -2,7 +2,7 @@ package backend.connectin.service;
 
 import backend.connectin.domain.*;
 import backend.connectin.domain.repository.*;
-import backend.connectin.recommendation.Algortithm.MatrixFactorization;
+import backend.connectin.recommendation.algortithm.MatrixFactorization;
 import backend.connectin.web.dto.JobPostDTO;
 import backend.connectin.web.mappers.PostMapper;
 import backend.connectin.web.resources.PostResourceDetailed;
@@ -46,9 +46,9 @@ public class RecommendationService {
     public List<JobPostDTO> findRecommendedJobsForUser(long userId) {
         List<JobRecommendation> jobRecommendations = jobRecommendationRepository.findByUserId(userId);
         List<JobRecommendation> sortedRecommendations = jobRecommendations.stream()
-                .sorted(Comparator.comparing(JobRecommendation::getJobScore))
+                .sorted(Comparator.comparing(JobRecommendation::getJobScore).reversed())
                 .toList();
-        //store by ascending order
+        //store by descending order, higher score = better recommendation
         List<Long> jobIds = sortedRecommendations.stream().map(JobRecommendation::getJobId).toList();
         List<JobPost> recommendedJobs = new ArrayList<>();
         jobIds.stream().map(jobId -> jobPostRepository.findById(jobId).orElse(null))
@@ -126,11 +126,10 @@ public class RecommendationService {
             for (int jobPostIndex = 0; jobPostIndex < jobPosts.size(); jobPostIndex++) {
                 JobPost job = jobPosts.get(jobPostIndex);
                 int skillMatchScore = calculateSkillMatchForJobs(skills, job, jobViews);
-                // LOWER MATCHING SCORE MEANING MORE RELEVANCE
-                matrix[userIndex][jobPostIndex] = skillMatchScore > 0 ? skillMatchScore : -1;
+                matrix[userIndex][jobPostIndex] = Math.max(skillMatchScore, 0);
             }
         }
-        MatrixFactorization matrixFactorization = new MatrixFactorization(matrix, 2, 0.0002, 0.02, 5000);
+        MatrixFactorization matrixFactorization = new MatrixFactorization(matrix, 2, 0.0001, 0.02, 6500);
         double[][] results = matrixFactorization.trainAndPredict();
         saveJobRecommendations(users, jobPosts, results, matrix);
     }
@@ -149,7 +148,6 @@ public class RecommendationService {
                 continue;
             }
 
-            //List<JobView> jobViews = jobViewRepository.findByUserId(user.getId());
             List<Long> connectionIds = new ArrayList<>(connectionService.getConnectedUserIds(user.getId()));
             List<Long> postIdsFromReactions = reactionRepository.findPostIdsByUserIds(connectionIds);
             // find the posts with the postsIds fetched before
@@ -158,11 +156,14 @@ public class RecommendationService {
             connectionIds = new ArrayList<>(new HashSet<>(connectionIds));
             List<Reaction> userReactions = reactionRepository.findAllByUserId(user.getId());
             List<PostView> postViews = postViewRepository.findByUserId(user.getId());
+            int connectionWeight = 10;
+            int threshold = 10;
+            int likeWeight = 4;
             for (int postIndex = 0; postIndex < posts.size(); postIndex++) {
                 int postScore = 0;
                 Post post = posts.get(postIndex);
                 if(connectionIds.contains(post.getUserId())){   //if the post is user post or connection post add score
-                    postScore+= 10;
+                    postScore+= connectionWeight;
                     if(!Objects.equals(post.getUserId(), user.getId())){
                         List<Reaction> reactions = reactionRepository.findAllByUserId(user.getId());
                         Long whoPosted = post.getUserId();
@@ -171,8 +172,7 @@ public class RecommendationService {
                          // depending on how many likes or comments current user has done to this user add score
                     }
                 }
-                else if(postsFromReactions.contains(post)){ //if not connected but connections have like this post
-                    postScore+= 3;
+                else if(postsFromReactions.contains(post)){ //if not connected but connections liked this post
                     List<Reaction> connectionReactions = new ArrayList<>();
                     for(var connection : connectionIds){
                         if(!Objects.equals(connection, user.getId())) {
@@ -180,15 +180,15 @@ public class RecommendationService {
                             connectionReactions.addAll(reactions);
                         }
                     }
-                    long reactionCount = connectionReactions.stream().filter(reaction -> reaction.getPost().getId().equals(post.getId())).count();
-                    if(reactionCount>6){
-                        reactionCount = 6;
+                    long reactionCount = connectionReactions.stream().filter(reaction -> reaction.getPost().getId().equals(post.getId())).count();  //add score depending on how many likes the current post has from connected users
+                    if(reactionCount>threshold){ //dont get above the threshold because we want connection posts to be above
+                        reactionCount = threshold;
                     }
                     postScore+= (int) reactionCount;
                 }
-                if(!userReactions.isEmpty()) {
+                if(!userReactions.isEmpty()) { //if user has like this post add score
                     if (userReactions.stream().anyMatch(reaction -> reaction.getPost().getId().equals(post.getId()))) {
-                        postScore += 4;
+                        postScore += likeWeight;
                     }
                 }
                 else {
@@ -203,16 +203,16 @@ public class RecommendationService {
                                 postCountByUser.put(userId, postCountByUser.getOrDefault(userId, 0) + 1);
                             });
                     for (Map.Entry<Long, Integer> entry : postCountByUser.entrySet()) {
-                        if(entry.getKey()==post.getUserId()){
+                        if(Objects.equals(entry.getKey(), post.getUserId())){
                             postScore+= entry.getValue();
                         }
                     }
                 }
-                matrix[userIndex][postIndex] = postScore > 0 ? postScore : -1;
+                matrix[userIndex][postIndex] = Math.max(postScore, 0);
             }
 
         }
-        MatrixFactorization matrixFactorization = new MatrixFactorization(matrix, 2, 0.0002, 0.02, 5000);
+        MatrixFactorization matrixFactorization = new MatrixFactorization(matrix, 2, 0.0001, 0.02, 6500);
         double[][] results = matrixFactorization.trainAndPredict();
         savePostRecommendations(users, posts, results, matrix);
 
@@ -223,49 +223,35 @@ public class RecommendationService {
         int skillCount = 0;
 
         for (Skill skill : skills) {
-            int distance = calculateLevenshteinDistance(skill.getSkillTitle().toLowerCase(), jobPost.getJobTitle().toLowerCase());
+            int maxLength = Math.max(skill.getSkillTitle().length(), jobPost.getJobTitle().length()); // here calculate the max score we can get from Levenshtein Distance
+            int distance = calculateLevenshteinDistance(skill.getSkillTitle().toLowerCase(), jobPost.getJobTitle().toLowerCase()); // find the distance between skill title and job title
+            distance = maxLength - distance; //from the distance we get lower scores if they are relevant and higher scores if they are not, so we normalize to get high scores for relevant and lower scores for not relevant
             if (distance >= 0) {
                 totalDistance += distance;
                 skillCount++;
             }
-        }   //here in levenshtein distance if the total distance is smaller we have more relevance
-        int skillMatchScore = skillCount > 0 ? totalDistance / skillCount : -1;
+        }
+        int skillScore = skillCount > 0 ? totalDistance / skillCount : 0; // the final score based on skills is the middle distance of total distance/number of skills
         int viewBonus = calculateViewedJobBonus(jobPost, jobViews);
-        if(viewBonus==0){
-            skillMatchScore+=2;
-        }
-        else if(viewBonus<0) {
-            skillMatchScore += 4;
-        }
-        else if(viewBonus>5 && viewBonus<10){
-            skillMatchScore -= 2;
-        }
-        else if(viewBonus>10 && viewBonus<20) {
-            skillMatchScore -= 4;
-        }
-        else if(viewBonus>20){
-            skillMatchScore -= 6;
-        }
-
-
-        return skillMatchScore;
+        return viewBonus+skillScore;
     }
 
     private int calculateViewedJobBonus(JobPost currentJob, List<JobView> jobViews) {
         int bonusScore = 0;
-
+        int jobsViewed=0;
         for (JobView jobView : jobViews) {
-            Optional<JobPost> viewedJobOpt = jobPostRepository.findById(jobView.getJobId()); //we need to know what job the user has seen ,find their titles
-            if (viewedJobOpt.isPresent()) {                                                  //and see the relevance with each other job
+            Optional<JobPost> viewedJobOpt = jobPostRepository.findById(jobView.getJobId()); //we need to know what jobs the user has seen and find their titles
+            if (viewedJobOpt.isPresent()) {                                                  //check current job relevance depending on the jobs that the user has seen
                 JobPost viewedJob = viewedJobOpt.get();
+                int maxLength = Math.max(viewedJob.getJobTitle().length(), currentJob.getJobTitle().length()); //normalize again
                 int titleDistance = calculateLevenshteinDistance(viewedJob.getJobTitle().toLowerCase(), currentJob.getJobTitle().toLowerCase());
-                // Invert the distance to create a "bonus" (lower distance = higher bonus)
-                int similarityBonus = Math.max(0, 10 - titleDistance);  // Bonus: 10 points minus title distance
-                bonusScore += similarityBonus;
+                int viewBonus = maxLength-titleDistance;
+                bonusScore += viewBonus;
+                jobsViewed++;
             }
         }
 
-        return bonusScore;
+        return bonusScore/jobsViewed;
     }
 
     private int calculateLevenshteinDistance(String word1, String word2) {
