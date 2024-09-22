@@ -71,10 +71,8 @@ public class JobService {
         if(jobPosts.isEmpty()){
             return List.of();
         }
-        List<Long> connectedUserIds = connectionService.getConnectedUserIds(currentUserId);
-        List<JobPost> connectedJobPosts = jobPosts.stream().filter(jobPost -> connectedUserIds.contains(jobPost.getUserId()) || jobPost.getUserId()==currentUserId).toList();
         List<JobPostDTO> jobPostDTOS = new ArrayList<>();
-        for(var jobPost : connectedJobPosts){
+        for(var jobPost : jobPosts){
             User user = userService.findUserOrThrow(jobPost.getUserId());
             String fullName = user.getFirstName() + " " + user.getLastName();
             List<JobApplication> jobApplications = jobApplicationRepository.findAll();
@@ -87,6 +85,7 @@ public class JobService {
         }
         return jobPostDTOS;
     }
+
 
     public List<JobApplicationDTO> getJobApplications(long userId){
         userService.findUserOrThrow(userId);
