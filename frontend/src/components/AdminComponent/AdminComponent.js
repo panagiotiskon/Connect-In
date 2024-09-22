@@ -236,9 +236,12 @@ export default function AdminComponent() {
   };
 
   return (
-    <div>
+    <div style={{
+      backgroundColor: "#f3f2ef",
+      minHeight:"100vh"
+    }}>
       <NavBarAdminComponent />
-      <MDBContainer fluid className="py-5">
+      <MDBContainer fluid className="py-5" >
         <div className="center-content">
           <h4 className="section-heading">Extract Selected Users</h4>
           <div className="button-group">
