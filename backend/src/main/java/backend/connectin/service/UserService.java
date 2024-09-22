@@ -1,4 +1,5 @@
 package backend.connectin.service;
+
 import backend.connectin.domain.repository.JobApplicationRepository;
 import backend.connectin.web.mappers.PostMapper;
 import backend.connectin.web.resources.*;
@@ -73,33 +74,34 @@ public class UserService {
         }
     }
 
-    public User findUserOrThrow(Long id){
+    public User findUserOrThrow(Long id) {
         return userRepository.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
     }
 
     @Transactional
-    public void registerUser(UserRegisterRequest userRegisterRequest){
+    public void registerUser(UserRegisterRequest userRegisterRequest) {
         String email = userRegisterRequest.getEmail();
         User user;
-        try{
+        try {
             validateEmail(email);
             user = userMapper.mapToUser(userRegisterRequest);
             userRepository.save(user);
-        }
-        catch(ResponseStatusException e){
+        } catch (ResponseStatusException e) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Email already exists");
         }
-        try{
+        try {
             fileService.store(userRegisterRequest.getProfilePicture(), true, user.getId()); // Adjusted to directly use the MultipartFile
-        }
-        catch(IOException e){
+        } catch (IOException e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Profile picture cannot be saved");
         }
 
     }
 
     public List<User> fetchAll() {
-        return userRepository.findAll(); // Fetch all users
+        List<User> users = userRepository.findAll(); // Fetch all users
+        return users.stream()  // fetch users without admin
+                .filter(user -> user.getRoles().stream().noneMatch(role -> role.getName().equalsIgnoreCase("ROLE_ADMIN")))
+                .toList();
     }
 
 
@@ -133,80 +135,78 @@ public class UserService {
         userRepository.save(user);
     }
 
-    public List<Experience> getExperience(long userId){
+    public List<Experience> getExperience(long userId) {
         if (userRepository.findById(userId).isEmpty()) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "User not found");
         }
         PersonalInfo personalInfo = personalInfoRepository.findByUserId(userId);
-        if(personalInfo==null){
+        if (personalInfo == null) {
             return List.of();
         }
         return personalInfo.getExperiences();
     }
 
-    public List<Skill> getSkills(long userId){
+    public List<Skill> getSkills(long userId) {
         if (userRepository.findById(userId).isEmpty()) {
             return List.of();
         }
         PersonalInfo personalInfo = personalInfoRepository.findByUserId(userId);
-        if(personalInfo==null){
+        if (personalInfo == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Personal Info not found");
         }
         return personalInfo.getSkills();
     }
 
-    public List<Education> getEducation(long userId){
+    public List<Education> getEducation(long userId) {
         if (userRepository.findById(userId).isEmpty()) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "User not found");
         }
         PersonalInfo personalInfo = personalInfoRepository.findByUserId(userId);
-        if(personalInfo==null){
+        if (personalInfo == null) {
             return List.of();
         }
         return personalInfo.getEducations();
     }
 
     @Transactional
-    public List<Education> addEducation(long userId,Education education){
-        if(userRepository.findById(userId).isEmpty()) {
+    public List<Education> addEducation(long userId, Education education) {
+        if (userRepository.findById(userId).isEmpty()) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "User not found");
         }
         PersonalInfo personalInfo;
-        if(personalInfoRepository.findByUserId(userId)==null){
+        if (personalInfoRepository.findByUserId(userId) == null) {
             User user = userRepository.findById(userId).get();
             personalInfo = new PersonalInfo();
             personalInfo.setUser(user);
             personalInfo.setEducations(List.of(education));
             education.setPersonalInfo(personalInfo);
             personalInfoRepository.save(personalInfo);
+        } else {
+            personalInfo = personalInfoRepository.findByUserId(userId);
+
+            education.setPersonalInfo(personalInfo);
+
+            personalInfo.addToEducations(education);
+
+            personalInfoRepository.save(personalInfo);
         }
-       else {
-        personalInfo = personalInfoRepository.findByUserId(userId);
-
-        education.setPersonalInfo(personalInfo);
-
-        personalInfo.addToEducations(education);
-
-        personalInfoRepository.save(personalInfo);
-    }
         return personalInfo.getEducations();
     }
 
     @Transactional
-    public List<Experience> addExperience(long userId,Experience experience){
-        if(userRepository.findById(userId).isEmpty()) {
+    public List<Experience> addExperience(long userId, Experience experience) {
+        if (userRepository.findById(userId).isEmpty()) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "User not found");
         }
         PersonalInfo personalInfo;
-        if(personalInfoRepository.findByUserId(userId)==null){
+        if (personalInfoRepository.findByUserId(userId) == null) {
             User user = userRepository.findById(userId).get();
             personalInfo = new PersonalInfo();
             personalInfo.setUser(user);
             personalInfo.setExperiences(List.of(experience));
             experience.setPersonalInfo(personalInfo);
             personalInfoRepository.save(personalInfo);
-        }
-        else {
+        } else {
             personalInfo = personalInfoRepository.findByUserId(userId);
 
             experience.setPersonalInfo(personalInfo);
@@ -219,20 +219,19 @@ public class UserService {
     }
 
     @Transactional
-    public List<Skill> addSkill(long userId,Skill skill){
-        if(userRepository.findById(userId).isEmpty()) {
+    public List<Skill> addSkill(long userId, Skill skill) {
+        if (userRepository.findById(userId).isEmpty()) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found");
         }
         PersonalInfo personalInfo;
-        if(personalInfoRepository.findByUserId(userId)==null){
+        if (personalInfoRepository.findByUserId(userId) == null) {
             User user = userRepository.findById(userId).get();
             personalInfo = new PersonalInfo();
             personalInfo.setUser(user);
             personalInfo.setSkills(List.of(skill));
             skill.setPersonalInfo(personalInfo);
             personalInfoRepository.save(personalInfo);
-        }
-        else {
+        } else {
             personalInfo = personalInfoRepository.findByUserId(userId);
 
             skill.setPersonalInfo(personalInfo);
@@ -323,13 +322,13 @@ public class UserService {
 
                         return matches;
                     }).toList();
-            if(users.isEmpty()){
-                return new ArrayList<>();}
+            if (users.isEmpty()) {
+                return new ArrayList<>();
+            }
 
             return users.stream().map(User::getId).toList();
 
-        }
-        else {
+        } else {
             return new ArrayList<>();
         }
     }
