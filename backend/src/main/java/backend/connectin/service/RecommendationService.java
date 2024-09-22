@@ -2,7 +2,7 @@ package backend.connectin.service;
 
 import backend.connectin.domain.*;
 import backend.connectin.domain.repository.*;
-import backend.connectin.recommendation.algortithm.MatrixFactorization;
+import backend.connectin.recommendation.algorithm.MatrixFactorization;
 import backend.connectin.web.dto.JobPostDTO;
 import backend.connectin.web.mappers.PostMapper;
 import backend.connectin.web.resources.PostResourceDetailed;
