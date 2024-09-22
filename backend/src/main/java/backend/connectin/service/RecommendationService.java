@@ -54,10 +54,8 @@ public class RecommendationService {
         jobIds.stream().map(jobId -> jobPostRepository.findById(jobId).orElse(null))
                 .filter(Objects::nonNull)
                 .forEach(recommendedJobs::add);
-        List<Long> connectedUserIds = connectionService.getConnectedUserIds(userId);
-        List<JobPost> connectedJobPosts = recommendedJobs.stream().filter(jobPost -> connectedUserIds.contains(jobPost.getUserId()) || jobPost.getUserId()==userId).toList();
         List<JobPostDTO> jobPostDTOS = new ArrayList<>();
-        for(var jobPost : connectedJobPosts){
+        for(var jobPost : recommendedJobs){
             User user = userService.findUserOrThrow(jobPost.getUserId());
             String fullName = user.getFirstName() + " " + user.getLastName();
             List<JobApplication> jobApplications = jobApplicationRepository.findAll();
