@@ -250,8 +250,12 @@ public class RecommendationService {
                 jobsViewed++;
             }
         }
-
-        return bonusScore/jobsViewed;
+        if(jobsViewed>0) {
+            return bonusScore / jobsViewed;
+        }
+        else{
+            return 0;
+        }
     }
 
     private int calculateLevenshteinDistance(String word1, String word2) {
