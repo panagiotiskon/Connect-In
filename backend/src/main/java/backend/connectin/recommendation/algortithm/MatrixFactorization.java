@@ -1,4 +1,4 @@
-package backend.connectin.recommendation.Algortithm;
+package backend.connectin.recommendation.algortithm;
 
 import java.util.Random;
 
