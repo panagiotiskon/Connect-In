@@ -1,7 +1,9 @@
 package backend.connectin.service;
 
-import backend.connectin.domain.*;
-import backend.connectin.domain.repository.ConnectionRepository;
+import backend.connectin.domain.FileDB;
+import backend.connectin.domain.Post;
+import backend.connectin.domain.PostView;
+import backend.connectin.domain.User;
 import backend.connectin.domain.repository.FileRepository;
 import backend.connectin.domain.repository.PostRepository;
 import backend.connectin.domain.repository.PostViewRepository;
@@ -32,8 +34,10 @@ public class PostService {
 
     public PostService(PostRepository postRepository, FileService fileService,
                        PostMapper postMapper, UserService userService,
-                       ConnectionService connectionService, ReactionRepository reactionRepository, FileRepository fileRepository) {
-                       ConnectionService connectionService, ReactionRepository reactionRepository, PostViewRepository postViewRepository) {
+                       ConnectionService connectionService, ReactionRepository reactionRepository,
+                       FileRepository fileRepository,
+                       PostViewRepository postViewRepository) {
+
         this.postRepository = postRepository;
         this.fileService = fileService;
         this.postMapper = postMapper;
@@ -74,7 +78,7 @@ public class PostService {
         // find the posts which the connections reacted to
         List<Long> postIdsFromReactions = reactionRepository.findPostIdsByUserIds(connectionIds);
         // find the posts with the postsIds fetched before
-        List<Post> postsFromReactions= postRepository.findPostsByIdIn(postIdsFromReactions);
+        List<Post> postsFromReactions = postRepository.findPostsByIdIn(postIdsFromReactions);
 
         connectionIds.add(userId);
         connectionIds = new ArrayList<>(new HashSet<>(connectionIds));
@@ -87,26 +91,30 @@ public class PostService {
     public List<Post> fetchAll() {
         return postRepository.findAll();
     }
-    public List<Post> fetchUserPosts(Long userId){return postRepository.findAllByUserId(userId);}
+
+    public List<Post> fetchUserPosts(Long userId) {
+        return postRepository.findAllByUserId(userId);
+    }
 
     public void deletePost(Long userId, Long postId) {
         User user = userService.findUserOrThrow(userId);
         Post post = findPostOrThrow(postId);
-        if(post.getFileId()!=null){
+        if (post.getFileId() != null) {
             fileRepository.deleteById(post.getFileId());
         }
         postRepository.delete(post);
     }
 
-    public PostView addViewToAPost(long userId, Long postId){
+    public PostView addViewToAPost(long userId, Long postId) {
         userService.findUserOrThrow(userId);
         Optional<Post> post = postRepository.findById(postId);
-        if(post.isEmpty()){
+        if (post.isEmpty()) {
             throw new RuntimeException("Post not found");
         }
-        if(postViewRepository.findPostViewByUserIdAndJobId(userId,postId).isPresent()){
+        if (postViewRepository.findPostViewByUserIdAndJobId(userId, postId).isPresent()) {
             return null;
-        };
+        }
+        ;
         PostView postView = new PostView();
         postView.setUserId(userId);
         postView.setPostId(post.get().getId());
@@ -114,7 +122,6 @@ public class PostService {
         postViewRepository.save(postView);
         return postView;
     }
-
 
 
 }
