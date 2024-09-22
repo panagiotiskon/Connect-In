@@ -29,7 +29,6 @@ const NavBarAdminComponent = () => {
   return (
     <MDBNavbar expand="lg" light bgColor="light">
       <MDBContainer fluid className="navbar-container">
-        {/* Logo Section */}
         <img
           src={ConnectInLogo}
           alt="ConnectIn Logo"
