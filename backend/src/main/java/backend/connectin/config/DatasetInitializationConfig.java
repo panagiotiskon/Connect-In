@@ -1,6 +1,7 @@
 package backend.connectin.config;
 
 import backend.connectin.domain.FileDB;
+import backend.connectin.domain.JobPost;
 import backend.connectin.domain.Role;
 import backend.connectin.domain.User;
 import backend.connectin.domain.repository.FileRepository;
@@ -35,6 +36,8 @@ public class DatasetInitializationConfig {
             String fileName = "default-profile.png";
             String contentType = "image/png";
 
+            // create users
+
             for (int i = 0; i <= userNumber; i++) {
                 String email = "user" + i + "@gmail.com";
                 if (userRepository.findUserByEmail(email).isEmpty()) {
@@ -54,6 +57,7 @@ public class DatasetInitializationConfig {
 
                 }
             }
+
         };
     }
 }
