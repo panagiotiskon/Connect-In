@@ -160,7 +160,7 @@ export default function ChatComponent() {
     <div>
       <NavbarComponent />
       <MDBContainer fluid className="py-5">
-        <MDBRow>
+        <MDBRow style={{margin:"2%", marginTop:"1%"}}>
           <MDBCol md="12">
             <MDBCard
               id="chat3"

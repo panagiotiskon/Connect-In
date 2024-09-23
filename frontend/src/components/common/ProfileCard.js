@@ -43,9 +43,9 @@ const ProfileCard = ({ currentUser }) => {
     <MDBCard
       className="mb-4"
       style={{
-        width: "70%",
         height: "500px",
-        margin: "5%",
+        marginTop: "7%",
+        margin: "12%",
         display: "flex",
       }}
     >
