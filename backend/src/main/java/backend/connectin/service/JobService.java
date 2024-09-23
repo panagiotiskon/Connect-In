@@ -9,6 +9,8 @@ import backend.connectin.domain.repository.JobPostRepository;
 import backend.connectin.domain.repository.JobViewRepository;
 import backend.connectin.web.dto.JobApplicationDTO;
 import backend.connectin.web.dto.JobPostDTO;
+import backend.connectin.web.mappers.JobMapper;
+import org.springframework.boot.autoconfigure.batch.BatchProperties;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -23,13 +25,15 @@ public class JobService {
     private final UserService userService;
     private final JobViewRepository jobViewRepository;
     private final ConnectionService connectionService;
+    private final JobMapper jobMapper;
 
-    public JobService(JobPostRepository jobPostRepository, JobApplicationRepository jobApplicationRepository, UserService userService, JobViewRepository jobViewRepository, ConnectionService connectionService) {
+    public JobService(JobPostRepository jobPostRepository, JobApplicationRepository jobApplicationRepository, UserService userService, JobViewRepository jobViewRepository, ConnectionService connectionService, JobMapper jobMapper) {
         this.jobPostRepository = jobPostRepository;
         this.jobApplicationRepository = jobApplicationRepository;
         this.userService = userService;
         this.jobViewRepository = jobViewRepository;
         this.connectionService = connectionService;
+        this.jobMapper = jobMapper;
     }
 
     public JobPost createJobPost(long userId,String jobTitle,String companyName,String jobDescription){
@@ -66,26 +70,17 @@ public class JobService {
         jobApplicationRepository.save(jobApplication);
     }
 
-    public List<JobPostDTO> getJobPosts(long currentUserId){
-        List<JobPost> jobPosts = jobPostRepository.findAll();
-        if(jobPosts.isEmpty()){
-            return List.of();
-        }
-        List<JobPostDTO> jobPostDTOS = new ArrayList<>();
-        for(var jobPost : jobPosts){
-            User user = userService.findUserOrThrow(jobPost.getUserId());
-            String fullName = user.getFirstName() + " " + user.getLastName();
-            List<JobApplication> jobApplications = jobApplicationRepository.findAll();
-            boolean hasApplied = false;
-            if(jobApplications.stream().anyMatch(jobApplication -> jobApplication.getJobPostId()==jobPost.getId() && jobApplication.getUserId() == currentUserId)){
-                hasApplied = true;
-            }
-            JobPostDTO jobPostDTO = new JobPostDTO(jobPost.getId(),user.getId(),jobPost.getJobTitle(),jobPost.getCompanyName(),jobPost.getJobDescription(),jobPost.getCreatedAt(),fullName,hasApplied);
-            jobPostDTOS.add(jobPostDTO);
-        }
-        return jobPostDTOS;
+    // returns Posts posted from user
+
+    public List<JobPostDTO> getUserJobPosts(long userId){
+        List<JobPost> jobPosts = jobPostRepository.findJobPostByUserId(userId);
+        return getJobPostDTOS(userId, jobPosts);
     }
 
+    public List<JobPostDTO> getJobPosts(long userId){
+        List<JobPost> jobPosts = jobPostRepository.findAll();
+        return getJobPostDTOS(userId, jobPosts);
+    }
 
     public List<JobApplicationDTO> getJobApplications(long userId){
         userService.findUserOrThrow(userId);
@@ -137,5 +132,20 @@ public class JobService {
         jobView.setViewedAt(Instant.now());
         jobViewRepository.save(jobView);
         return jobView;
+    }
+
+    private List<JobPostDTO> getJobPostDTOS(long userId, List<JobPost> jobPosts) {
+        if(jobPosts.isEmpty()){
+            return List.of();
+        }
+        List<JobPostDTO> jobPostDTOS = new ArrayList<>();
+        for(var jobPost : jobPosts){
+            User user = userService.findUserOrThrow(jobPost.getUserId());
+            List<JobApplication> jobApplications = jobApplicationRepository.findAll();
+            boolean hasApplied = jobApplications.stream().anyMatch(jobApplication -> jobApplication.getJobPostId() == jobPost.getId() && jobApplication.getUserId() == userId);
+            JobPostDTO jobPostDTO = jobMapper.mapToJopPostDto(jobPost, user, hasApplied);
+            jobPostDTOS.add(jobPostDTO);
+        }
+        return jobPostDTOS;
     }
 }

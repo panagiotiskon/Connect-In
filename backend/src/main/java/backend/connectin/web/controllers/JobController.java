@@ -4,8 +4,10 @@ import backend.connectin.domain.JobPost;
 import backend.connectin.service.JobService;
 import backend.connectin.web.dto.JobApplicationDTO;
 import backend.connectin.web.dto.JobPostDTO;
+import backend.connectin.web.resources.PostResourceDetailed;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Comparator;
 import java.util.List;
 
 @RestController
@@ -30,7 +32,13 @@ public class JobController {
 
     @GetMapping("/posts")
     public List<JobPostDTO> getJobPosts(@RequestParam long currentUserId) {
-        return jobService.getJobPosts(currentUserId);
+        List<JobPostDTO> jobPostDTOS = jobService.getJobPosts(currentUserId);
+
+        // return the lists sorted by creation date
+
+        return jobPostDTOS.stream()
+                .sorted(Comparator.comparing(JobPostDTO::createdAt).reversed())
+                .toList();
     }
 
     @GetMapping("/applications")

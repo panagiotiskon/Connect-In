@@ -40,39 +40,40 @@ const HomeComponent = () => {
             ? await PostService.getFeed(currentUser.id)
             : await PostService.getRecommendedPosts(currentUser.id);
 
-        const fetchedPosts = Array.isArray(response)
-          ? response
-          : response?.data || [];
-        const postsById = {};
+      const fetchedPosts = Array.isArray(response)
+        ? response
+        : response?.data || [];
 
-        const postsWithUserPhotos = await Promise.all(
-          fetchedPosts.map(async (post) => {
-            const poster = await PersonalInfoService.getUser(post.userId);
-            const commentsWithPhotos = await Promise.all(
-              post.comments.map(async (comment) => {
-                const userImage = await FileService.getUserImages(
-                  comment.userId
-                );
-                const userProfileImage =
-                  userImage.length > 0
-                    ? `data:${userImage[0].type};base64,${userImage[0].data}`
-                    : null;
+      const postsById = {};
 
-                return {
-                  ...comment,
-                  profileImage: userProfileImage,
-                };
-              })
-            );
+      const postsWithUserPhotos = await Promise.all(
+        fetchedPosts.map(async (post) => {
+          // Fetch poster info
+          const poster = await PersonalInfoService.getUser(post.userId);
+          // Process comments
+          const commentsWithPhotos = await Promise.all(
+            post.comments.map(async (comment) => {
+              const userImage = await FileService.getUserImages(comment.userId);
+              const userProfileImage =
+                userImage.length > 0
+                  ? `data:${userImage[0].type};base64,${userImage[0].data}`
+                  : null;
 
-            const processedPost = {
-              ...post,
-              posterName: `${poster.firstName} ${poster.lastName}`,
-              posterImage: poster?.profilePictureData
-                ? `data:image/jpeg;base64,${poster.profilePictureData}`
-                : null,
-            };
-            postsById[post.id] = processedPost;
+              return {
+                ...comment,
+                profileImage: userProfileImage,
+              };
+            })
+          );
+
+          const processedPost = {
+            ...post,
+            posterName: poster.firstName + " " + poster.lastName,
+            posterImage: poster?.profilePictureData ? `data:image/jpeg;base64,${poster.profilePictureData}` : "https://via.placeholder.com/40",
+            comments: commentsWithPhotos,
+          };
+
+          postsById[post.id] = processedPost;
 
             return processedPost;
           })
@@ -149,6 +150,7 @@ const HomeComponent = () => {
     }
   };
 
+  
   const fetchUserCommentIds = async () => {
     try {
       const response = await PostService.getUserComments();
@@ -238,7 +240,6 @@ const HomeComponent = () => {
 
       if (post) {
         const commentId = await PostService.createComment(postId, comment);
-        console.log(commentId.data, "eeeeee");
         setCommentInputs((prev) => ({
           ...prev,
           [postId]: "",
@@ -281,7 +282,7 @@ const HomeComponent = () => {
 
       if (hasReacted) {
         await PostService.deleteReaction(postId);
-        setReactedPostIds((prev) => prev.filter((id) => id !== postId)); // Remove from reacted post IDs
+        setReactedPostIds((prev) => prev.filter((id) => id !== postId)); 
         await NotificationAPI.deleteNotificationByObjectId(postId);
       } else {
         await PostService.createReaction(postId);
@@ -322,9 +323,17 @@ const HomeComponent = () => {
               currentUser={currentUser}
               profileImage={profileImage}
             />
-            <div className="mt-4">
-              <MDBTypography tag="h6" className="mb-3">
-                Sort By:
+            <MDBCard className="flex mt-4 mb-4 p-3"
+                  style={{
+                    margin:"20%",
+                    height: "9rem",
+                    flexDirection: "column",
+                    justifyContent: "center", 
+                    display: "flex",
+                  }}>
+              <MDBTypography tag="h6" className="mb-3"
+              style={{alignSelf: "center", fontWeight:"bold"}}>
+                Show Posts By:
               </MDBTypography>
               <div className="d-flex align-items-center mb-2">
                 <input
@@ -332,10 +341,12 @@ const HomeComponent = () => {
                   id="date"
                   name="sorting"
                   className="me-2"
+                  checked={sortingMethod === "date"}
                   onClick={() => handleSortChange("date")}
                 />
-                <label htmlFor="date" className="mb-0">
-                  Date Created
+                <label htmlFor="date" className="mb-0"
+                style={{alignSelf: "center"}}>
+                 📅 Date Posted
                 </label>
               </div>
               <div className="d-flex align-items-center">
@@ -346,11 +357,12 @@ const HomeComponent = () => {
                   className="me-2"
                   onClick={() => handleSortChange("relevance")}
                 />
-                <label htmlFor="relevance" className="mb-0">
-                  Relevance
+                <label htmlFor="relevance" className="mb-0"
+                style={{alignSelf: "center"}}>
+                   🔍 Relevance
                 </label>
               </div>
-            </div>
+            </MDBCard>
           </MDBCol>
           <MDBCol
             md="6"
@@ -389,14 +401,14 @@ const HomeComponent = () => {
                       onClick={handleImageClick}
                     >
                       <MDBIcon far icon="image" className="me-2" />
-                      <span>Image</span>
+                      <span>  Image</span>
                     </MDBBtn>
                     <MDBBtn
                       className="d-flex align-items-center me-4 video-btn"
                       onClick={handleImageClick}
                     >
                       <MDBIcon fas icon="video" className="me-2" />
-                      <span>Video</span>
+                      <span> Video</span>
                     </MDBBtn>
                     <MDBBtn
                       className="d-flex align-items-center audio-btn"
@@ -553,7 +565,7 @@ const HomeComponent = () => {
                         style={{ marginTop: "1rem" }}
                         onClick={() => handleReactionToggle(post.id)}
                       >
-                        {reactedPostIds.includes(post.id) ? "Reacted" : "React"}
+                        {reactedPostIds.includes(post.id) ? "👌🏻 Reacted" : "👆🏻 React"}
                       </MDBBtn>
                     </div>
                     <div className="add-comment-container">
@@ -571,7 +583,7 @@ const HomeComponent = () => {
                         color="primary"
                         onClick={() => handleCommentSubmit(post.id)}
                       >
-                        Comment
+                         💬 Comment
                       </MDBBtn>
                     </div>
 
@@ -583,7 +595,7 @@ const HomeComponent = () => {
                             className="comment d-flex align-items-center mb-3"
                           >
                             <img
-                              src={comment.profileImage}
+                              src={comment.profileImage || "https://via.placeholder.com/40"}
                               className="rounded-circle"
                               height="35"
                               width="35"

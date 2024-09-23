@@ -65,23 +65,3 @@ body {
 }
 
 
-.footer {
-    position: fixed;
-    bottom: 0;
-    width: 100%;
-    color: white;
-    background-color: #35677e;
-    text-align: center;
-    font-size: 10pt;
-    overflow: hidden;
-    display: flex;
-    align-items: center !important;
-    justify-content: center;
-    margin-top: 5px;
-}
-
-.footer-text {
-    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-    margin-top: 5px;
-    margin-bottom: 5px;
-}

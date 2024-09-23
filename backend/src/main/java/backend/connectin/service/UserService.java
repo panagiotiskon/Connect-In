@@ -271,7 +271,7 @@ public class UserService {
         }
         List<ConnectionResource> connectionResources = connectionService.getConnectedUsers(userId);
         List<JobApplicationDTO> jobApplicationDTOS = jobService.getJobApplications(userId);
-        List<JobPostDTO> jobPostDTOS = jobService.getJobPosts(userId);
+        List<JobPostDTO> jobPostDTOS = jobService.getUserJobPosts(userId);
 
         List<PostResource> postResources = postService.fetchUserPosts(userId)
                 .stream()

@@ -260,8 +260,8 @@ const JobsComponent = () => {
       <MDBContainer fluid className="mt-5">
         <MDBRow>
           <MDBCol md="4" className="mb-4">
-            <MDBCard>
-              <MDBCardBody>
+            <MDBCard className="mb-4" style={{ margin: "2%" }}>
+              <MDBCardBody >
                 {successMessage && (
                   <MDBTypography tag="div" color="success" className="mb-3">
                     {successMessage}
@@ -312,42 +312,53 @@ const JobsComponent = () => {
                 >
                   Create Job
                 </MDBBtn>
-                <div className="mt-4">
-                  <MDBTypography tag="h6" className="mb-2">
-                    Sort By:
-                  </MDBTypography>
-                  <div className="d-flex align-items-center mb-2">
-                    <input
-                      type="radio"
-                      id="date"
-                      name="sorting"
-                      className="me-2"
-                      onClick={() => handleSortChange("date")}
-                    />
-                    <label htmlFor="date" className="mb-0">
-                      Date Created
-                    </label>
-                  </div>
-                  <div className="d-flex align-items-center">
-                    <input
-                      type="radio"
-                      id="relevance"
-                      name="sorting"
-                      className="me-2"
-                      onClick={() => handleSortChange("relevance")}
-                    />
-                    <label htmlFor="relevance" className="mb-0">
-                      Relevance
-                    </label>
-                  </div>
-                </div>
               </MDBCardBody>
+            </MDBCard>
+            <MDBCard className="flex mt-5 mb-4 p-3"
+              style={{
+                margin: "20%",
+                height: "9rem",
+                flexDirection: "column",
+                justifyContent: "center",
+                display: "flex",
+
+              }}>
+              <MDBTypography tag="h6" className="mb-3"
+                style={{ alignSelf: "center", fontWeight: "bold" }}>
+                Show Jobs By:
+              </MDBTypography>
+              <div className="d-flex align-items-center mb-2">
+                <input
+                  type="radio"
+                  id="date"
+                  name="sorting"
+                  className="me-2"
+                  checked={sortingMethod === "date"}
+                  onChange={() => handleSortChange("date")}
+                />
+                <label htmlFor="date" className="mb-0">
+                  📅 Date Posted
+                </label>
+              </div>
+              <div className="d-flex align-items-center">
+                <input
+                  type="radio"
+                  id="relevance"
+                  name="sorting"
+                  className="me-2"
+                  onChange={() => handleSortChange("relevance")}
+                />
+                <label htmlFor="relevance" className="mb-0"
+                  style={{ alignSelf: "center" }}>
+                  🔍 Relevance
+                </label>
+              </div>
             </MDBCard>
           </MDBCol>
 
           <MDBCol md="8">
             <MDBRow>
-              <MDBCol md="12" className="mb-4">
+              <MDBCol md="12" className="mb-4" >
                 <MDBTypography
                   tag="h2"
                   className="text-dark"
@@ -409,12 +420,12 @@ const JobsComponent = () => {
                                             transition: "background-color 0.2s",
                                           }}
                                           onMouseOver={(e) =>
-                                            (e.currentTarget.style.backgroundColor =
-                                              "#f1f1f1")
+                                          (e.currentTarget.style.backgroundColor =
+                                            "#f1f1f1")
                                           }
                                           onMouseOut={(e) =>
-                                            (e.currentTarget.style.backgroundColor =
-                                              "transparent")
+                                          (e.currentTarget.style.backgroundColor =
+                                            "transparent")
                                           }
                                         >
                                           {applicant.fullName}
