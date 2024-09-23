@@ -99,7 +99,6 @@ export default function SettingsComponent() {
       <NavbarComponent />
       <MDBContainer fluid className="mt-5">
         <MDBRow className="justify-content-center">
-          {/* Email Change Form */}
           <MDBCol md="3" className="mb-5 pe-3">
             <MDBCard>
               <MDBCardBody className="card-body-flex">
@@ -107,7 +106,6 @@ export default function SettingsComponent() {
                   Change Email
                 </MDBCardTitle>
                 <form onSubmit={handleSubmitEmail(onSubmitEmail)}>
-                  {/* Old Email Field */}
                   <div className="form-group mb-5">
                     <MDBInput
                       label="Old Email"
@@ -133,7 +131,6 @@ export default function SettingsComponent() {
                     )}
                   </div>
 
-                  {/* New Email Field */}
                   <div className="form-group mb-5">
                     <MDBInput
                       label="New Email"
@@ -159,7 +156,6 @@ export default function SettingsComponent() {
                     )}
                   </div>
 
-                  {/* Confirm New Email Field */}
                   <div className="form-group mb-5">
                     <MDBInput
                       label="Confirm New Email"
