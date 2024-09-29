@@ -5,10 +5,18 @@
 **ConnectIn** is a LinkedIn-style professional networking application that allows users to create profiles, manage connections, and interact with other professionals. The application features user role management, job listings, private messaging, and collaborative filtering for personalized content recommendations.
 
 ## Technologies Used
-- **Backend**: Java 21, Spring Boot 3, Spring Security 6, MySQL 8, Flyway (for migrations)
-- **Frontend**: React 18, JavaScript, MDB React UI Kit
-- **Communication Protocol**: SSL/TLS for secure HTTP requests 🔒
-- **Build Tools**: Maven for backend, npm for frontend
+<p align="center"> 
+   <img src="https://img.shields.io/badge/Java-ED8B00?style=for-the-badge&logo=java&logoColor=white" alt="Java"> 
+   <img src="https://img.shields.io/badge/Spring_Boot-6DB33F?style=for-the-badge&logo=spring-boot&logoColor=white" alt="Spring Boot"> 
+   <img src="https://img.shields.io/badge/Spring_Security-6DB33F?style=for-the-badge&logo=spring-security&logoColor=white" alt="Spring Security"> 
+   <img src="https://img.shields.io/badge/MySQL-4479A1?style=for-the-badge&logo=mysql&logoColor=white" alt="MySQL"> 
+   <img src="https://img.shields.io/badge/Flyway-CC0200?style=for-the-badge&logo=flyway&logoColor=white" alt="Flyway"> 
+   <img src="https://img.shields.io/badge/React-61DAFB?style=for-the-badge&logo=react&logoColor=black" alt="React"> 
+   <img src="https://img.shields.io/badge/MDB_React_UI_Kit-37B8AF?style=for-the-badge&logoColor=white" alt="MDB React UI Kit"> 
+   <img src="https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black" alt="JavaScript"> 
+   <img src="https://img.shields.io/badge/Maven-C71A36?style=for-the-badge&logo=apache-maven&logoColor=white" alt="Maven"> 
+   <img src="https://img.shields.io/badge/npm-CB3837?style=for-the-badge&logo=npm&logoColor=white" alt="npm"> 
+</p>
 
 ## Features
 1. **User Roles**:
