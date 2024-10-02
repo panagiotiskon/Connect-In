@@ -77,3 +77,8 @@ https://localhost:3000
 
 ##  Conclusion
 ConnectIn was developed as a secure, scalable application designed to simulate a professional networking environment. 💡
+
+## Creators
+
+- [**Panagiotis Kon**](https://github.com/panagiotiskon)  
+- [**Stelios Dimopoulos**](https://github.com/steliosdimb)
