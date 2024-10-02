@@ -81,4 +81,4 @@ ConnectIn was developed as a secure, scalable application designed to simulate a
 ## Creators
 
 - [**Panagiotis Kon**](https://github.com/panagiotiskon)  
-- [**Stelios Dimopoulos**](https://github.com/steliosdimb)
+- [**Stelios Dimitriadis**](https://github.com/steliosdimb)
