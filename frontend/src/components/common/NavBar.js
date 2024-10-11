@@ -36,7 +36,7 @@ const NavbarComponent = () => {
   return (
     <MDBNavbar expand="lg" light bgColor="light">
       <MDBContainer fluid className="navbar-container">
-        <div>
+        <div onClick={handleHomeClick} style={{cursor:"pointer"}}>
           <img
             src={ConnectInLogo}
             alt="ConnectIn Logo"

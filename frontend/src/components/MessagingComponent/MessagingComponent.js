@@ -170,8 +170,7 @@ export default function ChatComponent() {
                 <MDBRow>
                   <MDBCol md="6" lg="5" xl="4" className="mb-4 mb-md-0"
                     style ={{
-                      border: "1px solid #ccc",
-                      borderRadius: "6px",
+                      borderRight: "1px solid #ccc",
                     }}>
                     <div className="p-3">
                       <MDBInputGroup className="rounded mb-3">
