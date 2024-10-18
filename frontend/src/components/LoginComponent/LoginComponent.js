@@ -6,6 +6,8 @@ import AuthService from "../../api/AuthenticationAPI";
 import { useForm } from "react-hook-form";
 import ConnectInLogo from "../../assets/ConnectIn.png";
 import FooterComponent from "../common/FooterComponent";
+import GoogleLogo from "../../assets/google-logo.png"
+
 
 const LoginComponent = () => {
   const {
@@ -51,6 +53,11 @@ const LoginComponent = () => {
       }
     );
   };
+  const handleGoogleSignIn = () => {
+    // You will need to implement the Google sign-in logic here
+    console.log("Sign in with Google clicked");
+  };
+
 
   return (
     <div className="login-wrapper">
@@ -107,6 +114,18 @@ const LoginComponent = () => {
             )}
           </MDBContainer>
         </form>
+        <div >
+          <hr className="separator-line" />
+        </div>
+        <div className="text-center">
+          <button
+            type="button"
+            className="btn google-signin"
+            onClick={handleGoogleSignIn}>
+            <img src={GoogleLogo} alt="Google" className="google-logo" />
+            Continue with Google
+          </button>
+        </div>
         <div
           className="text-center"
           onClick={() => {
