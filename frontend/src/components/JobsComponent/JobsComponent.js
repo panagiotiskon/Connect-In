@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import {
   MDBContainer,
   MDBRow,
@@ -50,7 +50,7 @@ const JobsComponent = () => {
     fetchUser();
   }, []);
 
-  const fetchJobsByDate = async () => {
+  const fetchJobsByDate = useCallback(async () => {
     if (currentUser) {
       try {
         const response = await JobAPI.getJobPosts(currentUser.id);
@@ -64,7 +64,7 @@ const JobsComponent = () => {
         setJobs([]);
       }
     }
-  };
+  }, [currentUser]);
 
   useEffect(() => {
     const fetchJobs = async () => {
@@ -81,7 +81,7 @@ const JobsComponent = () => {
     fetchJobs();
   }, [currentUser, sortingMethod]);
 
-  const fetchApplications = async () => {
+  const fetchApplications = useCallback(async () => {
     if (currentUser) {
       try {
         const response = await JobAPI.getJobApplications(currentUser.id);
@@ -104,10 +104,10 @@ const JobsComponent = () => {
         console.error("Error fetching applications:", error);
       }
     }
-  };
-  useEffect(() => {
-    fetchApplications(); // Fetch applications whenever currentUser changes
   }, [currentUser]);
+  useEffect(() => {
+    fetchApplications();
+  }, [fetchApplications]);
 
   const handleCreateJob = async () => {
     if (!validateForm()) return;
@@ -176,12 +176,12 @@ const JobsComponent = () => {
 
   useEffect(() => {
     const fetchJobs = async () => {
-      await fetchJobsByDate(); // Default to fetching jobs by date
-      await fetchApplications(); // Fetch applications right after
+      await fetchJobsByDate();
+      await fetchApplications();
     };
 
     fetchJobs();
-  }, [currentUser]);
+  }, [fetchJobsByDate, fetchApplications]);
 
   const handleSortChange = (method) => {
     setSortingMethod(method);

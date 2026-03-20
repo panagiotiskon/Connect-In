@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { MDBContainer, MDBRow, MDBCol, MDBInput } from "mdb-react-ui-kit";
 import NavbarComponent from "../common/NavBar";
 import ConnectedUsersCardComponent from "./ConnectedUsersCardComponent";
@@ -48,7 +48,7 @@ const NetworkComponent = () => {
     }
   };
 
-  const filterUsers = async () => {
+  const filterUsers = useCallback(async () => {
     const currentUser = await AuthService.getCurrentUser();
     const currentUserId = currentUser?.id;
 
@@ -68,7 +68,7 @@ const NetworkComponent = () => {
         console.error("Error fetching filtered registered users:", error);
       }
     }
-  };
+  }, [searchTerm, connectedUsers, pendingUsers]);
 
   useEffect(() => {
     fetchUserData();
@@ -76,7 +76,7 @@ const NetworkComponent = () => {
 
   useEffect(() => {
     filterUsers();
-  }, [searchTerm, connectedUsers, pendingUsers]);
+  }, [filterUsers]);
 
   const handleSearchChange = (e) => {
     setSearchTerm(e.target.value);

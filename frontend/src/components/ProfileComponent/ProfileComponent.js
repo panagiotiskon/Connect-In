@@ -30,8 +30,6 @@ const ProfileComponent = () => {
   const [jobTitle, setJobTitle] = useState("");
   const [companyName, setCompanyName] = useState("");
   const [universityName, setUniversityName] = useState("");
-  const [experienceId, setExperienceId] = useState("");
-  const [skillId, setSkillId] = useState("");
   const [educationId, setEducationId] = useState("");
   const [fieldOfStudy, setFieldOfStudy] = useState("");
   const [startDate, setStartDate] = useState("");
@@ -239,7 +237,6 @@ const ProfileComponent = () => {
           setToastMessage("Successfully added Work Experience!");
           setShowToast(true);
 
-          setExperienceId("");
           setJobTitle("");
           setCompanyName("");
           setStartDate("");
@@ -286,7 +283,6 @@ const ProfileComponent = () => {
             Skills: formattedSkillData,
           }));
           setToastMessage("Successfully added Skill!");
-          setSkillId("");
           setSkillDescription("");
           setSkillTitle("");
           setShowToast(true);
