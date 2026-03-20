@@ -10,9 +10,9 @@ spring:
         format_sql: true
 
   datasource:
-    url: jdbc:mysql://localhost:3306/connectIn?createDatabaseIfNotExist=true
-    username: root
-    password: password
+    url: jdbc:mysql://${MYSQLHOST:localhost}:${MYSQLPORT:3306}/${MYSQLDATABASE:connectIn}?createDatabaseIfNotExist=true
+    username: ${MYSQLUSER:root}
+    password: ${MYSQLPASSWORD:password}
     driver-class-name: com.mysql.cj.jdbc.Driver
 
   flyway:
@@ -30,12 +30,7 @@ spring:
       max-request-size: 2MB
 
 server:
-  port: 8443
-  ssl:
-    key-store: classpath:keystore.p12
-    key-store-password: password
-    keyStoreType: PKCS12
-    keyAlias: tomcat
+  port: ${PORT:8080}
   servlet:
     session:
       timeout: 10m
