@@ -1,28 +1,14 @@
-import axios from "axios";
+import api from "./axiosInstance";
 
-const API_URL = "https://localhost:8443/auth/messages";
-
-axios.defaults.withCredentials = true;
+const BASE = "/auth/messages";
 
 const MessagingAPI = {
-
   sendMessage: async (senderId, receiverId, content) => {
     try {
-      const response = await axios.post(
-        `${API_URL}/send`,
-        null,
-        {
-          params: {
-            senderId,
-            receiverId,
-            content,
-          },
-          headers: {
-            "Content-Type": "application/json",
-          },
-          withCredentials: true,
-        }
-      );
+      const response = await api.post(`${BASE}/send`, null, {
+        params: { senderId, receiverId, content },
+        headers: { "Content-Type": "application/json" },
+      });
       return response.data;
     } catch (error) {
       console.error("Error sending message:", error);
@@ -30,18 +16,11 @@ const MessagingAPI = {
     }
   },
 
-  // Method to get conversation between two users
   getConversation: async (userId1, userId2) => {
     try {
-      const response = await axios.get(`${API_URL}/conversation`, {
-        params: {
-          userId1,
-          userId2,
-        },
-        headers: {
-          "Content-Type": "application/json",
-        },
-        withCredentials: true,
+      const response = await api.get(`${BASE}/conversation`, {
+        params: { userId1, userId2 },
+        headers: { "Content-Type": "application/json" },
       });
       return response.data;
     } catch (error) {
@@ -50,17 +29,11 @@ const MessagingAPI = {
     }
   },
 
-  // Method to get all conversations for a specific user
   getConversations: async (currentUserId) => {
     try {
-      const response = await axios.get(`${API_URL}/conversations`, {
-        params: {
-          currentUserId,
-        },
-        headers: {
-          "Content-Type": "application/json",
-        },
-        withCredentials: true,
+      const response = await api.get(`${BASE}/conversations`, {
+        params: { currentUserId },
+        headers: { "Content-Type": "application/json" },
       });
       return response.data;
     } catch (error) {
@@ -68,22 +41,13 @@ const MessagingAPI = {
       throw error;
     }
   },
+
   createConversation: async (userId1, userId2) => {
     try {
-      const response = await axios.post(
-        `${API_URL}/conversation`,
-        null,
-        {
-          params: {
-            userId1,
-            userId2,
-          },
-          headers: {
-            "Content-Type": "application/json",
-          },
-          withCredentials: true,
-        }
-      );
+      const response = await api.post(`${BASE}/conversation`, null, {
+        params: { userId1, userId2 },
+        headers: { "Content-Type": "application/json" },
+      });
       return response.data;
     } catch (error) {
       console.error("Error creating conversation:", error);

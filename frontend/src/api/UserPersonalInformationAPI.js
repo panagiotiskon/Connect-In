@@ -1,15 +1,11 @@
-import axios from "axios";
+import api from "./axiosInstance";
 
-const API_URL = "https://localhost:8443/auth";
-
-axios.defaults.withCredentials = true;
+const BASE = "/auth";
 
 const getUser = async (userId) => {
   try {
-    const response = await axios.get(`${API_URL}/${userId}`, {
-      headers: {
-        "Content-Type": "application/json",
-      },
+    const response = await api.get(`${BASE}/${userId}`, {
+      headers: { "Content-Type": "application/json" },
     });
     return response.data;
   } catch (error) {
@@ -20,14 +16,9 @@ const getUser = async (userId) => {
 
 const getEducation = async (userId) => {
   try {
-    const response = await axios.get(
-      `${API_URL}/${userId}/personal-info/education`,
-      {
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }
-    );
+    const response = await api.get(`${BASE}/${userId}/personal-info/education`, {
+      headers: { "Content-Type": "application/json" },
+    });
     return response.data;
   } catch (error) {
     console.error("Error fetching education data:", error);
@@ -40,51 +31,32 @@ const addEducation = async (userId, educationDTO) => {
     console.log("Starting addEducation process...");
     console.log(`User ID: ${userId}`);
     console.log("Education DTO being sent:", educationDTO);
-
-    const response = await axios.post(
-      `${API_URL}/${userId}/personal-info/education`,
+    const response = await api.post(
+      `${BASE}/${userId}/personal-info/education`,
       educationDTO,
-      {
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }
+      { headers: { "Content-Type": "application/json" } }
     );
-
     console.log("Received response from backend:", response);
     return response;
   } catch (error) {
     console.error("Error occurred while adding education data:", error.message);
-
     if (error.response) {
-      console.error(
-        "Backend responded with status code:",
-        error.response.status
-      );
+      console.error("Backend responded with status code:", error.response.status);
       console.error("Backend response data:", error.response.data);
     } else if (error.request) {
-      console.error(
-        "No response from the server. Request details:",
-        error.request
-      );
+      console.error("No response from the server. Request details:", error.request);
     } else {
       console.error("Error setting up the request:", error.message);
     }
-
     throw error;
   }
 };
 
 const getExperience = async (userId) => {
   try {
-    const response = await axios.get(
-      `${API_URL}/${userId}/personal-info/experience`,
-      {
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }
-    );
+    const response = await api.get(`${BASE}/${userId}/personal-info/experience`, {
+      headers: { "Content-Type": "application/json" },
+    });
     return response.data;
   } catch (error) {
     console.error("Error fetching experience data:", error);
@@ -97,54 +69,32 @@ const addExperience = async (userId, experienceDTO) => {
     console.log("Starting addExperience process...");
     console.log(`User ID: ${userId}`);
     console.log("Experience DTO being sent:", experienceDTO);
-
-    const response = await axios.post(
-      `${API_URL}/${userId}/personal-info/experience`,
+    const response = await api.post(
+      `${BASE}/${userId}/personal-info/experience`,
       experienceDTO,
-      {
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }
+      { headers: { "Content-Type": "application/json" } }
     );
-
     console.log("Received response from backend:", response);
     return response;
   } catch (error) {
-    console.error(
-      "Error occurred while adding experience data:",
-      error.message
-    );
-
+    console.error("Error occurred while adding experience data:", error.message);
     if (error.response) {
-      console.error(
-        "Backend responded with status code:",
-        error.response.status
-      );
+      console.error("Backend responded with status code:", error.response.status);
       console.error("Backend response data:", error.response.data);
     } else if (error.request) {
-      console.error(
-        "No response from the server. Request details:",
-        error.request
-      );
+      console.error("No response from the server. Request details:", error.request);
     } else {
       console.error("Error setting up the request:", error.message);
     }
-
     throw error;
   }
 };
 
 const getSkills = async (userId) => {
   try {
-    const response = await axios.get(
-      `${API_URL}/${userId}/personal-info/skills`,
-      {
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }
-    );
+    const response = await api.get(`${BASE}/${userId}/personal-info/skills`, {
+      headers: { "Content-Type": "application/json" },
+    });
     return response.data;
   } catch (error) {
     console.error("Error fetching skills data:", error);
@@ -157,47 +107,31 @@ const addSkill = async (userId, skillDTO) => {
     console.log("Starting addSkill process...");
     console.log(`User ID: ${userId}`);
     console.log("Skill DTO being sent:", skillDTO);
-
-    const response = await axios.post(
-      `${API_URL}/${userId}/personal-info/skills`,
+    const response = await api.post(
+      `${BASE}/${userId}/personal-info/skills`,
       skillDTO,
-      {
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }
+      { headers: { "Content-Type": "application/json" } }
     );
-
     console.log("Received response from backend:", response);
     return response;
   } catch (error) {
     console.error("Error occurred while adding skill data:", error.message);
-
     if (error.response) {
-      console.error(
-        "Backend responded with status code:",
-        error.response.status
-      );
+      console.error("Backend responded with status code:", error.response.status);
       console.error("Backend response data:", error.response.data);
     } else if (error.request) {
-      console.error(
-        "No response from the server. Request details:",
-        error.request
-      );
+      console.error("No response from the server. Request details:", error.request);
     } else {
       console.error("Error setting up the request:", error.message);
     }
-
     throw error;
   }
 };
 
 const deleteSkill = async (userId, skillId) => {
   try {
-    await axios.delete(`${API_URL}/${userId}/personal-info/skills/${skillId}`, {
-      headers: {
-        "Content-Type": "application/json",
-      },
+    await api.delete(`${BASE}/${userId}/personal-info/skills/${skillId}`, {
+      headers: { "Content-Type": "application/json" },
     });
   } catch (error) {
     console.error("Error deleting skill:", error.message);
@@ -207,13 +141,9 @@ const deleteSkill = async (userId, skillId) => {
 
 const deleteEducation = async (userId, educationId) => {
   try {
-    await axios.delete(
-      `${API_URL}/${userId}/personal-info/educations/${educationId}`,
-      {
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }
+    await api.delete(
+      `${BASE}/${userId}/personal-info/educations/${educationId}`,
+      { headers: { "Content-Type": "application/json" } }
     );
   } catch (error) {
     console.error("Error deleting education:", error.message);
@@ -223,13 +153,9 @@ const deleteEducation = async (userId, educationId) => {
 
 const deleteExperience = async (userId, experienceId) => {
   try {
-    await axios.delete(
-      `${API_URL}/${userId}/personal-info/experiences/${experienceId}`,
-      {
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }
+    await api.delete(
+      `${BASE}/${userId}/personal-info/experiences/${experienceId}`,
+      { headers: { "Content-Type": "application/json" } }
     );
   } catch (error) {
     console.error("Error deleting experience:", error.message);

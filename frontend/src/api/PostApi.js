@@ -1,15 +1,13 @@
-import axios from "axios";
+import api from "./axiosInstance";
 import AuthService from "../api/AuthenticationAPI";
 
-const API_URL = "https://localhost:8443/auth";
+const BASE = "/auth";
 
 const getFeed = async (userId) => {
   try {
     const user = await AuthService.getCurrentUser();
-    const response = await axios.get(`${API_URL}/${user?.id}/feed`, {
-      headers: {
-        "Content-Type": "application/json",
-      },
+    const response = await api.get(`${BASE}/${user?.id}/feed`, {
+      headers: { "Content-Type": "application/json" },
     });
     return response.data;
   } catch (error) {
@@ -20,88 +18,71 @@ const getFeed = async (userId) => {
 
 const createPost = async (content, photo) => {
   const formData = new FormData();
-
   formData.append("content", content);
-
   if (photo) {
     formData.append("file", photo);
   }
-
   const currentUser = await AuthService.getCurrentUser();
   const userId = currentUser.id;
-
-  return axios.post(`${API_URL}/${userId}/create-post`, formData, {
-    headers: {
-      "Content-Type": "multipart/form-data",
-    },
+  return api.post(`${BASE}/${userId}/create-post`, formData, {
+    headers: { "Content-Type": "multipart/form-data" },
   });
 };
 
 const getUserPosts = async () => {
   const currentUser = await AuthService.getCurrentUser();
   const userId = currentUser.id;
-  return axios.get(`${API_URL}/${userId}/posts`);
+  return api.get(`${BASE}/${userId}/posts`);
 };
 
 const getUserReactions = async () => {
   const currentUser = await AuthService.getCurrentUser();
   const userId = currentUser.id;
-  return axios.get(`${API_URL}/${userId}/reactions`);
+  return api.get(`${BASE}/${userId}/reactions`);
 };
 
 const getUserComments = async () => {
   const currentUser = await AuthService.getCurrentUser();
   const userId = currentUser.id;
-  return axios.get(`${API_URL}/${userId}/comments`);
+  return api.get(`${BASE}/${userId}/comments`);
 };
 
 const deletePost = async (postId) => {
   const currentUser = await AuthService.getCurrentUser();
   const userId = currentUser.id;
-
-  return axios.delete(`${API_URL}/${userId}/${postId}`);
+  return api.delete(`${BASE}/${userId}/${postId}`);
 };
 
 const createComment = async (postId, content) => {
-  const commentRequest = {
-    content,
-  };
-
+  const commentRequest = { content };
   const currentUser = await AuthService.getCurrentUser();
   const userId = currentUser.id;
-
-  return axios.post(
-    `${API_URL}/${userId}/${postId}/create-comment`,
-    commentRequest
-  );
+  return api.post(`${BASE}/${userId}/${postId}/create-comment`, commentRequest);
 };
 
 const deleteComment = async (postId, commentId) => {
   const currentUser = await AuthService.getCurrentUser();
   const userId = currentUser.id;
-
-  return axios.delete(`${API_URL}/${userId}/${postId}/${commentId}`);
+  return api.delete(`${BASE}/${userId}/${postId}/${commentId}`);
 };
 
 const createReaction = async (postId) => {
   const currentUser = await AuthService.getCurrentUser();
   const userId = currentUser.id;
-
-  return axios.post(`${API_URL}/${userId}/${postId}/create-reaction`);
+  return api.post(`${BASE}/${userId}/${postId}/create-reaction`);
 };
 
 const deleteReaction = async (postId) => {
   const currentUser = await AuthService.getCurrentUser();
   const userId = currentUser.id;
-
-  return axios.delete(`${API_URL}/${userId}/${postId}/reaction`);
+  return api.delete(`${BASE}/${userId}/${postId}/reaction`);
 };
 
 const getRecommendedPosts = async () => {
   const currentUser = await AuthService.getCurrentUser();
   const userId = currentUser.id;
   try {
-    const response = await axios.get(`${API_URL}/${userId}/recommended-posts`);
+    const response = await api.get(`${BASE}/${userId}/recommended-posts`);
     return response.data;
   } catch (error) {
     console.error("Error fetching recommended posts:", error);
@@ -111,15 +92,9 @@ const getRecommendedPosts = async () => {
 
 const viewPosts = async (userId, postId) => {
   try {
-    const response = await axios.post(`${API_URL}/view-post`, null, {
-      params: {
-        userId,
-        postId,
-      },
-      headers: {
-        "Content-Type": "application/json",
-      },
-      withCredentials: true,
+    const response = await api.post(`${BASE}/view-post`, null, {
+      params: { userId, postId },
+      headers: { "Content-Type": "application/json" },
     });
     return response.data;
   } catch (error) {

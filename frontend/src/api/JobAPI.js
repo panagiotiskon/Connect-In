@@ -1,20 +1,13 @@
-import axios from "axios";
+import api from "./axiosInstance";
 
-const API_URL = "https://localhost:8443/auth/jobs";
-
-axios.defaults.withCredentials = true;
+const BASE = "/auth/jobs";
 
 const JobAPI = {
   getJobPosts: async (currentUserId) => {
     try {
-      const response = await axios.get(`${API_URL}/posts`, {
-        params: {
-          currentUserId: currentUserId,
-        },
-        headers: {
-          "Content-Type": "application/json",
-        },
-        withCredentials: true,
+      const response = await api.get(`${BASE}/posts`, {
+        params: { currentUserId },
+        headers: { "Content-Type": "application/json" },
       });
       return response.data;
     } catch (error) {
@@ -25,22 +18,10 @@ const JobAPI = {
 
   createJobPost: async (userId, jobTitle, companyName, jobDescription) => {
     try {
-      const response = await axios.post(
-        `${API_URL}/post`,
-        null,
-        {
-          params: {
-            userId,
-            jobTitle,
-            companyName,
-            jobDescription,
-          },
-          headers: {
-            "Content-Type": "application/json",
-          },
-          withCredentials: true,
-        }
-      );
+      const response = await api.post(`${BASE}/post`, null, {
+        params: { userId, jobTitle, companyName, jobDescription },
+        headers: { "Content-Type": "application/json" },
+      });
       return response.data;
     } catch (error) {
       console.error("Error creating job post:", error);
@@ -50,36 +31,22 @@ const JobAPI = {
 
   applyToJob: async (userId, jobPostId) => {
     try {
-      const response = await axios.post(
-        `${API_URL}/apply`,
-        null,
-        {
-          params: {
-            userId,
-            jobPostId,
-          },
-          headers: {
-            "Content-Type": "application/json",
-          },
-          withCredentials: true,
-        }
-      );
+      const response = await api.post(`${BASE}/apply`, null, {
+        params: { userId, jobPostId },
+        headers: { "Content-Type": "application/json" },
+      });
       return response.data;
     } catch (error) {
       console.error("Error applying to job:", error);
       throw error;
     }
   },
+
   getJobApplications: async (userId) => {
     try {
-      const response = await axios.get(`${API_URL}/applications`, {
-        params: {
-          userId,
-        },
-        headers: {
-          "Content-Type": "application/json",
-        },
-        withCredentials: true,
+      const response = await api.get(`${BASE}/applications`, {
+        params: { userId },
+        headers: { "Content-Type": "application/json" },
       });
       return response.data;
     } catch (error) {
@@ -87,17 +54,12 @@ const JobAPI = {
       throw error;
     }
   },
+
   deleteJob: async (userId, jobPostId) => {
     try {
-      const response = await axios.delete(`${API_URL}/delete`, {
-        params: {
-          userId,
-          jobPostId,
-        },
-        headers: {
-          "Content-Type": "application/json",
-        },
-        withCredentials: true,
+      const response = await api.delete(`${BASE}/delete`, {
+        params: { userId, jobPostId },
+        headers: { "Content-Type": "application/json" },
       });
       return response.data;
     } catch (error) {
@@ -105,17 +67,12 @@ const JobAPI = {
       throw error;
     }
   },
+
   viewJobPost: async (userId, jobId) => {
     try {
-      const response = await axios.post(`${API_URL}/view-job`, null, {
-        params: {
-          userId,
-          jobId,
-        },
-        headers: {
-          "Content-Type": "application/json",
-        },
-        withCredentials: true,
+      const response = await api.post(`${BASE}/view-job`, null, {
+        params: { userId, jobId },
+        headers: { "Content-Type": "application/json" },
       });
       return response.data;
     } catch (error) {
@@ -123,16 +80,12 @@ const JobAPI = {
       throw error;
     }
   },
+
   getRecommendedJobs: async (userId) => {
     try {
-      const response = await axios.get(`${API_URL}/recommend-jobs`, {
-        params: {
-          userId,
-        },
-        headers: {
-          "Content-Type": "application/json",
-        },
-        withCredentials: true,
+      const response = await api.get(`${BASE}/recommend-jobs`, {
+        params: { userId },
+        headers: { "Content-Type": "application/json" },
       });
       return response.data;
     } catch (error) {
