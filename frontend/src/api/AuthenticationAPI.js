@@ -1,20 +1,15 @@
-import axios from "axios";
+import api from "./axiosInstance";
 
-const API_URL = "https://localhost:8443/auth";
-
-axios.defaults.withCredentials = true;
+const BASE = "/auth";
 
 const uploadPhoto = async (file) => {
     const formData = new FormData();
     if (file) {
         formData.append("file", file);
     }
-
     try {
-        const response = await axios.post(`${API_URL}/upload`, formData, {
-            headers: {
-                "Content-Type": "multipart/form-data",
-            },
+        const response = await api.post(`${BASE}/upload`, formData, {
+            headers: { "Content-Type": "multipart/form-data" },
         });
         return response.data;
     } catch (error) {
@@ -26,15 +21,10 @@ const uploadPhoto = async (file) => {
 const changeEmail = async (oldEmail, newEmail) => {
     try {
         const currentUser = await getCurrentUser();
-        const userChangeEmailRequest = {
-            oldEmail,
-            newEmail,
-        };
-
+        const userChangeEmailRequest = { oldEmail, newEmail };
         const userId = currentUser.id;
-
-        const response = await axios.post(
-            `${API_URL}/${userId}/change-email`,
+        const response = await api.post(
+            `${BASE}/${userId}/change-email`,
             userChangeEmailRequest
         );
         return response.data;
@@ -44,21 +34,15 @@ const changeEmail = async (oldEmail, newEmail) => {
     }
 };
 
-
 const changePassword = async (oldPassword, newPassword) => {
     try {
         const currentUser = await getCurrentUser();
-
-        const UserChangePasswordRequest = {
-            oldPassword,
-            newPassword,
-        };
+        const UserChangePasswordRequest = { oldPassword, newPassword };
         const userId = currentUser.id;
-        const response = await axios.post(
-            `${API_URL}/${userId}/change-password`,
+        const response = await api.post(
+            `${BASE}/${userId}/change-password`,
             UserChangePasswordRequest
         );
-
         return response.data;
     } catch (error) {
         console.error("Change Password Error:", error.message);
@@ -67,48 +51,36 @@ const changePassword = async (oldPassword, newPassword) => {
 };
 
 const login = (email, password) => {
-    return axios
-        .post(API_URL + "/login", { email, password })
-        .then((response) => {
-            return response.data;
-        })
+    return api
+        .post(BASE + "/login", { email, password })
+        .then((response) => response.data)
         .catch((error) => {
             console.error("Login Error:", error.message);
             console.error("Error Config:", error.config);
-            throw error; 
+            throw error;
         });
 };
 
 const logout = () => {
-    return axios
-        .post(API_URL + "/logout")
-        .then(() => {
-            console.log("User logged out");
-        })
-        .catch((error) => {
-            console.error("Logout Error:", error.message);
-        });
+    return api
+        .post(BASE + "/logout")
+        .then(() => console.log("User logged out"))
+        .catch((error) => console.error("Logout Error:", error.message));
 };
 
 const register = (email, name, surname, password, phoneNumber, photo) => {
-    // Prepare form data to send to the server
     const formData = new FormData();
     formData.append("email", email);
     formData.append("firstName", name);
     formData.append("lastName", surname);
     formData.append("password", password);
     formData.append("phoneNumber", phoneNumber);
-
     if (photo) {
         formData.append("profilePicture", photo);
     }
-
-    return axios
-        .post(API_URL + "/register", formData, {
-            headers: {
-                "Content-Type": "multipart/form-data",
-            },
-            withCredentials: true,
+    return api
+        .post(BASE + "/register", formData, {
+            headers: { "Content-Type": "multipart/form-data" },
         })
         .then((response) => {
             console.log("Register Response:", response);
@@ -121,12 +93,9 @@ const register = (email, name, surname, password, phoneNumber, photo) => {
         });
 };
 
-
 const getCurrentUser = async () => {
     try {
-        const response = await axios.get(`${API_URL}/current-user`, {
-            withCredentials: true,
-        });
+        const response = await api.get(`${BASE}/current-user`);
         console.log(response);
         return response.data;
     } catch (error) {

@@ -1,22 +1,19 @@
-import axios from "axios";
-const API_URL = "https://localhost:8443/auth";
+import api from "./axiosInstance";
 
-axios.defaults.withCredentials = true;
+const BASE = "/auth";
 
 const getUserImages = async (userId) => {
   try {
-    const response = await axios.get(`${API_URL}/files/user/${userId}/images`, {
-      headers: {
-        "Content-Type": "application/json",
-      },
+    const response = await api.get(`${BASE}/files/user/${userId}/images`, {
+      headers: { "Content-Type": "application/json" },
     });
-
     return response.data;
   } catch (error) {
     console.error("Error fetching user images:", error);
     return [];
   }
 };
+
 const FileService = {
   getUserImages,
 };
