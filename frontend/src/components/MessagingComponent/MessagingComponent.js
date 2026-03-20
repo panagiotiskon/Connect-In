@@ -25,7 +25,6 @@ export default function ChatComponent() {
   const [messageInput, setMessageInput] = useState("");
   const [selectedUser, setSelectedUser] = useState(null);
   const [profileImage, setProfileImage] = useState("");
-  const [pollingIntervalId, setPollingIntervalId] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const messageContainerRef = useRef(null);
 
@@ -63,7 +62,6 @@ export default function ChatComponent() {
       };
 
       const intervalId = setInterval(fetchMessages, 3000);
-      setPollingIntervalId(intervalId);
 
       return () => clearInterval(intervalId);
     }
@@ -85,7 +83,7 @@ export default function ChatComponent() {
     };
 
     fetchProfileImage();
-  }, [selectedUser]);
+  }, [selectedUser, currentUser]);
 
   const sendMessage = async () => {
     if (messageInput.trim() !== "" && currentUser && selectedUser) {
@@ -129,7 +127,6 @@ export default function ChatComponent() {
     const filterConversations = () => {
       const lowercasedSearchTerm = searchTerm.toLowerCase();
       const filtered = conversations.filter((user) => {
-        const fullName = `${user.firstName} ${user.lastName}`.toLowerCase();
         const [firstNameSearch, lastNameSearch] =
           lowercasedSearchTerm.split(" ");
         if (lastNameSearch) {

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import {
   MDBContainer,
   MDBCardBody,
@@ -32,7 +32,7 @@ const HomeComponent = () => {
   const fileInputRef = useRef(null);
   const observerRef = useRef(null);
 
-  const fetchPosts = async () => {
+  const fetchPosts = useCallback(async () => {
     if (currentUser) {
       try {
         const response =
@@ -86,7 +86,7 @@ const HomeComponent = () => {
         setPosts([]);
       }
     }
-  };
+  }, [currentUser, sortingMethod]);
 
   useEffect(() => {
     if (posts.length > 0) {
@@ -134,36 +134,14 @@ const HomeComponent = () => {
     if (currentUser) {
       fetchPosts();
     }
-  }, [currentUser, sortingMethod]);
+  }, [currentUser, sortingMethod, fetchPosts]);
 
   const handleSortChange = (method) => {
     setSortingMethod(method);
   };
 
-  const fetchReactedPostIds = async () => {
-    try {
-      const response = await PostService.getUserReactions();
-      const userReactedPostIds = response?.data || [];
-      setReactedPostIds(userReactedPostIds);
-    } catch (error) {
-      console.error("Error fetching reacted post IDs:", error);
-    }
-  };
-
-  
-  const fetchUserCommentIds = async () => {
-    try {
-      const response = await PostService.getUserComments();
-      const commentsData = response?.data || {};
-      setUserComments(commentsData);
-      fetchPosts();
-    } catch (error) {
-      console.error("Error fetching user comments:", error);
-    }
-  };
-
   useEffect(() => {
-    const fetchCurrentUser = async () => {
+    const init = async () => {
       const user = await AuthService.getCurrentUser();
       setCurrentUser(user);
 
@@ -176,17 +154,23 @@ const HomeComponent = () => {
           setProfileImage(null);
         }
       }
-    };
-    fetchCurrentUser();
-    fetchReactedPostIds();
-    fetchUserCommentIds();
-  }, []);
 
-  useEffect(() => {
-    if (currentUser) {
-      fetchPosts();
-    }
-  }, [currentUser]);
+      try {
+        const response = await PostService.getUserReactions();
+        setReactedPostIds(response?.data || []);
+      } catch (error) {
+        console.error("Error fetching reacted post IDs:", error);
+      }
+
+      try {
+        const response = await PostService.getUserComments();
+        setUserComments(response?.data || {});
+      } catch (error) {
+        console.error("Error fetching user comments:", error);
+      }
+    };
+    init();
+  }, []);
 
   const handleImageClick = () => {
     fileInputRef.current.click();
@@ -515,7 +499,7 @@ const HomeComponent = () => {
                         {post.file.type.startsWith("image/") && (
                           <img
                             src={`data:${post.file.type};base64,${post.file.data}`}
-                            alt="Post Image"
+                            alt="Post content"
                             style={{
                               width: "100%",
                               height: "auto",

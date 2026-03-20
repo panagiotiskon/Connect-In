@@ -43,7 +43,6 @@ export default function SettingsComponent() {
   const [popupType, setPopupType] = useState("success");
 
   const newEmail = watchEmail("newEmail");
-  const oldEmail = watchEmail("oldEmail");
 
   const validateEmailsMatch = (value) => {
     return value === newEmail || "Emails do not match";

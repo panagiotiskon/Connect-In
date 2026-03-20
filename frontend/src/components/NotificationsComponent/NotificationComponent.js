@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import NavbarComponent from "../common/NavBar";
 import AuthService from "../../api/AuthenticationAPI";
 import NotificationAPI from "../../api/NotificationAPI";
@@ -19,8 +19,6 @@ export default function NotificationComponent() {
   const [connectionRequests, setConnectionRequests] = useState([]);
   const [commentsAndReactions, setCommentsAndReactions] = useState([]);
   const [currentUser, setCurrentUser] = useState(null);
-
-  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchNotifications = async () => {
@@ -97,12 +95,12 @@ export default function NotificationComponent() {
       <MDBCard className="notification-card">
         <MDBCardBody className="notification-card-body d-flex justify-content-between align-items-center">
           <div>
-            <a
-              onClick={() => navigate(`/profile/${userId}`)}
+            <Link
+              to={`/profile/${userId}`}
               className="notification-link"
             >
               {firstName} {lastName}
-            </a>{" "}
+            </Link>{" "}
             {action} your post.
           </div>
           <div className="d-flex">
@@ -132,14 +130,14 @@ export default function NotificationComponent() {
                 <MDBCard key={notification.id} className="my-3 ">
                   <MDBCardBody className="d-flex justify-content-between align-items-center">
                     <div>
-                      <a
-                        onClick={() => navigate(`/profile/${notification.userId}`)}
+                      <Link
+                        to={`/profile/${notification.userId}`}
                         className="notification-link"
                       >
                         <p style={{ display: "inline", fontWeight: "bold" }}>
                           {notification.firstName} {notification.lastName}
                         </p>
-                      </a>{" "}
+                      </Link>{" "}
                       <span>wants to connect</span>
                     </div>
                     <div className="d-flex">

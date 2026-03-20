@@ -11,7 +11,7 @@ const PhotoUpload = ({ onFileUpload }) => {
   const [popupContent, setPopupContent] = useState("");
   const [popupType, setPopupType] = useState("success");
 
-  const {} = useDropzone({
+  useDropzone({
     accept: "image/*",
     onDrop: (acceptedFiles) => {
       const file = acceptedFiles[0];
