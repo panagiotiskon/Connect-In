@@ -11,9 +11,10 @@ import backend.connectin.web.mappers.UserMapper;
 import backend.connectin.web.requests.UserLoginRequest;
 import backend.connectin.web.requests.UserRegisterRequest;
 import backend.connectin.web.resources.AuthResource;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -28,7 +29,6 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("auth")
-@CrossOrigin(origins = "https://localhost:3000", allowCredentials = "true")
 public class AuthController {
 
     private final UserService userService;
@@ -50,16 +50,15 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<AuthResource> login(@RequestBody UserLoginRequest userLoginRequest, HttpServletResponse response) {
         String token = authenticateUser(userLoginRequest.getEmail(), userLoginRequest.getPassword());
-        String type = "accessToken";
-        Cookie jwtCookie = jwtService.createCookie(type, token);
-        response.addCookie(jwtCookie);
+        ResponseCookie jwtCookie = jwtService.createCookie("accessToken", token);
+        response.addHeader(HttpHeaders.SET_COOKIE, jwtCookie.toString());
         AuthResource authResource = authResourceMapper.mapToAuthResource(token, userLoginRequest.getEmail());
         return new ResponseEntity<>(authResource, HttpStatus.OK);
     }
 
     @PostMapping("/logout")
     public ResponseEntity<String> logout(HttpServletResponse response) {
-        response.addCookie(jwtService.returnEmptyCookie());
+        response.addHeader(HttpHeaders.SET_COOKIE, jwtService.returnEmptyCookie().toString());
         return new ResponseEntity<>("Logged out successfully", HttpStatus.OK);
     }
 
@@ -78,9 +77,8 @@ public class AuthController {
                     firstName, profilePicture, phoneNumber);
             userService.registerUser(userRegisterRequest);
             String token = authenticateUser(email, password);
-            String type = "accessToken";
-            Cookie jwtCookie = jwtService.createCookie(type, token);
-            response.addCookie(jwtCookie);
+            ResponseCookie jwtCookie = jwtService.createCookie("accessToken", token);
+            response.addHeader(HttpHeaders.SET_COOKIE, jwtCookie.toString());
             AuthResource authResource = authResourceMapper.mapToAuthResource(token, email);
             return new ResponseEntity<>(authResource, HttpStatus.OK);
         } catch (ResponseStatusException e) {

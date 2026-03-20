@@ -15,9 +15,10 @@ import backend.connectin.web.requests.PostRequest;
 import backend.connectin.web.requests.UserChangeEmailRequest;
 import backend.connectin.web.requests.UserChangePasswordRequest;
 import backend.connectin.web.resources.PostResourceDetailed;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -27,7 +28,6 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 
-@CrossOrigin(origins = "http://localhost:3000", allowCredentials = "true")
 @RestController
 @RequestMapping("/auth")
 public class UserController {
@@ -58,8 +58,8 @@ public class UserController {
         try {
             User user = userService.findUserOrThrow(userId);
             userService.updatePassword(user, userChangePasswordRequest);
-            Cookie emptyCookie = jwtService.returnEmptyCookie();
-            response.addCookie(emptyCookie);
+            ResponseCookie emptyCookie = jwtService.returnEmptyCookie();
+            response.addHeader(HttpHeaders.SET_COOKIE, emptyCookie.toString());
             return ResponseEntity.ok("Password changed");
         } catch (RuntimeException e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
@@ -73,8 +73,8 @@ public class UserController {
         try {
             User user = userService.findUserOrThrow(userId);
             userService.updateUserEmail(userChangeEmailRequest);
-            Cookie emptyCookie = jwtService.returnEmptyCookie();
-            response.addCookie(emptyCookie);
+            ResponseCookie emptyCookie = jwtService.returnEmptyCookie();
+            response.addHeader(HttpHeaders.SET_COOKIE, emptyCookie.toString());
             return ResponseEntity.ok("Email changed");
         } catch (RuntimeException e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());

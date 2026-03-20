@@ -1,29 +1,28 @@
 package backend.connectin.service;
 
-import jakarta.servlet.http.Cookie;
+import org.springframework.http.ResponseCookie;
 import org.springframework.stereotype.Service;
 
 @Service
 public class JWTService {
 
-
-    public Cookie createCookie(String type, String token){
-        Cookie cookie = new Cookie(type, token);
-        cookie.setHttpOnly(true);
-        cookie.setSecure(true);
-        cookie.setMaxAge(3600);
-        cookie.setPath("/");
-        return cookie;
+    public ResponseCookie createCookie(String type, String token) {
+        return ResponseCookie.from(type, token)
+                .httpOnly(true)
+                .secure(true)
+                .maxAge(3600)
+                .path("/")
+                .sameSite("None")
+                .build();
     }
 
-
-    public Cookie returnEmptyCookie() {
-        Cookie jwtCookie = new Cookie("accessToken", null);
-        jwtCookie.setHttpOnly(true);
-        jwtCookie.setSecure(true);
-        jwtCookie.setPath("/");
-        jwtCookie.setMaxAge(0);
-        return jwtCookie;
+    public ResponseCookie returnEmptyCookie() {
+        return ResponseCookie.from("accessToken", "")
+                .httpOnly(true)
+                .secure(true)
+                .path("/")
+                .maxAge(0)
+                .sameSite("None")
+                .build();
     }
-
 }
