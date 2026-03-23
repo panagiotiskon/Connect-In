@@ -10,7 +10,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/auth/jobs")
-@CrossOrigin(origins = "http://localhost:3000", allowCredentials = "true")
 public class JobRecommendationController {
     private final JobService jobService;
     private final RecommendationService recommendationService;

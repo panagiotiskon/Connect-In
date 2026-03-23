@@ -15,7 +15,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("auth")
-@CrossOrigin(origins = "https://localhost:3000", allowCredentials = "true")
 public class ConnectionController {
     private final ConnectionService connectionService;
     private final UserService userService;
