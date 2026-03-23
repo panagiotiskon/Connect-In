@@ -34,3 +34,6 @@ server:
   servlet:
     session:
       timeout: 10m
+
+allowed:
+  origins: ${ALLOWED_ORIGINS:http://localhost:3000,https://localhost:3000}

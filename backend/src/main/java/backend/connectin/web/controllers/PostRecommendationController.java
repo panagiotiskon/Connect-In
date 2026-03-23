@@ -12,7 +12,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/auth")
-@CrossOrigin(origins = "http://localhost:3000", allowCredentials = "true")
 public class PostRecommendationController {
     private final RecommendationService recommendationService;
     private final PostService postService;

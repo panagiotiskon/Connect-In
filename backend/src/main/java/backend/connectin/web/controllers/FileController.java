@@ -14,7 +14,6 @@ import java.util.*;
 
 @RestController
 @RequestMapping("/auth")
-@CrossOrigin(origins = "http://localhost:3000", allowCredentials = "true")
 public class FileController {
 
     private final FileService fileService;
