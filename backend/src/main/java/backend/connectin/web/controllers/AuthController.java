@@ -82,7 +82,7 @@ public class AuthController {
             AuthResource authResource = authResourceMapper.mapToAuthResource(token, email);
             return new ResponseEntity<>(authResource, HttpStatus.OK);
         } catch (ResponseStatusException e) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
+            throw e;
         }
     }
 

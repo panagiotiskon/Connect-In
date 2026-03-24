@@ -2,7 +2,6 @@ spring:
   application:
     name: connect-in
 
-
   jpa:
     show-sql: true
     properties:
@@ -37,3 +36,6 @@ server:
 
 allowed:
   origins: ${ALLOWED_ORIGINS:http://localhost:3000,https://localhost:3000}
+
+jwt:
+  secret: ${JWT_SECRET:local-dev-secret-do-not-use-in-production-must-be-at-least-64-chars!!}
