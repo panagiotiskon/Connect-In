@@ -89,12 +89,10 @@ public class UserService {
         } catch (ResponseStatusException e) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Email already exists");
         }
-        if (userRegisterRequest.getProfilePicture() != null && !userRegisterRequest.getProfilePicture().isEmpty()) {
-            try {
-                fileService.store(userRegisterRequest.getProfilePicture(), true, user.getId());
-            } catch (IOException e) {
-                throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Profile picture cannot be saved");
-            }
+        try {
+            fileService.store(userRegisterRequest.getProfilePicture(), true, user.getId()); // Adjusted to directly use the MultipartFile
+        } catch (IOException e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Profile picture cannot be saved");
         }
 
     }
