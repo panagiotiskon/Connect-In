@@ -5,16 +5,18 @@ const api = axios.create({
   withCredentials: true,
 });
 
-// 401 interceptor: redirect to login when session expires
+// 401 interceptor: let AuthContext and ProtectedRoute handle the redirect
+// instead of doing a hard window.location redirect which causes a full page reload
 api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (
       error.response?.status === 401 &&
       !error.config.url?.includes("/auth/login") &&
-      !error.config.url?.includes("/auth/current-user")
+      !error.config.url?.includes("/auth/current-user") &&
+      !error.config.url?.includes("/auth/register")
     ) {
-      window.location.href = "/";
+      console.warn("Session expired or unauthorized. Redirecting to login.");
     }
     return Promise.reject(error);
   }
