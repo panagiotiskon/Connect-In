@@ -25,9 +25,9 @@ const LoginComponent = () => {
     try {
       const response = await login(data.email, data.password);
       setLoading(false);
-      if (response.roles[0].name === "ROLE_ADMIN") {
+      if (response.role === "ROLE_ADMIN") {
         navigate("/admin");
-      } else if (response.roles[0].name === "ROLE_USER") {
+      } else if (response.role === "ROLE_USER") {
         navigate("/home");
       } else {
         setMessage("Unexpected user role");

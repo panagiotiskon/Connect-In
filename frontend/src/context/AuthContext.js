@@ -38,8 +38,13 @@ export const AuthProvider = ({ children }) => {
   const login = useCallback(async (email, password) => {
     const response = await api.post("/auth/login", { email, password });
     const userData = response.data;
-    setUser(userData);
-    return userData;
+    // Normalize: login returns { roles: [{name}] }, current-user returns { role: string }
+    const normalizedUser = {
+      ...userData,
+      role: userData.roles?.[0]?.name || null,
+    };
+    setUser(normalizedUser);
+    return normalizedUser;
   }, []);
 
   const register = useCallback(async (email, name, surname, password, phoneNumber, photo) => {
