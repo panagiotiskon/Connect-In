@@ -40,8 +40,20 @@ export const AuthProvider = ({ children }) => {
       }
     }, []);
 
-  // Bootstrap: fetch current user once on mount
   useEffect(() => {
+    // Define paths where you don't want the automatic fetch to trigger
+    const authPaths = ["/", "/register"];
+    const currentPath = window.location.pathname;
+
+    if (
+      authPaths.some((path) =>
+        currentPath.endsWith(path),
+      )
+    ) {
+      setIsAuthLoading(false);
+      return;
+    }
+
     if (fetchRef.current) return; // prevent double-fetch in StrictMode
     fetchRef.current = true;
 
@@ -50,27 +62,28 @@ export const AuthProvider = ({ children }) => {
     );
   }, [fetchCurrentUser]);
 
+  const normalizeUserData = (data) => ({
+    ...data,
+    role:
+      data.roles?.[0]?.name || data.role || null,
+  });
+
   const login = useCallback(
     async (email, password) => {
       const response = await api.post(
         "/auth/login",
         { email, password },
       );
-      const loginData = response.data;
-      // Login response (AuthResource) lacks id and other fields.
-      // Fetch the full user profile (UserDTO) from /auth/current-user
-      // now that the cookie is set.
+
       const fullUser = await fetchCurrentUser();
-      if (fullUser) {
-        return fullUser;
-      }
-      // Fallback: use login response with normalized role
-      const normalizedUser = {
-        ...loginData,
-        role: loginData.roles?.[0]?.name || null,
-      };
-      setUser(normalizedUser);
-      return normalizedUser;
+      if (fullUser) return fullUser;
+
+      // Fallback if /current-user fails but login was successful
+      const fallbackUser = normalizeUserData(
+        response.data,
+      );
+      setUser(fallbackUser);
+      return fallbackUser;
     },
     [fetchCurrentUser],
   );
@@ -90,9 +103,9 @@ export const AuthProvider = ({ children }) => {
       formData.append("lastName", surname);
       formData.append("password", password);
       formData.append("phoneNumber", phoneNumber);
-      if (photo) {
+      if (photo)
         formData.append("profilePicture", photo);
-      }
+
       const response = await api.post(
         "/auth/register",
         formData,
@@ -102,9 +115,17 @@ export const AuthProvider = ({ children }) => {
           },
         },
       );
-      // After registration, fetch the user to populate auth state
-      await fetchCurrentUser();
-      return response.data;
+
+      // Standardize: After registration, fetch the full profile just like login
+      const fullUser = await fetchCurrentUser();
+      if (fullUser) return fullUser;
+
+      // Fallback for registration response
+      const fallbackUser = normalizeUserData(
+        response.data,
+      );
+      setUser(fallbackUser);
+      return fallbackUser;
     },
     [fetchCurrentUser],
   );
@@ -113,7 +134,7 @@ export const AuthProvider = ({ children }) => {
     try {
       await api.post("/auth/logout");
     } catch {
-      // ignore logout errors
+      // ignore
     }
     setUser(null);
   }, []);
@@ -126,11 +147,9 @@ export const AuthProvider = ({ children }) => {
       return userData;
     }, [fetchCurrentUser]);
 
-  const isAuthenticated = !!user;
-
   const value = {
     user,
-    isAuthenticated,
+    isAuthenticated: !!user,
     isAuthLoading,
     login,
     register,
