@@ -1,37 +1,27 @@
+
 body {
   background-color: #f3f2ef;
 }
 
 .register-wrapper {
+  margin-top: auto;
   display: flex;
   flex-direction: column;
   align-items: center;
-  font-family:
-    "Segoe UI", Tahoma, Geneva, Verdana,
-    sans-serif;
-  min-height: 100vh;
-}
-
-.register-content {
-  flex: 1;
-  display: flex;
-  align-items: center;
   justify-content: center;
-  width: 100%;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif ;
+  min-height: 100vh;
   padding: 20px;
 }
 
 .form-container {
+  margin-top: 100px;
+  margin-bottom: 100px;
   background-color: white;
-  padding: 40px;
   border-radius: 10px;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
   width: 100%;
-  max-width: 450px;
-
-  @media (max-width: 480px) {
-    padding: 24px 16px;
-  }
+  max-width: 400px;
 }
 
 .connectInLogo {
@@ -52,7 +42,8 @@ body {
 
 .wide-input {
   width: 100%;
-  margin-bottom: 1.5rem;
+  max-width: 350px;
+  margin-bottom: 20px;
 }
 
 .text-center {
@@ -72,7 +63,7 @@ body {
 }
 
 .register-button:hover {
-  background-color: #2a4d6a;
+  background-color: #2a4d6a; 
 }
 
 .link {
@@ -94,40 +85,21 @@ body {
 }
 
 .footer {
+  position: fixed;
+  bottom: 0;
   width: 100%;
   color: white;
   background-color: #35677e;
   text-align: center;
   font-size: 10pt;
+  overflow: hidden;
   display: flex;
-  align-items: center;
+  align-items: center !important;
   justify-content: center;
+  margin-top: 5px;
 }
 
 .footer-text {
   margin-top: 5px;
   margin-bottom: 5px;
-}
-
-.default-avatar {
-  width: 80px;
-  height: 80px;
-  border-radius: 50%;
-  background-color: #e0e0e0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 8px;
-
-  i {
-    font-size: 48px;
-    color: #9e9e9e;
-  }
-}
-
-.photo-preview img {
-  width: 80px;
-  height: 80px;
-  object-fit: cover;
-  border-radius: 50%;
 }
