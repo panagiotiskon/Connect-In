@@ -69,7 +69,7 @@ public class AuthController {
             @RequestParam("firstName") String firstName,
             @RequestParam("lastName") String lastName,
             @RequestParam("phoneNumber") String phoneNumber,
-            @RequestParam("profilePicture") MultipartFile profilePicture,
+            @RequestParam(value = "profilePicture", required = false) MultipartFile profilePicture,
             HttpServletResponse response) {
 
         try {
