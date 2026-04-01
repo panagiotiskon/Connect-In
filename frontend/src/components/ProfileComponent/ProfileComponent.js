@@ -12,11 +12,11 @@ import {
 import { Modal, Form, Alert, Toast } from "react-bootstrap";
 import NavbarComponent from "../common/NavBar";
 import ProfileCard from "../common/ProfileCard";
-import AuthService from "../../api/AuthenticationAPI";
+import { useAuth } from "../../context/AuthContext";
 import PersonalInfoService from "../../api/UserPersonalInformationAPI";
 
 const ProfileComponent = () => {
-  const [currentUser, setCurrentUser] = useState(null);
+  const { user: currentUser } = useAuth();
   const [showModal, setShowModal] = useState(false);
   const [selectedCard, setSelectedCard] = useState("");
   const [modalContent, setModalContent] = useState("");
@@ -41,70 +41,62 @@ const ProfileComponent = () => {
 
   useEffect(() => {
     const fetchData = async () => {
+      if (!currentUser) return;
+
       try {
-        console.log("Fetching current user...");
-        const user = await AuthService.getCurrentUser();
-        console.log("Current user fetched:", user);
-        setCurrentUser(user);
+        const educationData = await PersonalInfoService.getEducation(currentUser.id);
+        const formattedEducationData = educationData.map((edu) => ({
+          educationId: edu.educationId,
+          universityName: edu.universityName,
+          fieldOfStudy: edu.fieldOfStudy,
+          startDate: edu.startDate,
+          endDate: edu.endDate,
+          isPublic: edu.isPublic,
+        }));
 
-        if (user) {
-          console.log("Fetching education data for user ID:", user.id);
-          const educationData = await PersonalInfoService.getEducation(user.id);
-          console.log("Education data fetched:", educationData);
+        setCardsContent((prev) => ({
+          ...prev,
+          Education: formattedEducationData,
+        }));
 
-          const formattedEducationData = educationData.map((edu) => ({
-            educationId: edu.educationId,
-            universityName: edu.universityName,
-            fieldOfStudy: edu.fieldOfStudy,
-            startDate: edu.startDate,
-            endDate: edu.endDate,
-            isPublic: edu.isPublic,
-          }));
+        const workExperienceData = await PersonalInfoService.getExperience(
+          currentUser.id
+        );
+        const formattedExperienceData = workExperienceData.map((exp) => ({
+          experienceId: exp.experienceId,
+          jobTitle: exp.jobTitle,
+          companyName: exp.companyName,
+          startDate: exp.startDate,
+          endDate: exp.endDate,
+          isPublic: exp.isPublic,
+        }));
+        setCardsContent((prev) => ({
+          ...prev,
+          "Work Experience": formattedExperienceData,
+        }));
 
-          setCardsContent((prev) => ({
-            ...prev,
-            Education: formattedEducationData,
-          }));
+        const SkillData = await PersonalInfoService.getSkills(currentUser.id);
+        const formattedSkillData = SkillData.map((skill) => ({
+          skillId: skill.skillId,
+          skillTitle: skill.skillTitle,
+          skillDescription: skill.skillDescription,
+          isPublic: skill.isPublic,
+        }));
 
-          const workExperienceData = await PersonalInfoService.getExperience(
-            user.id
-          );
-          const formattedExperienceData = workExperienceData.map((exp) => ({
-            experienceId: exp.experienceId,
-            jobTitle: exp.jobTitle,
-            companyName: exp.companyName,
-            startDate: exp.startDate,
-            endDate: exp.endDate,
-            isPublic: exp.isPublic,
-          }));
-          setCardsContent((prev) => ({
-            ...prev,
-            "Work Experience": formattedExperienceData,
-          }));
-
-          const SkillData = await PersonalInfoService.getSkills(user.id);
-          const formattedSkillData = SkillData.map((skill) => ({
-            skillId: skill.skillId,
-            skillTitle: skill.skillTitle,
-            skillDescription: skill.skillDescription,
-            isPublic: skill.isPublic,
-          }));
-
-          setCardsContent((prev) => ({
-            ...prev,
-            Skills: formattedSkillData,
-          }));
-        }
+        setCardsContent((prev) => ({
+          ...prev,
+          Skills: formattedSkillData,
+        }));
       } catch (error) {
         console.error(
-          "Error fetching user, education, or experience data",
+          "Error fetching education or experience data",
           error
         );
       }
     };
 
     fetchData();
-  }, []);
+  }, [currentUser]);
 
   const handleAddClick = (card) => {
     setSelectedCard(card);
@@ -195,7 +187,6 @@ const ProfileComponent = () => {
         setErrorMessage("Failed to save education.");
       }
     } else if (selectedCard === "Work Experience") {
-      // Handle Work Experience saving
       if (!jobTitle || !companyName || !startDate) {
         setErrorMessage("Please fill out all required fields.");
         return;
@@ -306,7 +297,6 @@ const ProfileComponent = () => {
         await PersonalInfoService.deleteSkill(currentUser.id, id);
       }
 
-      // Update the state immediately after successful deletion
       setCardsContent((prev) => {
         let updatedContent = [];
 
@@ -322,7 +312,6 @@ const ProfileComponent = () => {
           updatedContent = prev["Skills"].filter((item) => item.skillId !== id);
         }
 
-        // Return updated state
         return { ...prev, [category]: updatedContent };
       });
 
@@ -355,7 +344,7 @@ const ProfileComponent = () => {
                   <div
                     style={{
                       overflowY: "auto",
-                      maxHeight: "200px", // Adjust the height to fit your design
+                      maxHeight: "200px",
                       padding: "10px 0",
                     }}
                   >
@@ -729,8 +718,8 @@ const ProfileComponent = () => {
                 bottom: "20px",
                 right: "20px",
                 zIndex: 1050,
-                backgroundColor: "#28a745", // Green background
-                color: "#fff", // White text
+                backgroundColor: "#28a745",
+                color: "#fff",
               }}
             >
               <Toast.Body>{toastMessage}</Toast.Body>

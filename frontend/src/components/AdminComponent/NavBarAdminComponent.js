@@ -8,15 +8,16 @@ import {
   MDBBtn,
 } from "mdb-react-ui-kit";
 import ConnectInLogo from "../../assets/ConnectIn.png";
-import AuthService from "../../api/AuthenticationAPI";
+import { useAuth } from "../../context/AuthContext";
 import "./NavBarAdminComponent.scss"
 
 const NavBarAdminComponent = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { logout } = useAuth();
 
-  const handleLogoutClick = () => {
-    AuthService.logout();
+  const handleLogoutClick = async () => {
+    await logout();
     navigate("/");
   };
 

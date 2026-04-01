@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { MDBContainer, MDBInput, MDBBtn, MDBSpinner } from "mdb-react-ui-kit";
 import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
-import AuthService from "../../api/AuthenticationAPI";
+import { useAuth } from "../../context/AuthContext";
 import ConnectInLogo from "../../assets/ConnectIn.png";
 import PhotoUpload from "./PhotoUpload";
 import FooterComponent from "../common/FooterComponent";
@@ -20,8 +20,9 @@ const RegisterComponent = () => {
   const [photoError, setPhotoError] = useState("");
   const navigate = useNavigate();
   const [photo, setPhoto] = useState(null);
+  const { register } = useAuth();
 
-  const onSubmit = (data) => {
+  const onSubmit = async (data) => {
     setMessage("");
     setPhotoError("");
     setLoading(true);
@@ -38,36 +39,34 @@ const RegisterComponent = () => {
       return;
     }
 
-    AuthService.register(
-      data.email,
-      data.name,
-      data.surname,
-      data.password,
-      data.phoneNumber,
-      photo
-    )
-      .then(() => {
-        navigate("/home");
-        window.location.reload();
-      })
-      .catch((error) => {
-        let resMessage;
+    try {
+      await register(
+        data.email,
+        data.name,
+        data.surname,
+        data.password,
+        data.phoneNumber,
+        photo
+      );
+      navigate("/home");
+    } catch (error) {
+      let resMessage;
 
-        if (error.response && error.response.status === 401) {
-          resMessage =
-            "A user with this email already exists, try logging instead.";
-        } else {
-          resMessage =
-            (error.response &&
-              error.response.data &&
-              error.response.data.message) ||
-            error.message ||
-            error.toString();
-        }
+      if (error.response && error.response.status === 401) {
+        resMessage =
+          "A user with this email already exists, try logging instead.";
+      } else {
+        resMessage =
+          (error.response &&
+            error.response.data &&
+            error.response.data.message) ||
+          error.message ||
+          error.toString();
+      }
 
-        setLoading(false);
-        setMessage(resMessage);
-      });
+      setLoading(false);
+      setMessage(resMessage);
+    }
   };
 
   const handleFileUpload = (file) => {

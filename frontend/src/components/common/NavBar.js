@@ -12,12 +12,13 @@ import {
   MDBNavbarToggler,
 } from "mdb-react-ui-kit";
 import ConnectInLogo from "../../assets/ConnectIn.png";
-import AuthService from "../../api/AuthenticationAPI";
+import { useAuth } from "../../context/AuthContext";
 
 const NavbarComponent = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [openNavSecond, setOpenNavSecond] = useState(false);
+  const { logout } = useAuth();
 
   const isActivePage = (path) => location.pathname === path;
   const handleHomeClick = () => navigate("/home");
@@ -28,8 +29,8 @@ const NavbarComponent = () => {
   const handleProfilePageClick = () => navigate("/profile");
   const handleSettingsClick = () => navigate("/settings");
 
-  const handleLogout = () => {
-    AuthService.logout();
+  const handleLogout = async () => {
+    await logout();
     navigate("/");
   };
 
@@ -170,7 +171,7 @@ const NavbarComponent = () => {
               <span
                 style={{
                   fontSize: "0.9rem",
-                  fontWeight: isActivePage("/profile") ? "bold" : "normal", // Bold text if active
+                  fontWeight: isActivePage("/profile") ? "bold" : "normal",
                 }}
               >
                 Profile

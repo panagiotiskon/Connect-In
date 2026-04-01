@@ -9,12 +9,10 @@ import {
   MDBDropdownItem,
 } from "mdb-react-ui-kit";
 import FileService from "../../api/UserFilesApi";
-import AuthService from "../../api/AuthenticationAPI";
 
-const ViewProfileCard = ({ viewedUser, connections, onNavigateToProfile }) => {
+const ViewProfileCard = ({ viewedUser, connections, onNavigateToProfile, currentUser }) => {
   const [profileImage, setProfileImage] = useState(null);
-  const [currentUser, setCurrentUser] = useState(null);
-  const [isAdmin, setIsAdmin] = useState(false);
+  const isAdmin = currentUser?.role === "ROLE_ADMIN";
 
   useEffect(() => {
     const fetchProfileImage = async () => {
@@ -33,20 +31,7 @@ const ViewProfileCard = ({ viewedUser, connections, onNavigateToProfile }) => {
       }
     };
 
-    const fetchCurrentUser = async () => {
-      try {
-        const user = await AuthService.getCurrentUser();
-        if (user) {
-          setCurrentUser(user);
-          setIsAdmin(user.role === "ROLE_ADMIN");
-        }
-      } catch (error) {
-        console.error("Error fetching current user:", error);
-      }
-    };
-
     fetchProfileImage();
-    fetchCurrentUser();
   }, [viewedUser]);
 
   if (!viewedUser) {

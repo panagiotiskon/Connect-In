@@ -11,7 +11,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import NavbarAdminComponent from "../AdminComponent/NavBarAdminComponent";
 import ViewProfileCard from "../common/ViewProfileCard";
 import PersonalInfoService from "../../api/UserPersonalInformationAPI";
-import AuthenticationAPI from "../../api/AuthenticationAPI";
+import { useAuth } from "../../context/AuthContext";
 import ConnectionAPI from "../../api/ConnectionAPI";
 import NavbarComponent from "../common/NavBar";
 const ViewProfileComponent = () => {
@@ -22,28 +22,10 @@ const ViewProfileComponent = () => {
     Education: [],
     Skills: [],
   });
-  const [isAdmin, setIsAdmin] = useState(false);
+  const { user: currentUser } = useAuth();
+  const isAdmin = currentUser?.role === "ROLE_ADMIN";
   const [connections, setConnections] = useState([]);
-  const [currentUserId, setCurrentUserId] = useState(null);
   const navigate = useNavigate();
-
-  useEffect(() => {
-    const fetchCurrentUser = async () => {
-      try {
-        const currentUser = await AuthenticationAPI.getCurrentUser();
-        if (currentUser) {
-          setCurrentUserId(currentUser.id); // Ensure this is how you get the ID
-          if (currentUser.role === "ROLE_ADMIN") {
-            setIsAdmin(true);
-          }
-        }
-      } catch (error) {
-        console.error("Error fetching logged-in user", error);
-      }
-    };
-
-    fetchCurrentUser();
-  }, []);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -107,7 +89,7 @@ const ViewProfileComponent = () => {
   }, [userId, navigate, isAdmin]);
 
   const handleNavigateToProfile = (connectionId) => {
-    if (connectionId === currentUserId) {
+    if (connectionId === currentUser?.id) {
       navigate("/profile");
     } else {
       navigate(`/profile/${connectionId}`);
@@ -128,6 +110,7 @@ const ViewProfileComponent = () => {
               viewedUser={user}
               connections={connections}
               onNavigateToProfile={handleNavigateToProfile}
+              currentUser={currentUser}
             />
           </MDBCol>
           <MDBCol
