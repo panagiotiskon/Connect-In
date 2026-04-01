@@ -2,7 +2,14 @@ import api from "./axiosInstance";
 
 const BASE = "/auth";
 
+const requireUserId = (userId) => {
+  if (!userId || userId === "undefined") {
+    throw new Error("userId is required but was missing or undefined");
+  }
+};
+
 const getUser = async (userId) => {
+  requireUserId(userId);
   try {
     const response = await api.get(`${BASE}/${userId}`, {
       headers: { "Content-Type": "application/json" },
@@ -15,6 +22,7 @@ const getUser = async (userId) => {
 };
 
 const getEducation = async (userId) => {
+  requireUserId(userId);
   try {
     const response = await api.get(`${BASE}/${userId}/personal-info/education`, {
       headers: { "Content-Type": "application/json" },
@@ -27,6 +35,7 @@ const getEducation = async (userId) => {
 };
 
 const addEducation = async (userId, educationDTO) => {
+  requireUserId(userId);
   try {
     console.log("Starting addEducation process...");
     console.log(`User ID: ${userId}`);
@@ -53,6 +62,7 @@ const addEducation = async (userId, educationDTO) => {
 };
 
 const getExperience = async (userId) => {
+  requireUserId(userId);
   try {
     const response = await api.get(`${BASE}/${userId}/personal-info/experience`, {
       headers: { "Content-Type": "application/json" },
@@ -65,6 +75,7 @@ const getExperience = async (userId) => {
 };
 
 const addExperience = async (userId, experienceDTO) => {
+  requireUserId(userId);
   try {
     console.log("Starting addExperience process...");
     console.log(`User ID: ${userId}`);
@@ -91,6 +102,7 @@ const addExperience = async (userId, experienceDTO) => {
 };
 
 const getSkills = async (userId) => {
+  requireUserId(userId);
   try {
     const response = await api.get(`${BASE}/${userId}/personal-info/skills`, {
       headers: { "Content-Type": "application/json" },
@@ -103,6 +115,7 @@ const getSkills = async (userId) => {
 };
 
 const addSkill = async (userId, skillDTO) => {
+  requireUserId(userId);
   try {
     console.log("Starting addSkill process...");
     console.log(`User ID: ${userId}`);
@@ -129,6 +142,7 @@ const addSkill = async (userId, skillDTO) => {
 };
 
 const deleteSkill = async (userId, skillId) => {
+  requireUserId(userId);
   try {
     await api.delete(`${BASE}/${userId}/personal-info/skills/${skillId}`, {
       headers: { "Content-Type": "application/json" },
@@ -140,6 +154,7 @@ const deleteSkill = async (userId, skillId) => {
 };
 
 const deleteEducation = async (userId, educationId) => {
+  requireUserId(userId);
   try {
     await api.delete(
       `${BASE}/${userId}/personal-info/educations/${educationId}`,
@@ -152,6 +167,7 @@ const deleteEducation = async (userId, educationId) => {
 };
 
 const deleteExperience = async (userId, experienceId) => {
+  requireUserId(userId);
   try {
     await api.delete(
       `${BASE}/${userId}/personal-info/experiences/${experienceId}`,

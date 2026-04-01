@@ -4,23 +4,28 @@ import Popup from "reactjs-popup";
 import { MDBIcon } from "mdb-react-ui-kit";
 import "reactjs-popup/dist/index.css";
 
-
 const PhotoUpload = ({ onFileUpload }) => {
-  const [previewUrl, setPreviewUrl] = useState(null);
-  const [popupOpen, setPopupOpen] = useState(false);
-  const [popupContent, setPopupContent] = useState("");
-  const [popupType, setPopupType] = useState("success");
+  const [previewUrl, setPreviewUrl] =
+    useState(null);
+  const [popupOpen, setPopupOpen] =
+    useState(false);
+  const [popupContent, setPopupContent] =
+    useState("");
+  const [popupType, setPopupType] =
+    useState("success");
 
   useDropzone({
     accept: "image/*",
     onDrop: (acceptedFiles) => {
-      const file = acceptedFiles[0];
-      handleFile(file);
+      const file = acceptedFiles?.[0];
+      file && handleFile(file);
     },
   });
 
   const handleFileChange = (event) => {
-    const file = event.target.files ? event.target.files[0] : null;
+    const file = event.target.files
+      ? event.target.files[0]
+      : null;
     if (file) {
       handleFile(file);
     }
@@ -31,7 +36,9 @@ const PhotoUpload = ({ onFileUpload }) => {
     setPreviewUrl(url);
     onFileUpload(file);
     setPopupOpen(true);
-    setPopupContent("File uploaded successfully!");
+    setPopupContent(
+      "File uploaded successfully!",
+    );
     setPopupType("success");
   };
 
@@ -42,74 +49,109 @@ const PhotoUpload = ({ onFileUpload }) => {
 
   const handlePopupClose = () => {
     setPopupOpen(false);
-    URL.revokeObjectURL(previewUrl);
+    if (previewUrl)
+      URL.revokeObjectURL(previewUrl);
   };
 
   return (
-    <>
-      <div className="photo-upload">
-        <input
-          type="file"
-          accept="image/*"
-          onChange={handleFileChange}
-          className="form-control"
-          style={{ display: "none" }}
-          id="fileInput"
-        />
-        <label htmlFor="fileInput" className="btn btn-primary">
-          Select Photo
-        </label>
-        <button
-          type="button"
-          className="btn btn-secondary ms-2"
-          onClick={handleRemovePhoto}
-          disabled={!previewUrl}
-        >
-          Remove Photo
-        </button>
+    <div className="container-fluid p-0">
+      <div className="d-flex flex-row gap-2">
+        <div className="col-5 flex-grow-1 align-items-center justify-content-center">
+          <input
+            id="fileInput"
+            type="file"
+            accept="image/*"
+            onChange={handleFileChange}
+            // className="btn btn-primary w-70 d-flex align-items-center justify-content-center"
+            className="d-none"
+          />
+          <label
+            htmlFor="fileInput"
+            className="btn btn-primary w-70 d-flex align-items-center justify-content-center mb-0"
+          >
+            <MDBIcon
+              fas
+              icon="camera"
+              className="me-2"
+            />
+            Add
+          </label>
+        </div>
+        <div className="col-5 flex-grow-1 align-items-center justify-content-center">
+          <button
+            type="button"
+            className="btn btn-secondary w-100 d-flex align-items-center justify-content-center"
+            onClick={handleRemovePhoto}
+            disabled={!previewUrl}
+          >
+            <MDBIcon
+              fas
+              icon="trash"
+              className="me-2"
+            />
+            Remove
+          </button>
+        </div>
       </div>
-
       {previewUrl && (
-        <div className="photo-preview">
-          <img src={previewUrl} alt="Preview" className="img-thumbnail mt-2" />
+        <div className="photo-preview mt-3 text-center">
+          <img
+            src={previewUrl}
+            alt="Preview"
+            className="img-thumbnail shadow-sm"
+            style={{
+              maxHeight: "200px",
+              objectFit: "cover",
+            }}
+          />
         </div>
       )}
 
+      {/* Popup remains mostly the same, adjusted for mobile width */}
       <Popup
         open={popupOpen}
         onClose={handlePopupClose}
         closeOnDocumentClick
         contentStyle={{
-          left: 0,
-          width: "100%",
-          maxWidth: "500px",
+          width: "90%",
+          maxWidth: "400px",
           padding: "20px",
-          background: popupType === "success" ? "#d4edda" : "#f8d7da",
-          borderRadius: "8px",
+          background:
+            popupType === "success"
+              ? "#d4edda"
+              : "#f8d7da",
+          borderRadius: "12px",
           textAlign: "center",
-          top: "30%",
-          right: 0,
           border: "none",
-          position: "fixed",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          boxShadow: "0 4px 8px rgba(0,0,0,0.2)",
+          boxShadow:
+            "0 8px 24px rgba(0,0,0,0.15)",
         }}
       >
-        <div>
+        <div className="py-2">
           <MDBIcon
             fas
-            icon={popupType === "success" ? "check-circle" : "times-circle"}
-            size="2x"
-            className={popupType === "success" ? "text-success" : "text-danger"}
+            icon={
+              popupType === "success"
+                ? "check-circle"
+                : "times-circle"
+            }
+            size="3x"
+            className={
+              popupType === "success"
+                ? "text-success"
+                : "text-danger"
+            }
           />
-          <p style={{ fontSize: "16px", margin: "10px 0" }}>{popupContent}</p>
+          <p
+            className="mt-3 mb-0 fw-bold"
+            style={{ fontSize: "1.1rem" }}
+          >
+            {popupContent}
+          </p>
         </div>
       </Popup>
-    </>
+    </div>
   );
 };
 
 export default PhotoUpload;
-

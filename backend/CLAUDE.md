@@ -24,6 +24,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 **Prerequisites**: Java 21, MySQL 8.0+ running on localhost:3306 (DB `connectIn` is auto-created).
 
 **Environment variables** (all have defaults for local dev):
+
 - `MYSQLHOST`, `MYSQLPORT`, `MYSQLUSER`, `MYSQLPASSWORD`, `MYSQLDATABASE`
 - `JWT_SECRET` — HMAC SHA256 key (min 64 chars)
 - `ALLOWED_ORIGINS` — comma-separated CORS origins (default: `http://localhost:3000,https://localhost:3000`)
@@ -52,6 +53,7 @@ web/mappers/
 ## Authentication & Security
 
 JWT-based auth with HTTP-only cookies (stateless sessions, CSRF disabled):
+
 - `security/SecurityConfig.java` — endpoint authorization rules
 - `security/JWTAuthenticationFilter.java` — extracts JWT from cookies on every request
 - `security/JWTGenerator.java` — token creation/validation
@@ -66,6 +68,7 @@ Flyway migrations in `src/main/resources/db/migration/` (V1–V22). Add new migr
 ## API URL Pattern
 
 All endpoints are under `/auth/` or `/admin/`:
+
 - Auth: `/auth/login`, `/auth/logout`, `/auth/register`
 - Users: `/auth/{userId}/...` (profile, feed, personal-info)
 - Connections: `/auth/connections/`
