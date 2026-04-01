@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import NavbarComponent from "../common/NavBar";
 import AuthService from "../../api/AuthenticationAPI";
+import { useAuth } from "../../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 
 import {
@@ -16,10 +17,11 @@ import {
 } from "mdb-react-ui-kit";
 import { useForm } from "react-hook-form";
 import "./SettingsComponent.scss";
-import SettingsPopup from "./SettingsPopup"; 
+import SettingsPopup from "./SettingsPopup";
 
 export default function SettingsComponent() {
   const navigate = useNavigate();
+  const { user, logout } = useAuth();
 
   const {
     register: registerEmail,
@@ -53,7 +55,7 @@ export default function SettingsComponent() {
 
   const handlePopupClose = async () => {
     setPopupOpen(false);
-    await AuthService.logout();
+    await logout();
     navigate("/");
   };
 
@@ -67,7 +69,7 @@ export default function SettingsComponent() {
     setLoading(true);
     setMessage("");
     try {
-      await AuthService.changeEmail(data.oldEmail, data.newEmail);
+      await AuthService.changeEmail(user.id, data.oldEmail, data.newEmail);
       setPopupContent("Email changed successfully!");
       setPopupType("success");
       setPopupOpen(true);
@@ -82,7 +84,7 @@ export default function SettingsComponent() {
     setLoading(true);
     setMessage("");
     try {
-      await AuthService.changePassword(data.oldPassword, data.newPassword);
+      await AuthService.changePassword(user.id, data.oldPassword, data.newPassword);
       setPopupContent("Password changed successfully!");
       setPopupType("success");
       setPopupOpen(true);
@@ -347,9 +349,9 @@ export default function SettingsComponent() {
             role="alert"
             style={{
               padding: "10px",
-              border: "2px solid #f3f2ef", 
+              border: "2px solid #f3f2ef",
               borderRadius: "5px",
-              backgroundColor: "#f3f2ef", // White background
+              backgroundColor: "#f3f2ef",
               color: message.includes("Failed") ? "red" : "green",
               fontWeight: "bold",
             }}

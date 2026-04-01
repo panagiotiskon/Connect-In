@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { MDBContainer, MDBInput, MDBBtn, MDBSpinner } from "mdb-react-ui-kit";
 import { useNavigate } from "react-router-dom";
 import "./LoginComponent.scss";
-import AuthService from "../../api/AuthenticationAPI";
+import { useAuth } from "../../context/AuthContext";
 import { useForm } from "react-hook-form";
 import ConnectInLogo from "../../assets/ConnectIn.png";
 import FooterComponent from "../common/FooterComponent";
@@ -16,40 +16,39 @@ const LoginComponent = () => {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const navigate = useNavigate();
+  const { login } = useAuth();
 
-  const onSubmit = (data) => {
+  const onSubmit = async (data) => {
     setMessage("");
     setLoading(true);
 
-    AuthService.login(data.email, data.password).then(
-      (response) => {
-        setLoading(false);
-        if (response.roles[0].name === "ROLE_ADMIN") {
-          navigate("/admin");
-        } else if (response.roles[0].name === "ROLE_USER") {
-          navigate("/home");
-        } else {
-          setMessage("Unexpected user role");
-        }
-      },
-      (error) => {
-        setLoading(false);
-        let resMessage = "";
-
-        if (error.response && error.response.status === 401) {
-          resMessage = "Invalid email or password. Please try again.";
-        } else {
-          resMessage =
-            (error.response &&
-              error.response.data &&
-              error.response.data.message) ||
-            error.message ||
-            error.toString();
-        }
-
-        setMessage(resMessage);
+    try {
+      const response = await login(data.email, data.password);
+      setLoading(false);
+      if (response.roles[0].name === "ROLE_ADMIN") {
+        navigate("/admin");
+      } else if (response.roles[0].name === "ROLE_USER") {
+        navigate("/home");
+      } else {
+        setMessage("Unexpected user role");
       }
-    );
+    } catch (error) {
+      setLoading(false);
+      let resMessage = "";
+
+      if (error.response && error.response.status === 401) {
+        resMessage = "Invalid email or password. Please try again.";
+      } else {
+        resMessage =
+          (error.response &&
+            error.response.data &&
+            error.response.data.message) ||
+          error.message ||
+          error.toString();
+      }
+
+      setMessage(resMessage);
+    }
   };
 
   return (

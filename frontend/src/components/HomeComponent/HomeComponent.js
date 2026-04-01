@@ -10,7 +10,7 @@ import {
   MDBIcon,
 } from "mdb-react-ui-kit";
 import NavbarComponent from "../common/NavBar";
-import AuthService from "../../api/AuthenticationAPI";
+import { useAuth } from "../../context/AuthContext";
 import ProfileCard from "../common/ProfileCard";
 import PostService from "../../api/PostApi";
 import FileService from "../../api/UserFilesApi";
@@ -19,12 +19,12 @@ import NotificationAPI from "../../api/NotificationAPI";
 import "./HomeComponent.scss";
 
 const HomeComponent = () => {
-  const [currentUser, setCurrentUser] = useState(null);
+  const { user: currentUser } = useAuth();
   const [profileImage, setProfileImage] = useState(null);
   const [postContent, setPostContent] = useState("");
   const [uploadedFile, setUploadedFile] = useState(null);
   const [posts, setPosts] = useState([]);
-  const [commentInputs, setCommentInputs] = useState({}); // Track comment input for each post
+  const [commentInputs, setCommentInputs] = useState({});
   const [postsMap, setPostsMap] = useState({});
   const [reactedPostIds, setReactedPostIds] = useState([]);
   const [userComments, setUserComments] = useState({});
@@ -48,9 +48,7 @@ const HomeComponent = () => {
 
       const postsWithUserPhotos = await Promise.all(
         fetchedPosts.map(async (post) => {
-          // Fetch poster info
           const poster = await PersonalInfoService.getUser(post.userId);
-          // Process comments
           const commentsWithPhotos = await Promise.all(
             post.comments.map(async (comment) => {
               const userImage = await FileService.getUserImages(comment.userId);
@@ -97,7 +95,6 @@ const HomeComponent = () => {
             if (postId) {
               try {
                 await PostService.viewPosts(currentUser.id, postId);
-                console.log(`Post ${postId} viewed by user ${currentUser.id}`);
               } catch (error) {
                 console.error("Error viewing post:", error);
               }
@@ -142,35 +139,32 @@ const HomeComponent = () => {
 
   useEffect(() => {
     const init = async () => {
-      const user = await AuthService.getCurrentUser();
-      setCurrentUser(user);
+      if (!currentUser?.id) return;
 
-      if (user?.id) {
-        const userImages = await FileService.getUserImages(user.id);
-        if (userImages.length > 0) {
-          const profileImageData = `data:${userImages[0].type};base64,${userImages[0].data}`;
-          setProfileImage(profileImageData);
-        } else {
-          setProfileImage(null);
-        }
+      const userImages = await FileService.getUserImages(currentUser.id);
+      if (userImages.length > 0) {
+        const profileImageData = `data:${userImages[0].type};base64,${userImages[0].data}`;
+        setProfileImage(profileImageData);
+      } else {
+        setProfileImage(null);
       }
 
       try {
-        const response = await PostService.getUserReactions();
+        const response = await PostService.getUserReactions(currentUser.id);
         setReactedPostIds(response?.data || []);
       } catch (error) {
         console.error("Error fetching reacted post IDs:", error);
       }
 
       try {
-        const response = await PostService.getUserComments();
+        const response = await PostService.getUserComments(currentUser.id);
         setUserComments(response?.data || {});
       } catch (error) {
         console.error("Error fetching user comments:", error);
       }
     };
     init();
-  }, []);
+  }, [currentUser]);
 
   const handleImageClick = () => {
     fileInputRef.current.click();
@@ -195,7 +189,7 @@ const HomeComponent = () => {
     }
 
     try {
-      await PostService.createPost(postContent, uploadedFile?.file);
+      await PostService.createPost(currentUser.id, postContent, uploadedFile?.file);
       setPostContent("");
       setUploadedFile(null);
       fetchPosts();
@@ -223,7 +217,7 @@ const HomeComponent = () => {
       const post = postsMap[postId];
 
       if (post) {
-        const commentId = await PostService.createComment(postId, comment);
+        const commentId = await PostService.createComment(currentUser.id, postId, comment);
         setCommentInputs((prev) => ({
           ...prev,
           [postId]: "",
@@ -251,7 +245,7 @@ const HomeComponent = () => {
 
   const handleDeletePost = async (postId) => {
     try {
-      await PostService.deletePost(postId);
+      await PostService.deletePost(currentUser.id, postId);
       fetchPosts();
     } catch (error) {
       console.error("Error deleting post:", error);
@@ -265,11 +259,11 @@ const HomeComponent = () => {
       const post = postsMap[postId];
 
       if (hasReacted) {
-        await PostService.deleteReaction(postId);
-        setReactedPostIds((prev) => prev.filter((id) => id !== postId)); 
+        await PostService.deleteReaction(currentUser.id, postId);
+        setReactedPostIds((prev) => prev.filter((id) => id !== postId));
         await NotificationAPI.deleteNotificationByObjectId(postId);
       } else {
-        await PostService.createReaction(postId);
+        await PostService.createReaction(currentUser.id, postId);
         setReactedPostIds((prev) => [...prev, postId]);
         if (post.userId !== currentUser.id) {
           await NotificationAPI.createNotification(
@@ -288,7 +282,7 @@ const HomeComponent = () => {
 
   const handleDeleteComment = async (postId, commentId) => {
     try {
-      await PostService.deleteComment(postId, commentId);
+      await PostService.deleteComment(currentUser.id, postId, commentId);
       await NotificationAPI.deleteNotificationByObjectId(commentId);
       await fetchPosts();
     } catch (error) {
@@ -312,7 +306,7 @@ const HomeComponent = () => {
                     margin:"20%",
                     height: "9rem",
                     flexDirection: "column",
-                    justifyContent: "center", 
+                    justifyContent: "center",
                     display: "flex",
                   }}>
               <MDBTypography tag="h6" className="mb-3"

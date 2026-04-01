@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import NavbarComponent from "../common/NavBar";
 import MessagingAPI from "../../api/MessagingAPI";
-import AuthService from "../../api/AuthenticationAPI";
+import { useAuth } from "../../context/AuthContext";
 import FileService from "../../api/UserFilesApi";
 import {
   MDBContainer,
@@ -20,7 +20,7 @@ const base64ToDataURL = (base64String, picType) =>
 export default function ChatComponent() {
   const [conversations, setConversations] = useState([]);
   const [filteredConversations, setFilteredConversations] = useState([]);
-  const [currentUser, setCurrentUser] = useState(null);
+  const { user: currentUser } = useAuth();
   const [conversationMessages, setConversationMessages] = useState([]);
   const [messageInput, setMessageInput] = useState("");
   const [selectedUser, setSelectedUser] = useState(null);
@@ -29,23 +29,20 @@ export default function ChatComponent() {
   const messageContainerRef = useRef(null);
 
   useEffect(() => {
-    const fetchCurrentUserAndConversations = async () => {
-      try {
-        const user = await AuthService.getCurrentUser();
-        setCurrentUser(user);
+    const fetchConversations = async () => {
+      if (!currentUser) return;
 
-        if (user) {
-          const data = await MessagingAPI.getConversations(user.id);
-          setConversations(data);
-          setFilteredConversations(data);
-        }
+      try {
+        const data = await MessagingAPI.getConversations(currentUser.id);
+        setConversations(data);
+        setFilteredConversations(data);
       } catch (error) {
-        console.error("Error fetching current user or conversations:", error);
+        console.error("Error fetching conversations:", error);
       }
     };
 
-    fetchCurrentUserAndConversations();
-  }, []);
+    fetchConversations();
+  }, [currentUser]);
 
   useEffect(() => {
     if (selectedUser && currentUser) {
@@ -69,7 +66,7 @@ export default function ChatComponent() {
 
   useEffect(() => {
     const fetchProfileImage = async () => {
-      if (selectedUser) {
+      if (selectedUser && currentUser) {
         try {
           const images = await FileService.getUserImages(currentUser.id);
           if (images.length > 0) {
@@ -88,7 +85,6 @@ export default function ChatComponent() {
   const sendMessage = async () => {
     if (messageInput.trim() !== "" && currentUser && selectedUser) {
       try {
-        // Send message via API
         await MessagingAPI.sendMessage(
           currentUser.id,
           selectedUser.userId,

@@ -17,7 +17,7 @@ import {
   MDBIcon,
 } from "mdb-react-ui-kit";
 import NavbarComponent from "../common/NavBar";
-import AuthService from "../../api/AuthenticationAPI";
+import { useAuth } from "../../context/AuthContext";
 import JobAPI from "../../api/JobAPI";
 import { useNavigate } from "react-router-dom";
 
@@ -33,22 +33,10 @@ const JobsComponent = () => {
     description: "",
   });
   const [successMessage, setSuccessMessage] = useState("");
-  const [currentUser, setCurrentUser] = useState(null);
-  const [sortingMethod, setSortingMethod] = useState("date"); // new state for sorting
+  const { user: currentUser } = useAuth();
+  const [sortingMethod, setSortingMethod] = useState("date");
   const navigate = useNavigate();
   const observerRef = useRef(null);
-
-  useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const user = await AuthService.getCurrentUser();
-        setCurrentUser(user);
-      } catch (error) {
-        console.error("Error fetching user:", error);
-      }
-    };
-    fetchUser();
-  }, []);
 
   const fetchJobsByDate = useCallback(async () => {
     if (currentUser) {
@@ -131,7 +119,7 @@ const JobsComponent = () => {
           setSuccessMessage("");
         }, 1000);
 
-        fetchJobsByDate(); // Refresh jobs after creating a new one
+        fetchJobsByDate();
       } catch (error) {
         console.error("Error creating job:", error);
       }

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import NavbarComponent from "../common/NavBar";
-import AuthService from "../../api/AuthenticationAPI";
+import { useAuth } from "../../context/AuthContext";
 import NotificationAPI from "../../api/NotificationAPI";
 
 import {
@@ -18,41 +18,37 @@ import './NotificationsComponent.scss';
 export default function NotificationComponent() {
   const [connectionRequests, setConnectionRequests] = useState([]);
   const [commentsAndReactions, setCommentsAndReactions] = useState([]);
-  const [currentUser, setCurrentUser] = useState(null);
+  const { user: currentUser } = useAuth();
 
   useEffect(() => {
     const fetchNotifications = async () => {
+      if (!currentUser) return;
+
       try {
-        const user = await AuthService.getCurrentUser();
-        setCurrentUser(user);
+        const notifications = await NotificationAPI.getNotifications(currentUser.id);
 
-        if (user) {
-          const notifications = await NotificationAPI.getNotifications(user.id);
+        const connectionRequests = notifications.filter(
+          (notification) => notification.notificationType === "CONNECTION"
+        );
+        setConnectionRequests(connectionRequests);
 
-          const connectionRequests = notifications.filter(
-            (notification) => notification.notificationType === "CONNECTION"
-          );
-          setConnectionRequests(connectionRequests);
-
-          const commentsAndReactions = notifications.filter(
-            (notification) =>
-              notification.notificationType === "COMMENT" ||
-              notification.notificationType === "REACTION"
-          );
-          setCommentsAndReactions(commentsAndReactions);
-        }
+        const commentsAndReactions = notifications.filter(
+          (notification) =>
+            notification.notificationType === "COMMENT" ||
+            notification.notificationType === "REACTION"
+        );
+        setCommentsAndReactions(commentsAndReactions);
       } catch (error) {
         console.error("Error fetching notifications:", error);
       }
     };
 
     fetchNotifications();
-  }, []);
+  }, [currentUser]);
 
   const handleAccept = async (userId, notificationId) => {
     try {
       await NotificationAPI.acceptNotification(currentUser.id, notificationId);
-      console.log("Accepted:", userId);
       setConnectionRequests((prev) =>
         prev.filter((notification) => notification.id !== notificationId)
       );
@@ -64,7 +60,6 @@ export default function NotificationComponent() {
   const handleDecline = async (userId, notificationId) => {
     try {
       await NotificationAPI.declineNotification(currentUser.id, notificationId);
-      console.log("Declined:", userId);
       setConnectionRequests((prev) =>
         prev.filter((notification) => notification.id !== notificationId)
       );
@@ -76,7 +71,6 @@ export default function NotificationComponent() {
   const handleDelete = async (notificationId) => {
     try {
       await NotificationAPI.deleteNotificationById(notificationId);
-      console.log("Deleted:", notificationId);
       setCommentsAndReactions((prev) =>
         prev.filter((notification) => notification.id !== notificationId)
       );

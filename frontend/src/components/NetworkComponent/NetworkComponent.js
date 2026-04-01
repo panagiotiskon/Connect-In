@@ -5,7 +5,7 @@ import ConnectedUsersCardComponent from "./ConnectedUsersCardComponent";
 import RegisteredUsersCardComponent from "./RegisteredUsersCardComponent";
 import ConnectionAPI from "../../api/ConnectionAPI";
 import NotificationAPI from "../../api/NotificationAPI";
-import AuthService from "../../api/AuthenticationAPI";
+import { useAuth } from "../../context/AuthContext";
 import MessagingAPI from "../../api/MessagingAPI";
 import { useNavigate } from "react-router-dom";
 import PendingUsersCardComponent from "./PendingUserCardComponent";
@@ -19,38 +19,36 @@ const NetworkComponent = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [showRegisteredUsers, setShowRegisteredUsers] = useState(false);
   const navigate = useNavigate();
+  const { user: currentUser } = useAuth();
+  const currentUserId = currentUser?.id;
 
-  const fetchUserData = async () => {
+  const fetchUserData = useCallback(async () => {
+    if (!currentUserId) return;
+
     try {
-      const currentUser = await AuthService.getCurrentUser();
-      const currentUserId = currentUser?.id;
+      const connectionsResponse = await ConnectionAPI.getUserConnections(
+        currentUserId
+      );
+      const pendingConnectionsResponse =
+        await ConnectionAPI.getUserPendingConnections(currentUserId);
 
-      if (currentUserId) {
-        const connectionsResponse = await ConnectionAPI.getUserConnections(
-          currentUserId
-        );
-        const pendingConnectionsResponse =
-          await ConnectionAPI.getUserPendingConnections(currentUserId);
+      setConnectedUsers(connectionsResponse);
+      setPendingUsers(pendingConnectionsResponse);
 
-        setConnectedUsers(connectionsResponse);
-        setPendingUsers(pendingConnectionsResponse);
-
-        const combinedUsers = [
-          ...connectionsResponse,
-          ...pendingConnectionsResponse,
-        ];
-        setDisplayedUsers(combinedUsers);
-      }
+      const combinedUsers = [
+        ...connectionsResponse,
+        ...pendingConnectionsResponse,
+      ];
+      setDisplayedUsers(combinedUsers);
     } catch (error) {
       console.error("Error fetching users:", error);
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [currentUserId]);
 
   const filterUsers = useCallback(async () => {
-    const currentUser = await AuthService.getCurrentUser();
-    const currentUserId = currentUser?.id;
+    if (!currentUserId) return;
 
     if (searchTerm.trim() === "") {
       const combinedUsers = [...connectedUsers, ...pendingUsers];
@@ -68,11 +66,11 @@ const NetworkComponent = () => {
         console.error("Error fetching filtered registered users:", error);
       }
     }
-  }, [searchTerm, connectedUsers, pendingUsers]);
+  }, [searchTerm, connectedUsers, pendingUsers, currentUserId]);
 
   useEffect(() => {
     fetchUserData();
-  }, []);
+  }, [fetchUserData]);
 
   useEffect(() => {
     filterUsers();
@@ -89,47 +87,29 @@ const NetworkComponent = () => {
   };
 
   const handleConnect = async (connectionUserId) => {
+    if (!currentUserId) return;
+
     try {
-      const currentUser = await AuthService.getCurrentUser();
-      const currentUserId = currentUser?.id;
+      await ConnectionAPI.requestToConnect(currentUserId, connectionUserId);
 
-      if (currentUserId) {
-        await ConnectionAPI.requestToConnect(currentUserId, connectionUserId);
-        console.log("Connection request sent to user ID:", connectionUserId);
+      await NotificationAPI.createNotification(
+        connectionUserId,
+        "CONNECTION",
+        currentUserId
+      );
 
-        await NotificationAPI.createNotification(
-          connectionUserId,
-          "CONNECTION",
-          currentUserId
-        );
-        console.log(
-          "Notification sent for connection to user ID:",
-          connectionUserId
-        );
-
-        await fetchUserData(); // Refresh user data after the connection request
-      }
+      await fetchUserData();
     } catch (error) {
       console.error("Error sending connection request or notification:", error);
     }
   };
 
   const handleMessage = async (connectedUserId) => {
+    if (!currentUserId) return;
+
     try {
-      const currentUser = await AuthService.getCurrentUser();
-      const currentUserId = currentUser?.id;
-
-      if (currentUserId) {
-        await MessagingAPI.createConversation(currentUserId, connectedUserId);
-        console.log(
-          "Conversation created between user ID:",
-          currentUserId,
-          "and user ID:",
-          connectedUserId
-        );
-
-        navigate(`/messaging`);
-      }
+      await MessagingAPI.createConversation(currentUserId, connectedUserId);
+      navigate(`/messaging`);
     } catch (error) {
       console.error(
         "Error creating conversation or navigating to messaging page:",
@@ -143,34 +123,26 @@ const NetworkComponent = () => {
   };
 
   const handleDeleteConnection = async (connectionUserId) => {
+    if (!currentUserId) return;
+
     try {
-      const currentUser = await AuthService.getCurrentUser();
-      const currentUserId = currentUser?.id;
-
-      if (currentUserId) {
-        await ConnectionAPI.deleteConnection(currentUserId, connectionUserId);
-        console.log("Connection deleted for user ID:", connectionUserId);
-
-        await fetchUserData();
-      }
+      await ConnectionAPI.deleteConnection(currentUserId, connectionUserId);
+      await fetchUserData();
     } catch (error) {
       console.error("Error deleting connection:", error);
     }
   };
 
   const handleDeletePendingConnection = async (connectionUserId) => {
-    try {
-      const currentUser = await AuthService.getCurrentUser();
-      const currentUserId = currentUser?.id;
+    if (!currentUserId) return;
 
-      if (currentUserId) {
-        await ConnectionAPI.deleteConnection(currentUserId, connectionUserId);
-        await NotificationAPI.deleteNotification(
-          connectionUserId,
-          currentUserId
-        );
-        await fetchUserData();
-      }
+    try {
+      await ConnectionAPI.deleteConnection(currentUserId, connectionUserId);
+      await NotificationAPI.deleteNotification(
+        connectionUserId,
+        currentUserId
+      );
+      await fetchUserData();
     } catch (error) {
       console.error("Error deleting connection:", error);
     }
