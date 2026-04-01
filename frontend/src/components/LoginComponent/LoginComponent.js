@@ -1,5 +1,10 @@
 import React, { useState } from "react";
-import { MDBContainer, MDBInput, MDBBtn, MDBSpinner } from "mdb-react-ui-kit";
+import {
+  MDBContainer,
+  MDBInput,
+  MDBBtn,
+  MDBSpinner,
+} from "mdb-react-ui-kit";
 import { useNavigate } from "react-router-dom";
 import "./LoginComponent.scss";
 import { useAuth } from "../../context/AuthContext";
@@ -23,7 +28,10 @@ const LoginComponent = () => {
     setLoading(true);
 
     try {
-      const response = await login(data.email, data.password);
+      const response = await login(
+        data.email,
+        data.password,
+      );
       setLoading(false);
       if (response.role === "ROLE_ADMIN") {
         navigate("/admin");
@@ -36,8 +44,12 @@ const LoginComponent = () => {
       setLoading(false);
       let resMessage = "";
 
-      if (error.response && error.response.status === 401) {
-        resMessage = "Invalid email or password. Please try again.";
+      if (
+        error.response &&
+        error.response.status === 401
+      ) {
+        resMessage =
+          "Invalid email or password. Please try again.";
       } else {
         resMessage =
           (error.response &&
@@ -53,72 +65,112 @@ const LoginComponent = () => {
 
   return (
     <div className="login-wrapper">
-      <img src={ConnectInLogo} alt="ConnectIn Logo" className="connectInLogo" />
-      <div className="form-container">
-        <h2 className="subheading">Welcome to your professional community! </h2>
-        <form onSubmit={handleSubmit(onSubmit)}>
-          <MDBContainer>
-            <MDBInput
-              size="lg"
-              wrapperClass="mb-4 wide-input"
-              label="Email address"
-              id="form1"
-              type="email"
-              placeholder={errors.email ? errors.email.message : "Email"}
-              {...register("email", { required: "Email is required" })}
-              className={errors.email ? "is-invalid" : ""}
-            />
-
-            <MDBInput
-              size="lg"
-              wrapperClass="mb-4 wide-input"
-              label="Password"
-              id="form2"
-              type="password"
-              placeholder={
-                errors.password ? errors.password.message : "Password"
-              }
-              {...register("password", { required: "Password is required" })}
-              className={errors.password ? "is-invalid" : ""}
-            />
-            <div className="text-center">
-              <MDBBtn
-                type="submit"
-                size="lg"
-                className="sign-in-button"
-                disabled={loading}
-              >
-                {loading && (
-                  <MDBSpinner className="mx-2" size="sm" color="secondary">
-                    <span className="visually-hidden"></span>
-                  </MDBSpinner>
-                )}
-                <span>Sign in</span>
-              </MDBBtn>
-            </div>
-
-            {message && (
-              <div className="form-group">
-                <div className="alert alert-danger" role="alert">
-                  {message}
-                </div>
+      <img
+        src={ConnectInLogo}
+        alt="ConnectIn Logo"
+        className="connectInLogo"
+      />
+      <div className="login-content">
+        <div className="form-container">
+          <h2 className="subheading">
+            Welcome to your professional
+            community!{" "}
+          </h2>
+          <form onSubmit={handleSubmit(onSubmit)}>
+            <MDBContainer>
+              <div className="form-group mb-4">
+                <MDBInput
+                  size="lg"
+                  wrapperClass="wide-input"
+                  label="Email address"
+                  id="form1"
+                  type="email"
+                  placeholder={
+                    errors.email
+                      ? errors.email.message
+                      : "Email"
+                  }
+                  {...register("email", {
+                    required: "Email is required",
+                  })}
+                  className={
+                    errors.email
+                      ? "is-invalid"
+                      : ""
+                  }
+                />
               </div>
-            )}
-          </MDBContainer>
-        </form>
-        <div
-          className="text-center"
-          onClick={() => {
-            navigate("/register");
-            window.location.reload();
-          }}
-        >
-          <p className="inner-footer-text">
-            New to ConnectIn?{" "}
-            <a href="#!" className="link">
-              Join now
-            </a>
-          </p>
+
+              <div className="form-group mb-4">
+                <MDBInput
+                  size="lg"
+                  wrapperClass="wide-input"
+                  label="Password"
+                  id="form2"
+                  type="password"
+                  placeholder={
+                    errors.password
+                      ? errors.password.message
+                      : "Password"
+                  }
+                  {...register("password", {
+                    required:
+                      "Password is required",
+                  })}
+                  className={
+                    errors.password
+                      ? "is-invalid"
+                      : ""
+                  }
+                />
+              </div>
+
+              <div className="text-center">
+                <MDBBtn
+                  type="submit"
+                  size="lg"
+                  className="sign-in-button"
+                  disabled={loading}
+                >
+                  {loading && (
+                    <MDBSpinner
+                      className="mx-2"
+                      size="sm"
+                      color="secondary"
+                    >
+                      <span className="visually-hidden"></span>
+                    </MDBSpinner>
+                  )}
+                  <span>Sign in</span>
+                </MDBBtn>
+              </div>
+
+              {message && (
+                <div className="form-group">
+                  <div
+                    className="alert alert-danger"
+                    role="alert"
+                  >
+                    {message}
+                  </div>
+                </div>
+              )}
+            </MDBContainer>
+          </form>
+          <div
+            className="text-center"
+            onClick={() => {
+              navigate("/register");
+              window.location.reload();
+            }}
+          >
+            <p className="inner-footer-text">
+              New to ConnectIn?{" "}
+              <a href="#!" className="link">
+                Join now
+              </a>
+            </p>
+          </div>
         </div>
       </div>
       <FooterComponent />
