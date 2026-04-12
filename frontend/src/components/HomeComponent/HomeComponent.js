@@ -137,34 +137,23 @@ const HomeComponent = () => {
     setSortingMethod(method);
   };
 
-  useEffect(() => {
-    const init = async () => {
-      if (!currentUser?.id) return;
+useEffect(() => {
+  if (!currentUser?.id) return;
+  let cancelled = false;
+  (async () => {
+    const [images, reactions, comments] = await Promise.all([
+      FileService.getUserImages(currentUser.id),
+      PostService.getUserReactions(currentUser.id),
+      PostService.getUserComments(currentUser.id),
+    ]);
+    if (cancelled) return;
+    setProfileImage(images[0] ? `data:${images[0].type};base64,${images[0].data}` : null);
+    setReactedPostIds(reactions?.data || []);
+    setUserComments(comments?.data || {});
+  })();
+  return () => { cancelled = true; };
+}, [currentUser]);
 
-      const userImages = await FileService.getUserImages(currentUser.id);
-      if (userImages.length > 0) {
-        const profileImageData = `data:${userImages[0].type};base64,${userImages[0].data}`;
-        setProfileImage(profileImageData);
-      } else {
-        setProfileImage(null);
-      }
-
-      try {
-        const response = await PostService.getUserReactions(currentUser.id);
-        setReactedPostIds(response?.data || []);
-      } catch (error) {
-        console.error("Error fetching reacted post IDs:", error);
-      }
-
-      try {
-        const response = await PostService.getUserComments(currentUser.id);
-        setUserComments(response?.data || {});
-      } catch (error) {
-        console.error("Error fetching user comments:", error);
-      }
-    };
-    init();
-  }, [currentUser]);
 
   const handleImageClick = () => {
     fileInputRef.current.click();
