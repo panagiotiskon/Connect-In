@@ -61,26 +61,13 @@ public class CommentService {
 
 
     public Map<Long, List<Long>> fetchUserComments(Long userId) {
-        User user = userService.findUserOrThrow(userId);
-        List<Post> posts = postService.fetchAll();
+        userService.findUserOrThrow(userId);
+        List<Comment> comments = commentRepository.findAllByUserIdWithPost(userId);
         Map<Long, List<Long>> userComments = new HashMap<>();
-
-        // Iterate over all posts
-        for (Post post : posts) {
-            List<Long> commentIds = new ArrayList<>();
-
-            // Iterate over the comments of each post
-            for (Comment comment : post.getComments()) {
-                // If the comment belongs to the user, add commentId to the list
-                if (comment.getUser().getId().equals(userId)) {
-                    commentIds.add(comment.getId());
-                }
-            }
-
-            // Only add the post to the map if there are comments by the user
-            if (!commentIds.isEmpty()) {
-                userComments.put(post.getId(), commentIds);
-            }
+        for (Comment comment : comments) {
+            userComments
+                    .computeIfAbsent(comment.getPost().getId(), k -> new ArrayList<>())
+                    .add(comment.getId());
         }
         return userComments;
     }

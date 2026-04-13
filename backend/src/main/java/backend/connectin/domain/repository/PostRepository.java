@@ -32,4 +32,20 @@ public interface PostRepository extends JpaRepository<Post, Long> {
 
     List<Post> findPostsByIdIn(List<Long> postIds);
 
+    @Query("""
+            SELECT DISTINCT p FROM Post p
+            LEFT JOIN FETCH p.comments c
+            LEFT JOIN FETCH c.user
+            WHERE p.userId IN :userIds
+            """)
+    Set<Post> findAllByUserIdInWithComments(@Param("userIds") Collection<Long> userIds);
+
+    @Query("""
+            SELECT DISTINCT p FROM Post p
+            LEFT JOIN FETCH p.comments c
+            LEFT JOIN FETCH c.user
+            WHERE p.id IN :postIds
+            """)
+    List<Post> findPostsByIdInWithComments(@Param("postIds") List<Long> postIds);
+
 }

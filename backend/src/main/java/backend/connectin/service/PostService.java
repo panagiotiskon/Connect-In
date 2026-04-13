@@ -75,17 +75,18 @@ public class PostService {
     public List<Post> fetchFeed(Long userId) {
         // first find the connection Ids
         List<Long> connectionIds = new ArrayList<>(connectionService.getConnectedUserIds(userId));
-        // find the posts which the connections reacted to
-        List<Long> postIdsFromReactions = reactionRepository.findPostIdsByUserIds(connectionIds);
-        // find the posts with the postsIds fetched before
-        List<Post> postsFromReactions = postRepository.findPostsByIdIn(postIdsFromReactions);
+
+        // find the posts which the connections reacted to, guarding against empty IN clause
+        List<Post> postsFromReactions = connectionIds.isEmpty()
+                ? Collections.emptyList()
+                : postRepository.findPostsByIdInWithComments(
+                        reactionRepository.findPostIdsByUserIds(connectionIds));
 
         connectionIds.add(userId);
         connectionIds = new ArrayList<>(new HashSet<>(connectionIds));
-        Set<Post> userPostsSet = postRepository.findAllByUserIdIn(connectionIds);
+        Set<Post> userPostsSet = postRepository.findAllByUserIdInWithComments(connectionIds);
         userPostsSet.addAll(postsFromReactions);
         return new ArrayList<>(userPostsSet);
-
     }
 
     public List<Post> fetchAll() {

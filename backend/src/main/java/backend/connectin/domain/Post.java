@@ -1,6 +1,7 @@
 package backend.connectin.domain;
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.BatchSize;
 
 import java.io.Serializable;
 import java.time.Instant;
@@ -49,7 +50,8 @@ public class Post implements Serializable {
         this.createdAt = createdAt;
     }
 
-    @OneToMany(mappedBy = "post", fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "post", fetch = FetchType.LAZY)
+    @BatchSize(size = 30)
     public List<Comment> getComments() {
         return comments;
     }
@@ -58,7 +60,8 @@ public class Post implements Serializable {
         this.comments = comments;
     }
 
-    @OneToMany(mappedBy = "post", fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "post", fetch = FetchType.LAZY)
+    @BatchSize(size = 30)
     public List<Reaction> getReactions() {
         return reactions;
     }

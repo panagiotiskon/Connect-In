@@ -44,27 +44,33 @@ public class RecommendationService {
     }
 
     public List<JobPostDTO> findRecommendedJobsForUser(long userId) {
-        List<JobRecommendation> jobRecommendations = jobRecommendationRepository.findByUserId(userId);
-        List<JobRecommendation> sortedRecommendations = jobRecommendations.stream()
+        // sorted job IDs by recommendation score, highest first
+        List<Long> jobIds = jobRecommendationRepository.findByUserId(userId).stream()
                 .sorted(Comparator.comparing(JobRecommendation::getJobScore).reversed())
+                .map(JobRecommendation::getJobId)
                 .toList();
-        //store by descending order, higher score = better recommendation
-        List<Long> jobIds = sortedRecommendations.stream().map(JobRecommendation::getJobId).toList();
-        List<JobPost> recommendedJobs = new ArrayList<>();
-        jobIds.stream().map(jobId -> jobPostRepository.findById(jobId).orElse(null))
+
+        // fetch all job posts in one query, then restore the sorted order via map lookup
+        Map<Long, JobPost> jobPostMap = jobPostRepository.findAllById(jobIds).stream()
+                .collect(Collectors.toMap(jp -> jp.getId(), jp -> jp));
+        List<JobPost> recommendedJobs = jobIds.stream()
+                .map(jobPostMap::get)
                 .filter(Objects::nonNull)
-                .forEach(recommendedJobs::add);
+                .toList();
+
+        // fetch only this user's applications once — not the entire table per job
+        Set<Long> appliedJobIds = jobApplicationRepository.findJobApplicationByUserId(userId).stream()
+                .map(JobApplication::getJobPostId)
+                .collect(Collectors.toSet());
+
         List<JobPostDTO> jobPostDTOS = new ArrayList<>();
-        for(var jobPost : recommendedJobs){
+        for (var jobPost : recommendedJobs) {
             User user = userService.findUserOrThrow(jobPost.getUserId());
             String fullName = user.getFirstName() + " " + user.getLastName();
-            List<JobApplication> jobApplications = jobApplicationRepository.findAll();
-            boolean hasApplied = false;
-            if(jobApplications.stream().anyMatch(jobApplication -> jobApplication.getJobPostId()==jobPost.getId() && jobApplication.getUserId() == userId)){
-                hasApplied = true;
-            }
-            JobPostDTO jobPostDTO = new JobPostDTO(jobPost.getId(),user.getId(),jobPost.getJobTitle(),jobPost.getCompanyName(),jobPost.getJobDescription(),jobPost.getCreatedAt(),fullName,hasApplied);
-            jobPostDTOS.add(jobPostDTO);
+            boolean hasApplied = appliedJobIds.contains(jobPost.getId());
+            jobPostDTOS.add(new JobPostDTO(jobPost.getId(), user.getId(), jobPost.getJobTitle(),
+                    jobPost.getCompanyName(), jobPost.getJobDescription(), jobPost.getCreatedAt(),
+                    fullName, hasApplied));
         }
         return jobPostDTOS;
     }

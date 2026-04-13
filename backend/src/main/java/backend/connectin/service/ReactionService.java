@@ -11,7 +11,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -57,13 +56,7 @@ public class ReactionService {
     // fetches a list of post ids which the user reacted
 
     public List<Long> fetchUserReactionIds(Long userId) {
-        List<Reaction> reactions = reactionRepository.findAllByUserId(userId);
-        List<Long> reactedPostIds = new ArrayList<>();
-        reactedPostIds = reactions.stream()
-                .map(reaction -> reaction.getPost().getId())
-                .distinct()
-                .toList();
-        return reactedPostIds;
+        return reactionRepository.findPostIdsByUserId(userId);
     }
 
 
