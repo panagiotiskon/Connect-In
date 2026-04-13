@@ -1,99 +1,67 @@
-import React, { useEffect, useState } from 'react';
-import { MDBCard, MDBCardBody } from 'mdb-react-ui-kit';
+import { useEffect, useState } from 'react';
+import { MDBIcon } from 'mdb-react-ui-kit';
 import { useNavigate } from 'react-router-dom';
 import FileService from '../../api/UserFilesApi';
 import OptimizedImage from './OptimizedImage';
+import './ProfileCard.scss';
 
 const ProfileCard = ({ currentUser }) => {
   const navigate = useNavigate();
   const [profileImage, setProfileImage] = useState(null);
 
-  // Fetch user's profile image
   useEffect(() => {
-    const fetchProfileImage = async () => {
-      if (currentUser) {
-        try {
-          const images = await FileService.getUserImages(currentUser.id);
-          if (images && images.length > 0) {
-            const { type, data } = images[0]; // Assume the first image is the profile image
-            setProfileImage(`data:${type};base64,${data}`); // Dynamically set image type and data
-          } else {
-            setProfileImage('/path/to/default-image.png'); // Fallback to default if no image
-          }
-        } catch (error) {
-          console.error('Error fetching profile image:', error);
+    if (!currentUser) return;
+    (async () => {
+      try {
+        const images = await FileService.getUserImages(currentUser.id);
+        if (images?.length > 0) {
+          setProfileImage(`data:${images[0].type};base64,${images[0].data}`);
         }
+      } catch (e) {
+        console.error('Error fetching profile image:', e);
       }
-    };
-
-    fetchProfileImage();
+    })();
   }, [currentUser]);
 
-  const handleProfileClick = () => navigate(`/profile`);
-  const handleConnectionsClick = () => navigate('/network');
-
-  if (!currentUser) {
-    return (
-      <div style={{ textAlign: 'center', padding: '2rem' }}>
-        Loading profile...
-      </div>
-    );
-  }
+  if (!currentUser) return null;
 
   return (
-    <MDBCard
-      className="mb-4"
-      style={{
-        height: '500px',
-        marginTop: '7%',
-        margin: '12%',
-        display: 'flex',
-      }}
-    >
-      <MDBCardBody>
-        <OptimizedImage
-          src={profileImage}
-          alt="avatar"
-          className="rounded-circle"
-          style={{
-            width: 150,
-            height: 150,
-            objectFit: 'cover',
-            display: 'block',
-            alignSelf: 'center',
-            margin: '0 auto',
-            marginTop: '3rem',
-            marginBottom: '3rem',
-          }}
-        />
-        <p
-          onClick={handleProfileClick}
-          style={{
-            fontWeight: 'bold',
-            fontSize: '1.8rem',
-            cursor: 'pointer',
-            textAlign: 'center',
-            font: 'Segoe UI',
-            marginBottom: '2rem',
-          }}
-        >
+    <div className="profile-card">
+      <div className="profile-card__banner" />
+
+      <div className="profile-card__body">
+        <div className="profile-card__avatar-wrap">
+          <OptimizedImage
+            src={profileImage}
+            alt="avatar"
+            className="profile-card__avatar"
+          />
+        </div>
+
+        <p className="profile-card__name" onClick={() => navigate('/profile')}>
           {currentUser.firstName} {currentUser.lastName}
         </p>
-        <p
-          onClick={handleConnectionsClick}
-          style={{
-            fontWeight: 'bold',
-            fontSize: '1.3rem',
-            cursor: 'pointer',
-            textAlign: 'center',
-            marginBottom: '1rem',
-            font: 'Segoe UI',
-          }}
+        <p className="profile-card__email">{currentUser.email}</p>
+
+        <div className="profile-card__divider" />
+
+        <div
+          className="profile-card__network"
+          onClick={() => navigate('/network')}
         >
-          Your Connections
-        </p>
-      </MDBCardBody>
-    </MDBCard>
+          <MDBIcon fas icon="user-friends" />
+          <span className="profile-card__network-label">Your Network</span>
+          <MDBIcon fas icon="chevron-right" className="profile-card__network-chevron" />
+        </div>
+
+        <button
+          className="profile-card__cta"
+          onClick={() => navigate('/profile')}
+        >
+          View Profile
+        </button>
+      </div>
+    </div>
   );
 };
 

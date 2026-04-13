@@ -121,17 +121,19 @@
   margin-left: auto;
   padding: 0.45rem 1.4rem !important;
   border-radius: 20px !important;
-  background: #35677e !important;
+  background: linear-gradient(135deg, #1a8a9a 0%, #35677e 50%, #5b4fcf 100%) !important;
+  background-size: 200% 200% !important;
+  background-position: left center !important;
   border: none !important;
   color: #fff !important;
   font-size: 0.875rem !important;
   font-weight: 600 !important;
   letter-spacing: 0.04em;
   box-shadow: none !important;
-  transition: background 0.18s !important;
+  transition: background-position 0.4s ease !important;
 
   &:hover {
-    background: #2a5468 !important;
+    background-position: right center !important;
   }
 }
 

@@ -1,0 +1,47 @@
+/* Vendor prefixes for older browser support */
+@-webkit-keyframes pulseLogo {
+  0% {
+    -webkit-transform: scale(1);
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    -webkit-transform: scale(1.05);
+    transform: scale(1.05);
+    opacity: 0.7;
+  }
+  100% {
+    -webkit-transform: scale(1);
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes pulseLogo {
+  0% {
+    -webkit-transform: scale(1);
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    -webkit-transform: scale(1.05);
+    transform: scale(1.05);
+    opacity: 0.7;
+  }
+  100% {
+    -webkit-transform: scale(1);
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.protected-route-loader {
+  height: 100vh;
+}
+
+.pulsing-logo {
+  -webkit-animation: pulseLogo 1.5s infinite ease-in-out;
+  animation: pulseLogo 1.5s infinite ease-in-out;
+  width: 250px;
+  margin-bottom: 2rem;
+}

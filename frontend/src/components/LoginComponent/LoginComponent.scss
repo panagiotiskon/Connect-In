@@ -77,15 +77,17 @@ body {
   width: 100%;
   max-width: 350px;
   height: 45px;
-  background-color: #35677e !important;
+  background: linear-gradient(135deg, #1a8a9a 0%, #35677e 50%, #5b4fcf 100%) !important;
+  background-size: 200% 200% !important;
+  background-position: left center !important;
   border: 100px;
-  color: white; 
-  cursor: pointer; 
+  color: white;
+  cursor: pointer;
+  transition: background-position 0.4s ease !important;
 }
 
-
 .sign-in-button:hover {
-  background-color: #2a4d6a;
+  background-position: right center !important;
 }
 
 .link {

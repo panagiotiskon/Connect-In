@@ -189,17 +189,19 @@
 .comment-submit-btn {
   padding: 0.45rem 1.1rem !important;
   border-radius: 20px !important;
-  background: #35677e !important;
+  background: linear-gradient(135deg, #1a8a9a 0%, #35677e 50%, #5b4fcf 100%) !important;
+  background-size: 200% 200% !important;
+  background-position: left center !important;
   border: none !important;
   color: #fff !important;
   font-size: 0.8rem !important;
   font-weight: 600 !important;
   box-shadow: none !important;
   white-space: nowrap;
-  transition: background 0.18s !important;
+  transition: background-position 0.4s ease !important;
 
   &:hover {
-    background: #2a5468 !important;
+    background-position: right center !important;
   }
 }
 

@@ -33,12 +33,15 @@
   }
 
   &--active {
-    background: #35677e;
+    background: linear-gradient(135deg, #1a8a9a 0%, #35677e 50%, #5b4fcf 100%);
+    background-size: 200% 200%;
+    background-position: left center;
     color: #fff;
     font-weight: 600;
+    transition: background-position 0.4s ease, color 0.18s;
 
     &:hover {
-      background: #2a5468;
+      background-position: right center;
     }
   }
 
