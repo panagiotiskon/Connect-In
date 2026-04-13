@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
-import { MDBCard, MDBCardBody, MDBCardImage } from "mdb-react-ui-kit";
+import { MDBCard, MDBCardBody } from "mdb-react-ui-kit";
 import { useNavigate } from "react-router-dom";
 import FileService from "../../api/UserFilesApi";
+import OptimizedImage from "./OptimizedImage";
 
 const ProfileCard = ({ currentUser }) => {
   const navigate = useNavigate();
@@ -51,8 +52,8 @@ const ProfileCard = ({ currentUser }) => {
     >
       <MDBCardBody
       >
-        <MDBCardImage
-          src={profileImage || "/path/to/default-image.png"}
+        <OptimizedImage
+          src={profileImage}
           alt="avatar"
           className="rounded-circle"
           style={{
@@ -65,7 +66,6 @@ const ProfileCard = ({ currentUser }) => {
             marginTop: "3rem",
             marginBottom: "3rem",
           }}
-          fluid
         />
         <p
           onClick={handleProfileClick}
@@ -78,7 +78,7 @@ const ProfileCard = ({ currentUser }) => {
             marginBottom:"2rem",
           }}
         >
-          {`${currentUser.firstName} ${currentUser.lastName}`}
+          {currentUser.firstName} {currentUser.lastName}
         </p>
         <p
           onClick={handleConnectionsClick}

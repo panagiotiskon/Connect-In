@@ -2,13 +2,13 @@ import React, { useEffect, useState } from "react";
 import {
   MDBCard,
   MDBCardBody,
-  MDBCardImage,
   MDBDropdown,
   MDBDropdownToggle,
   MDBDropdownMenu,
   MDBDropdownItem,
 } from "mdb-react-ui-kit";
 import FileService from "../../api/UserFilesApi";
+import OptimizedImage from "./OptimizedImage";
 
 const ViewProfileCard = ({ viewedUser, connections, onNavigateToProfile, currentUser }) => {
   const [profileImage, setProfileImage] = useState(null);
@@ -54,8 +54,8 @@ const ViewProfileCard = ({ viewedUser, connections, onNavigateToProfile, current
       }}
     >
       <MDBCardBody>
-        <MDBCardImage
-          src={profileImage || "/path/to/default-image.png"}
+        <OptimizedImage
+          src={profileImage}
           alt="avatar"
           className="rounded-circle"
           style={{
@@ -68,7 +68,6 @@ const ViewProfileCard = ({ viewedUser, connections, onNavigateToProfile, current
             marginTop: "3rem",
             marginBottom: "3rem",
           }}
-          fluid
         />
         <p
           style={{
@@ -119,7 +118,7 @@ const ViewProfileCard = ({ viewedUser, connections, onNavigateToProfile, current
                     }}
                   >
                     <div>
-                      <img
+                      <OptimizedImage
                         src={`data:${connection.profileType};base64,${connection.profilePic}`}
                         alt={`${connection.firstName} ${connection.lastName}`}
                         style={{

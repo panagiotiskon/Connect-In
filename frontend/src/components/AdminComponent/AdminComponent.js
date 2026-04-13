@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import AdminAPI from "../../api/AdminAPI";
 import FileService from "../../api/UserFilesApi";
@@ -12,8 +12,8 @@ import {
   MDBCardText,
   MDBBtn,
   MDBCheckbox,
-  MDBCardImage,
 } from "mdb-react-ui-kit";
+import OptimizedImage from "../common/OptimizedImage";
 
 import './AdminComponent.scss';
 
@@ -259,11 +259,10 @@ export default function AdminComponent() {
               <MDBCard key={user.id} className="m-3 card-admin">
                 <MDBCardBody>
                   <div className="text-center mb-3">
-                    <MDBCardImage
+                    <OptimizedImage
                       src={profileImages[user.id]}
                       alt={`${user.firstName} ${user.lastName}`}
                       className="rounded-circle profile-image-admin"
-                      fluid
                     />
                   </div>
                   <MDBCardTitle className="text-center">

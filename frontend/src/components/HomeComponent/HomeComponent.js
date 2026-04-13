@@ -10,6 +10,7 @@ import {
   MDBIcon,
 } from "mdb-react-ui-kit";
 import NavbarComponent from "../common/NavBar";
+import OptimizedImage from "../common/OptimizedImage";
 import { useAuth } from "../../context/AuthContext";
 import ProfileCard from "../common/ProfileCard";
 import PostService from "../../api/PostApi";
@@ -339,13 +340,11 @@ useEffect(() => {
             <MDBCard className="new-post-container shadow-0">
               <MDBCardBody className="pb-2 w-100">
                 <div className="d-flex new-post-input-container">
-                  <img
+                  <OptimizedImage
                     src={profileImage}
                     className="rounded-circle"
-                    height="60"
-                    width={60}
+                    style={{ width: 60, height: 60 }}
                     alt="Avatar"
-                    loading="lazy"
                   />
                   <div className="w-100 ps-3 ">
                     <input
@@ -455,11 +454,10 @@ useEffect(() => {
                 >
                   <MDBCardBody>
                     <div className="poster-info">
-                      <img
+                      <OptimizedImage
                         src={post.posterImage}
                         className="rounded-circle"
-                        height="45"
-                        width="45"
+                        style={{ width: 45, height: 45 }}
                         alt="Poster Avatar"
                       />
                       <div className="poster-text">
@@ -480,7 +478,7 @@ useEffect(() => {
                     {post.file && (
                       <div className="post-media-container">
                         {post.file.type.startsWith("image/") && (
-                          <img
+                          <OptimizedImage
                             src={`data:${post.file.type};base64,${post.file.data}`}
                             alt="Post content"
                             style={{
@@ -561,11 +559,10 @@ useEffect(() => {
                             key={comment.commentId}
                             className="comment d-flex align-items-center mb-3"
                           >
-                            <img
+                            <OptimizedImage
                               src={comment.profileImage || "https://via.placeholder.com/40"}
                               className="rounded-circle"
-                              height="35"
-                              width="35"
+                              style={{ width: 35, height: 35 }}
                               alt="Commenter's Avatar"
                             />
                             <div className="ms-3 comment-container">

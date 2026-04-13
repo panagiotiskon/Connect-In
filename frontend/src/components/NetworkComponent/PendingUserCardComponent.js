@@ -1,5 +1,6 @@
 import React from "react";
 import { MDBBtn, MDBIcon } from "mdb-react-ui-kit";
+import OptimizedImage from "../common/OptimizedImage";
 import "./NetworkUserCards.scss";
 
 const PendingUsersCardComponent = ({ user, onShowProfile, onDeletePending }) => {
@@ -12,7 +13,7 @@ const PendingUsersCardComponent = ({ user, onShowProfile, onDeletePending }) => 
       >
         <MDBIcon fas icon="times" />
       </MDBBtn>
-      <img
+      <OptimizedImage
         src={user.profileImage}
         alt={`${user.firstName} ${user.lastName}`}
         className="profile-image-network"

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import NavbarComponent from "../common/NavBar";
+import OptimizedImage from "../common/OptimizedImage";
 import MessagingAPI from "../../api/MessagingAPI";
 import { useAuth } from "../../context/AuthContext";
 import FileService from "../../api/UserFilesApi";
@@ -203,14 +204,14 @@ export default function ChatComponent() {
                               >
                                 <div className="d-flex flex-row">
                                   <div>
-                                    <img
+                                    <OptimizedImage
                                       src={base64ToDataURL(
                                         user.profilePic,
                                         user.picType
                                       )}
                                       alt="avatar"
                                       className="d-flex align-self-center me-3"
-                                      width="60"
+                                      style={{ width: 60, height: 60 }}
                                     />
                                   </div>
                                   <div className="pt-1">
@@ -269,7 +270,7 @@ export default function ChatComponent() {
                                 style={{ alignItems: "flex-start" }}
                               >
                                 {!isCurrentUser && (
-                                  <img
+                                  <OptimizedImage
                                     src={base64ToDataURL(
                                       message.profilePicture,
                                       message.picType
@@ -277,7 +278,7 @@ export default function ChatComponent() {
                                     alt="avatar"
                                     style={{
                                       width: "45px",
-                                      height: "auto",
+                                      height: "45px",
                                       marginRight: "10px",
                                     }}
                                   />
@@ -327,11 +328,12 @@ export default function ChatComponent() {
                           })}
                         </div>
                         <div className="text-muted d-flex justify-content-start align-items-center pe-2 pt-4 mx-6">
-                          <img
+                          <OptimizedImage
                             src={profileImage}
                             alt="avatar 3"
                             style={{
                               width: "50px",
+                              height: "50px",
                               padding: "5px",
                               marginTop: "-15px",
                             }}

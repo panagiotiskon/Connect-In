@@ -1,11 +1,12 @@
 import React from "react";
 import { MDBBtn } from "mdb-react-ui-kit";
+import OptimizedImage from "../common/OptimizedImage";
 import "./NetworkUserCards.scss";
 
 const RegisteredUsersCardComponent = ({ user, onConnect, onShowProfile }) => {
   return (
     <div className="card-network">
-      <img
+      <OptimizedImage
         src={user.profileImage}
         alt={`${user.firstName} ${user.lastName}`}
         className="profile-image-network"
