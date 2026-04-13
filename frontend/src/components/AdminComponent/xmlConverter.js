@@ -105,3 +105,5 @@ export const convertToXML = (data) => {
     throw error;
   }
 };
+
+export default convertToXML;

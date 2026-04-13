@@ -5,7 +5,7 @@ import FileService from '../../api/UserFilesApi';
 import NavBarAdminComponent from './NavBarAdminComponent';
 import { MDBContainer, MDBBtn } from 'mdb-react-ui-kit';
 import AdminUserCard from './AdminUserCard';
-import { convertToXML } from '../../utils/xmlConverter';
+import { convertToXML } from './xmlConverter';
 
 import './AdminComponent.scss';
 
