@@ -21,18 +21,20 @@ const NavbarComponent = () => {
   const { logout } = useAuth();
 
   const isActivePage = (path) => location.pathname === path;
-  const handleHomeClick = () => navigate("/home");
-  const handleNetworkClick = () => navigate("/network");
-  const handleJobsClick = () => navigate("/jobs");
-  const handleMessagingClick = () => navigate("/messaging");
-  const handleNotificationsClick = () => navigate("/notifications");
-  const handleProfilePageClick = () => navigate("/profile");
-  const handleSettingsClick = () => navigate("/settings");
-
   const handleLogout = async () => {
     await logout();
     navigate("/");
   };
+
+  const navItems = [
+    { path: "/home", icon: "home", label: "Home" },
+    { path: "/network", icon: "users", label: "Network" },
+    { path: "/jobs", icon: "suitcase", label: "Jobs" },
+    { path: "/messaging", icon: "message", label: "Messaging" },
+    { path: "/notifications", icon: "bell", label: "Notifications", hasBadge: true },
+    { path: "/profile", icon: "user-circle", label: "Profile" },
+    { path: "/settings", icon: "cog", label: "Settings" },
+  ];
 
   return (
     <MDBNavbar expand="lg" light bgColor="light">
@@ -42,6 +44,8 @@ const NavbarComponent = () => {
             src={ConnectInLogo}
             alt="ConnectIn Logo"
             className="navbar-logo"
+            onClick={() => navigate("/home")}
+            style={{ cursor: "pointer" }}
           />
         </div>
         <MDBNavbarToggler
@@ -52,151 +56,44 @@ const NavbarComponent = () => {
         ></MDBNavbarToggler>
         <MDBCollapse navbar open={openNavSecond}>
           <MDBNavbarNav className="navbar-nav">
-            <MDBNavbarItem className="d-flex flex-column align-items-center navbar-nav-item">
-              <MDBNavbarLink onClick={handleHomeClick}>
+            {navItems.map((item) => {
+              const active = isActivePage(item.path);
+              const iconComponent = (
                 <MDBIcon
                   fas
-                  icon="home"
+                  icon={item.icon}
                   style={{
                     fontSize: "1.4rem",
-                    color: isActivePage("/home") ? "black" : "gray",
+                    color: active ? "black" : "gray",
                   }}
                 />
-              </MDBNavbarLink>
-              <span
-                style={{
-                  fontSize: "0.9rem",
-                  fontWeight: isActivePage("/home") ? "bold" : "normal",
-                }}
-              >
-                Home
-              </span>
-            </MDBNavbarItem>
-            <MDBNavbarItem className="d-flex flex-column align-items-center navbar-nav-item">
-              <MDBNavbarLink onClick={handleNetworkClick}>
-                <MDBIcon
-                  fas
-                  icon="users"
-                  style={{
-                    fontSize: "1.4rem",
-                    color: isActivePage("/network") ? "black" : "gray",
-                  }}
-                />
-              </MDBNavbarLink>
-              <span
-                style={{
-                  fontSize: "0.9rem",
-                  fontWeight: isActivePage("/network") ? "bold" : "normal",
-                }}
-              >
-                Network
-              </span>
-            </MDBNavbarItem>
-            <MDBNavbarItem className="d-flex flex-column align-items-center navbar-nav-item">
-              <MDBNavbarLink onClick={handleJobsClick}>
-                <MDBIcon
-                  fas
-                  icon="suitcase"
-                  style={{
-                    fontSize: "1.4rem",
-                    color: isActivePage("/jobs") ? "black" : "gray",
-                  }}
-                />
-              </MDBNavbarLink>
-              <span
-                style={{
-                  fontSize: "0.9rem",
-                  fontWeight: isActivePage("/jobs") ? "bold" : "normal",
-                }}
-              >
-                Jobs
-              </span>
-            </MDBNavbarItem>
-            <MDBNavbarItem className="d-flex flex-column align-items-center navbar-nav-item">
-              <MDBNavbarLink onClick={handleMessagingClick}>
-                <MDBIcon
-                  fas
-                  icon="message"
-                  style={{
-                    fontSize: "1.4rem",
-                    color: isActivePage("/messaging") ? "black" : "gray",
-                  }}
-                />
-              </MDBNavbarLink>
-              <span
-                style={{
-                  fontSize: "0.9rem",
-                  fontWeight: isActivePage("/messaging") ? "bold" : "normal",
-                }}
-              >
-                Messaging
-              </span>
-            </MDBNavbarItem>
-            <MDBNavbarItem className="d-flex flex-column align-items-center navbar-nav-item">
-              <MDBNavbarLink onClick={handleNotificationsClick}>
-              <div style={{ position: "relative", display: "inline-block" }}>
+              );
 
-                <MDBIcon
-                  fas
-                  icon="bell"
-                  style={{
-                    fontSize: "1.4rem",
-                    color: isActivePage("/notifications") ? "black" : "gray",
-                  }}
-                />
-              </div>
-              </MDBNavbarLink>
-              <span
-                style={{
-                  fontSize: "0.9rem",
-                  fontWeight: isActivePage("/notifications")
-                    ? "bold"
-                    : "normal",
-                }}
-              >
-                Notifications
-              </span>
-            </MDBNavbarItem>
-            <MDBNavbarItem className="d-flex flex-column align-items-center navbar-nav-item">
-              <MDBNavbarLink onClick={handleProfilePageClick}>
-                <MDBIcon
-                  fas
-                  icon="user-circle"
-                  style={{
-                    fontSize: "1.4rem",
-                    color: isActivePage("/profile") ? "black" : "gray",
-                  }}
-                />
-              </MDBNavbarLink>
-              <span
-                style={{
-                  fontSize: "0.9rem",
-                  fontWeight: isActivePage("/profile") ? "bold" : "normal",
-                }}
-              >
-                Profile
-              </span>
-            </MDBNavbarItem>
-            <MDBNavbarItem className="d-flex flex-column align-items-center navbar-nav-item">
-              <MDBNavbarLink onClick={handleSettingsClick}>
-                <MDBIcon
-                  fas
-                  icon="cog"
-                  style={{
-                    fontSize: "1.4rem",
-                    color: isActivePage("/settings") ? "black" : "gray",
-                  }}
-                />
-              </MDBNavbarLink>
-              <span
-                style={{
-                  fontSize: "0.9rem",
-                  fontWeight: isActivePage("/settings") ? "bold" : "normal",
-                }}
-              >
-                Settings
-              </span>
-            </MDBNavbarItem>
+              return (
+                <MDBNavbarItem
+                  key={item.path}
+                  className="d-flex flex-column align-items-center navbar-nav-item"
+                >
+                  <MDBNavbarLink onClick={() => navigate(item.path)}>
+                    {item.hasBadge ? (
+                      <div style={{ position: "relative", display: "inline-block" }}>
+                        {iconComponent}
+                      </div>
+                    ) : (
+                      iconComponent
+                    )}
+                  </MDBNavbarLink>
+                  <span
+                    style={{
+                      fontSize: "0.9rem",
+                      fontWeight: active ? "bold" : "normal",
+                    }}
+                  >
+                    {item.label}
+                  </span>
+                </MDBNavbarItem>
+              );
+            })}
             <MDBNavbarItem className="d-flex flex-column align-items-center navbar-nav-item">
               <MDBNavbarLink onClick={handleLogout}>
                 <MDBIcon

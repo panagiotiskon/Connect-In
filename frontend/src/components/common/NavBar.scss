@@ -20,7 +20,7 @@
 .navbar-logo {
   max-width: 150px;
   height: auto;
-}
+  }
 
 .navbar-nav {
   display: flex;
@@ -29,31 +29,23 @@
 }
 
 
-.navbar-nav-item {
-  cursor: pointer; /* Make sure it looks clickable */
 
-  /* For the hover effect */
+.navbar-nav-item {
+  cursor: pointer;
   &:hover {
-    color: black; /* This affects the text and icons */
+    color: black; 
     font-weight: bold;
   }
 
   .navbar-link {
     text-decoration: none;
   }
-
-  span {
-    &:hover {
-      text-decoration: underline; /* Underline on hover */
-    }
-  }
 }
 
-/* Add a class for active links */
 .active-nav-item {
   color: black;
   font-weight: bold;
-  text-decoration: underline; /* Underline for active page */
+  text-decoration: underline; 
 }
 
 
@@ -85,9 +77,7 @@
 
   .navbar-item {
     width: 100%;
-    /* Makes each item take full width */
     text-align: center;
-    /* Centers the text within each item */
   }
 
 }
