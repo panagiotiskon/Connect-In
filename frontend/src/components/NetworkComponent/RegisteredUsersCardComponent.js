@@ -1,26 +1,48 @@
-import React from "react";
-import { MDBBtn } from "mdb-react-ui-kit";
-import OptimizedImage from "../common/OptimizedImage";
-import "./NetworkUserCards.scss";
+import { MDBIcon } from 'mdb-react-ui-kit';
+import OptimizedImage from '../common/OptimizedImage';
+import './NetworkUserCards.scss';
 
 const RegisteredUsersCardComponent = ({ user, onConnect, onShowProfile }) => {
+  const { firstName, lastName, profileImage = '', job, companyName } = user;
+
   return (
-    <div className="card-network">
-      <OptimizedImage
-        src={user.profileImage}
-        alt={`${user.firstName} ${user.lastName}`}
-        className="profile-image-network"
-      />
-      <h5 className="card-title-network">{`${user.firstName} ${user.lastName}`}</h5>
-      {user.job && <p className="card-subtitle-network">{user.job}</p>}
-      {user.companyName && <p className="card-company-network">{user.companyName}</p>}
-      <div className="button-container-network">
-        <MDBBtn className="view-network-button mdb-btn-network view-profile-btn-network" onClick={onShowProfile}>
-          View Profile
-        </MDBBtn>
-        <MDBBtn className="mdb-btn-network connect-btn-network" onClick={onConnect}>
-          Connect
-        </MDBBtn>
+    <div className="user-card">
+      <div className="user-card__banner" />
+
+      <div className="user-card__body">
+        <div className="user-card__avatar-wrap">
+          <OptimizedImage
+            src={profileImage}
+            alt={`${firstName} ${lastName}`}
+            className="user-card__avatar"
+          />
+        </div>
+
+        <p className="user-card__name">
+          {firstName} {lastName}
+        </p>
+
+        {job && <p className="user-card__job">{job}</p>}
+        {companyName && <p className="user-card__company">{companyName}</p>}
+
+        <div className="user-card__divider" />
+
+        <div className="user-card__actions">
+          <button
+            className="user-card__action-btn user-card__action-btn--primary"
+            onClick={onShowProfile}
+          >
+            <MDBIcon fas icon="user" />
+            <span>View Profile</span>
+          </button>
+          <button
+            className="user-card__action-btn user-card__action-btn--success"
+            onClick={onConnect}
+          >
+            <MDBIcon fas icon="user-plus" />
+            <span>Connect</span>
+          </button>
+        </div>
       </div>
     </div>
   );

@@ -1,83 +1,246 @@
-.card-network {
-    width: 300px;
-    background-color: #ffffff;
-    border: 1px solid #e0e0e0;
-    border-radius: 10px;
-    height: 420px;
-    text-align: center;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+/* User cards - matching ProfileCard design */
+
+.user-card {
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  background: linear-gradient(160deg, #ffffff 0%, #f0f6fa 100%);
+  overflow: hidden;
+  box-shadow:
+    0 4px 24px rgba(53, 103, 126, 0.1),
+    0 1px 4px rgba(0, 0, 0, 0.06);
+  transition: all 0.3s ease;
+  position: relative;
+  display: flex;
+  flex-direction: column;
 }
 
-.profile-image-network {
-    margin: 0.5rem;
-    width: 120px;
-    height: 120px;
-    object-fit: cover;
-    border-radius: 50%;
+/* Banner */
+.user-card__banner {
+  height: 80px;
+  background: linear-gradient(135deg, #1a8a9a 0%, #35677e 40%, #5b4fcf 100%);
+  position: relative;
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      180deg,
+      transparent 40%,
+      rgba(0, 0, 0, 0.18) 100%
+    );
+  }
 }
 
-.card-title-network {
-    font-weight: bold;
-    font-size: 1.25rem;
+/* Body */
+.user-card__body {
+  padding: 0 1.25rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
 }
 
-.card-subtitle-network {
-    font-weight: bold;
-    font-size: 1rem;
+/* Avatar */
+.user-card__avatar-wrap {
+  margin-top: -32px;
+  margin-bottom: 0.75rem;
 }
 
-.card-company-network {
+.user-card__avatar {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  border: 3px solid #fff;
+  object-fit: cover;
+  display: block;
+  box-shadow:
+    0 0 0 3px rgba(53, 103, 126, 0.25),
+    0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Name */
+.user-card__name {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #111827;
+  margin: 0 0 0.2rem;
+  line-height: 1.3;
+  cursor: pointer;
+  transition: color 0.15s;
+
+  &:hover {
+    color: #35677e;
+  }
+}
+
+/* Job title */
+.user-card__job {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: #35677e;
+  margin: 0 0 0.2rem;
+  line-height: 1.3;
+}
+
+/* Company */
+.user-card__company {
+  font-size: 0.78rem;
+  color: #9ca3af;
+  margin: 0 0 1rem;
+  line-height: 1.3;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Divider */
+.user-card__divider {
+  height: 1px;
+  background: #f0f0f0;
+  margin: 0 0 0.875rem;
+}
+
+/* Actions */
+.user-card__actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.user-card__action-btn {
+  flex: 1;
+  min-width: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.55rem 0.75rem;
+  border-radius: 10px;
+  border: none;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  i {
+    font-size: 0.9rem;
+    flex-shrink: 0;
+  }
+
+  &:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
+  }
+}
+
+.user-card__action-btn--primary {
+  background: linear-gradient(135deg, #1a8a9a 0%, #35677e 50%, #5b4fcf 100%);
+  background-size: 200% 200%;
+  background-position: left center;
+  color: #fff;
+  box-shadow: 0 2px 10px rgba(53, 103, 126, 0.3);
+
+  &:not(:disabled):hover {
+    background-position: right center;
+    box-shadow: 0 4px 16px rgba(91, 79, 207, 0.35);
+  }
+}
+
+.user-card__action-btn--secondary {
+  background-color: #17a2b8;
+  color: #fff;
+  box-shadow: 0 2px 10px rgba(23, 162, 184, 0.2);
+
+  &:hover {
+    background-color: #138496;
+    box-shadow: 0 4px 16px rgba(23, 162, 184, 0.3);
+  }
+}
+
+.user-card__action-btn--success {
+  background-color: #28a745;
+  color: #fff;
+  box-shadow: 0 2px 10px rgba(40, 167, 69, 0.2);
+
+  &:hover {
+    background-color: #218838;
+    box-shadow: 0 4px 16px rgba(40, 167, 69, 0.3);
+  }
+}
+
+.user-card__action-btn--pending {
+  background-color: #6c757d;
+  color: #fff;
+  box-shadow: 0 2px 10px rgba(108, 117, 125, 0.2);
+  cursor: not-allowed;
+}
+
+/* Delete button */
+.user-card__delete-btn {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border-radius: 50%;
+  border: 1px solid #ddd;
+  background: #ffffff;
+  color: #666;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  z-index: 10;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+
+  &:hover {
+    background: #f5f5f5;
+    color: #333;
+    border-color: #999;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+  }
+
+  i {
+    font-size: 0.85rem;
+  }
+}
+
+/* Responsive */
+@media (max-width: 1200px) {
+  .user-card {
+    width: 100%;
+    max-width: 280px;
+  }
+}
+
+@media (max-width: 767px) {
+  .user-card {
+    border-radius: 16px;
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .user-card__banner {
+    height: 60px;
+  }
+
+  .user-card__avatar {
+    width: 56px;
+    height: 56px;
+  }
+
+  .user-card__avatar-wrap {
+    margin-top: -28px;
+  }
+
+  .user-card__name {
+    font-size: 0.95rem;
+  }
+
+  .user-card__job {
     font-size: 0.8rem;
-}
-
-.button-container-network {
-    display: flex;
-    justify-content: center;
-    gap: 10px;
-    margin-top: 10px;
-    padding-bottom: 0;
-}
-
-.mdb-btn-network {
-    justify-content: center;
-    width: 120px;
-    margin: 1rem;
-    padding: 10px;
-}
-
-.view-profile-btn-network {
-    background: linear-gradient(135deg, #1a8a9a 0%, #35677e 50%, #5b4fcf 100%) !important;
-    background-size: 200% 200% !important;
-    background-position: left center !important;
-    color: #ffffff;
-    transition: background-position 0.4s ease !important;
-
-    &:hover {
-        background-position: right center !important;
-    }
-}
-
-.pending-btn-network {
-    background-color: #af3642 !important;
-}
-
-.message-btn-network {
-    background-color: #17a2b8 !important;
-    color: #ffffff;
-}
-
-.connect-btn-network {
-    background-color: #2e765e !important;
-    color: #ffffff;
-}
-
-.connected-btn-network {
-    background-color: #2e765e !important;
-}
-
-
-.delete-connection-btn2{
-    top: 1rem;
-    left: 18rem;
-
+  }
 }

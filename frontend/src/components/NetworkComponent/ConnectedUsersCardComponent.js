@@ -1,44 +1,62 @@
-import React from "react";
-import { MDBBtn, MDBIcon } from "mdb-react-ui-kit";
-import OptimizedImage from "../common/OptimizedImage";
-import "./NetworkUserCards.scss";
+import { MDBIcon } from 'mdb-react-ui-kit';
+import OptimizedImage from '../common/OptimizedImage';
+import './NetworkUserCards.scss';
 
-const ConnectedUsersCardComponent = ({ user, onConnect, onShowProfile, onMessage, onDelete }) => {
+const ConnectedUsersCardComponent = ({
+  user,
+  onShowProfile,
+  onMessage,
+  onDelete,
+}) => {
+  const { firstName, lastName, profileImage = '', job, companyName } = user;
+
   return (
+    <div className="user-card">
+      <button
+        className="user-card__delete-btn"
+        onClick={onDelete}
+        title="Remove connection"
+      >
+        <MDBIcon fas icon="times" />
+      </button>
 
-    <div className="card-network">
-        <MDBBtn
-          className="d-flex btn-sm delete-connection-btn2"
-          color="secondary"
-          onClick={onDelete}
-        >
-          <MDBIcon fas icon="times" />
-        </MDBBtn>
-      <OptimizedImage
-        src={user.profileImage}
-        alt={`${user.firstName} ${user.lastName}`}
-        className="profile-image-network"
-      />
-      <h5 className="card-title-network">{`${user.firstName} ${user.lastName}`}</h5>
-      {user.job && <p className="card-subtitle-network">{user.job}</p>}
-      {user.companyName && <p className="card-company-network">{user.companyName}</p>}
-      <div className="button-container-network">
-        <MDBBtn className="mdb-btn-network view-profile-btn-network" onClick={onShowProfile}>
-          View Profile
-        </MDBBtn>
-        <MDBBtn className="mdb-btn-network message-btn-network" onClick={onMessage}>
-          Message
-        </MDBBtn>
+      <div className="user-card__banner" />
+
+      <div className="user-card__body">
+        <div className="user-card__avatar-wrap">
+          <OptimizedImage
+            src={profileImage}
+            alt={`${firstName} ${lastName}`}
+            className="user-card__avatar"
+          />
+        </div>
+
+        <p className="user-card__name">
+          {firstName} {lastName}
+        </p>
+
+        {job && <p className="user-card__job">{job}</p>}
+        {companyName && <p className="user-card__company">{companyName}</p>}
+
+        <div className="user-card__divider" />
+
+        <div className="user-card__actions">
+          <button
+            className="user-card__action-btn user-card__action-btn--primary"
+            onClick={onShowProfile}
+          >
+            <MDBIcon fas icon="user" />
+            <span>View Profile</span>
+          </button>
+          <button
+            className="user-card__action-btn user-card__action-btn--secondary"
+            onClick={onMessage}
+          >
+            <MDBIcon fas icon="envelope" />
+            <span>Message</span>
+          </button>
+        </div>
       </div>
-      {user.isConnected ? (
-        <MDBBtn className="mdb-btn-network connected-btn-network" disabled>
-          Connected
-        </MDBBtn>
-      ) : (
-        <MDBBtn className="mdb-btn-network connect-btn-network" onClick={onConnect}>
-          Connect
-        </MDBBtn>
-      )}
     </div>
   );
 };
