@@ -1,11 +1,11 @@
-import React, { useState } from "react";
-import { MDBContainer, MDBInput, MDBBtn, MDBSpinner } from "mdb-react-ui-kit";
-import { useNavigate } from "react-router-dom";
-import "./LoginComponent.scss";
-import { useAuth } from "../../context/AuthContext";
-import { useForm } from "react-hook-form";
-import ConnectInLogo from "../../assets/ConnectIn.png";
-import FooterComponent from "../common/FooterComponent";
+import React, { useState } from 'react';
+import { MDBContainer, MDBInput, MDBBtn, MDBSpinner } from 'mdb-react-ui-kit';
+import { useNavigate } from 'react-router-dom';
+import './LoginComponent.scss';
+import { useAuth } from '../../context/AuthContext';
+import { useForm } from 'react-hook-form';
+import ConnectInLogo from '../../assets/ConnectIn.png';
+import FooterComponent from '../common/FooterComponent';
 
 const LoginComponent = () => {
   const {
@@ -14,30 +14,30 @@ const LoginComponent = () => {
     formState: { errors },
   } = useForm();
   const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState("");
+  const [message, setMessage] = useState('');
   const navigate = useNavigate();
   const { login } = useAuth();
 
   const onSubmit = async (data) => {
-    setMessage("");
+    setMessage('');
     setLoading(true);
 
     try {
       const response = await login(data.email, data.password);
       setLoading(false);
-      if (response.role === "ROLE_ADMIN") {
-        navigate("/admin");
-      } else if (response.role === "ROLE_USER") {
-        navigate("/home");
+      if (response.role === 'ROLE_ADMIN') {
+        navigate('/admin');
+      } else if (response.role === 'ROLE_USER') {
+        navigate('/home');
       } else {
-        setMessage("Unexpected user role");
+        setMessage('Unexpected user role');
       }
     } catch (error) {
       setLoading(false);
-      let resMessage = "";
+      let resMessage = '';
 
       if (error.response && error.response.status === 401) {
-        resMessage = "Invalid email or password. Please try again.";
+        resMessage = 'Invalid email or password. Please try again.';
       } else {
         resMessage =
           (error.response &&
@@ -61,12 +61,12 @@ const LoginComponent = () => {
             <MDBInput
               size="lg"
               wrapperClass="mb-4 wide-input"
-              label="Email address"
+              label="Email"
               id="form1"
               type="email"
-              placeholder={errors.email ? errors.email.message : "Email"}
-              {...register("email", { required: "Email is required" })}
-              className={errors.email ? "is-invalid" : ""}
+              placeholder={errors.email ? errors.email.message : 'Email'}
+              {...register('email', { required: 'Email is required' })}
+              className={errors.email ? 'is-invalid' : ''}
             />
 
             <MDBInput
@@ -76,10 +76,10 @@ const LoginComponent = () => {
               id="form2"
               type="password"
               placeholder={
-                errors.password ? errors.password.message : "Password"
+                errors.password ? errors.password.message : 'Password'
               }
-              {...register("password", { required: "Password is required" })}
-              className={errors.password ? "is-invalid" : ""}
+              {...register('password', { required: 'Password is required' })}
+              className={errors.password ? 'is-invalid' : ''}
             />
             <div className="text-center">
               <MDBBtn
@@ -109,12 +109,12 @@ const LoginComponent = () => {
         <div
           className="text-center"
           onClick={() => {
-            navigate("/register");
+            navigate('/register');
             window.location.reload();
           }}
         >
           <p className="inner-footer-text">
-            New to ConnectIn?{" "}
+            New to ConnectIn?{' '}
             <a href="#!" className="link">
               Join now
             </a>
