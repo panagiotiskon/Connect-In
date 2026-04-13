@@ -1,45 +1,41 @@
-import React, { useState, useEffect, useRef, useCallback } from "react";
-import {
-  MDBContainer,
-  MDBCardBody,
-  MDBCard,
-  MDBTypography,
-  MDBBtn,
-  MDBRow,
-  MDBCol,
-  MDBIcon,
-} from "mdb-react-ui-kit";
-import NavbarComponent from "../common/NavBar";
-import OptimizedImage from "../common/OptimizedImage";
-import { useAuth } from "../../context/AuthContext";
-import ProfileCard from "../common/ProfileCard";
-import PostService from "../../api/PostApi";
-import FileService from "../../api/UserFilesApi";
-import PersonalInfoService from "../../api/UserPersonalInformationAPI";
-import NotificationAPI from "../../api/NotificationAPI";
-import "./HomeComponent.scss";
+import { useState, useEffect, useRef, useCallback } from 'react';
+import { MDBContainer, MDBRow, MDBCol } from 'mdb-react-ui-kit';
+import NavbarComponent from '../common/NavBar';
+import ProfileCard from '../common/ProfileCard';
+import CreatePostCard from './CreatePostCard';
+import SortingCard from './SortingCard';
+import PostCard from './PostCard';
+import { useAuth } from '../../context/AuthContext';
+import PostService from '../../api/PostApi';
+import FileService from '../../api/UserFilesApi';
+import PersonalInfoService from '../../api/UserPersonalInformationAPI';
+import NotificationAPI from '../../api/NotificationAPI';
+import './HomeComponent.scss';
 
 const HomeComponent = () => {
   const { user: currentUser } = useAuth();
   const [profileImage, setProfileImage] = useState(null);
-  const [postContent, setPostContent] = useState("");
+  const [postContent, setPostContent] = useState('');
   const [uploadedFile, setUploadedFile] = useState(null);
   const [posts, setPosts] = useState([]);
   const [commentInputs, setCommentInputs] = useState({});
   const [postsMap, setPostsMap] = useState({});
   const [reactedPostIds, setReactedPostIds] = useState([]);
   const [userComments, setUserComments] = useState({});
-  const [sortingMethod, setSortingMethod] = useState("date");
-  const fileInputRef = useRef(null);
+  const [sortingMethod, setSortingMethod] = useState('date');
+  const [commentErrors, setCommentErrors] = useState({});
+  const [postError, setPostError] = useState(null);
+  const [loadingPosts, setLoadingPosts] = useState(false);
   const observerRef = useRef(null);
 
   const fetchPosts = useCallback(async () => {
-    if (currentUser) {
-      try {
-        const response =
-          sortingMethod === "date"
-            ? await PostService.getFeed(currentUser.id)
-            : await PostService.getRecommendedPosts(currentUser.id);
+    if (!currentUser) return;
+    setLoadingPosts(true);
+    try {
+      const response =
+        sortingMethod === 'date'
+          ? await PostService.getFeed(currentUser.id)
+          : await PostService.getRecommendedPosts(currentUser.id);
 
       const fetchedPosts = Array.isArray(response)
         ? response
@@ -57,179 +53,141 @@ const HomeComponent = () => {
                 userImage.length > 0
                   ? `data:${userImage[0].type};base64,${userImage[0].data}`
                   : null;
-
-              return {
-                ...comment,
-                profileImage: userProfileImage,
-              };
+              return { ...comment, profileImage: userProfileImage };
             })
           );
 
           const processedPost = {
             ...post,
-            posterName: poster.firstName + " " + poster.lastName,
-            posterImage: poster?.profilePictureData ? `data:image/jpeg;base64,${poster.profilePictureData}` : "https://via.placeholder.com/40",
+            posterName: poster.firstName + ' ' + poster.lastName,
+            posterImage: poster?.profilePictureData
+              ? `data:image/jpeg;base64,${poster.profilePictureData}`
+              : 'https://via.placeholder.com/40',
             comments: commentsWithPhotos,
           };
 
           postsById[post.id] = processedPost;
+          return processedPost;
+        })
+      );
 
-            return processedPost;
-          })
-        );
-
-        setPosts(postsWithUserPhotos);
-        setPostsMap(postsById);
-      } catch (error) {
-        console.error("Error fetching posts:", error);
-        setPosts([]);
-      }
+      setPosts(postsWithUserPhotos);
+      setPostsMap(postsById);
+    } catch (error) {
+      console.error('Error fetching posts:', error);
+      setPosts([]);
+    } finally {
+      setLoadingPosts(false);
     }
   }, [currentUser, sortingMethod]);
 
   useEffect(() => {
-    if (posts.length > 0) {
-      const observerCallback = async (entries) => {
+    if (posts.length === 0) return;
+
+    observerRef.current = new IntersectionObserver(
+      async (entries) => {
         for (const entry of entries) {
           if (entry.isIntersecting) {
-            const postId = entry.target.getAttribute("data-post-id");
+            const postId = entry.target.getAttribute('data-post-id');
             if (postId) {
               try {
                 await PostService.viewPosts(currentUser.id, postId);
               } catch (error) {
-                console.error("Error viewing post:", error);
+                console.error('Error viewing post:', error);
               }
             }
           }
         }
-      };
+      },
+      { root: null, rootMargin: '0px', threshold: 0.5 }
+    );
 
-      const observerOptions = {
-        root: null,
-        rootMargin: "0px",
-        threshold: 0.5,
-      };
+    document.querySelectorAll('[data-post-id]').forEach((el) => {
+      observerRef.current.observe(el);
+    });
 
-      observerRef.current = new IntersectionObserver(
-        observerCallback,
-        observerOptions
-      );
-
-      const postCards = document.querySelectorAll("[data-post-id]");
-      postCards.forEach((postCard) => {
-        observerRef.current.observe(postCard);
-      });
-
-      return () => {
-        if (observerRef.current) {
-          observerRef.current.disconnect();
-        }
-      };
-    }
+    return () => observerRef.current?.disconnect();
   }, [currentUser, posts]);
 
   useEffect(() => {
-    if (currentUser) {
-      fetchPosts();
-    }
-  }, [currentUser, sortingMethod, fetchPosts]);
+    if (currentUser) fetchPosts();
+  }, [currentUser, sortingMethod]);
 
-  const handleSortChange = (method) => {
-    setSortingMethod(method);
-  };
-
-useEffect(() => {
-  if (!currentUser?.id) return;
-  let cancelled = false;
-  (async () => {
-    const [images, reactions, comments] = await Promise.all([
-      FileService.getUserImages(currentUser.id),
-      PostService.getUserReactions(currentUser.id),
-      PostService.getUserComments(currentUser.id),
-    ]);
-    if (cancelled) return;
-    setProfileImage(images[0] ? `data:${images[0].type};base64,${images[0].data}` : null);
-    setReactedPostIds(reactions?.data || []);
-    setUserComments(comments?.data || {});
-  })();
-  return () => { cancelled = true; };
-}, [currentUser]);
-
-
-  const handleImageClick = () => {
-    fileInputRef.current.click();
-  };
-
-  const handleFileChange = (event) => {
-    const file = event.target.files ? event.target.files[0] : null;
-    if (file) {
-      const fileUrl = URL.createObjectURL(file);
-      setUploadedFile({ file, previewUrl: fileUrl, type: file.type });
-    }
-  };
-
-  const handleRemoveImage = () => {
-    setUploadedFile(null);
-  };
+  useEffect(() => {
+    if (!currentUser?.id) return;
+    let cancelled = false;
+    (async () => {
+      const [images, reactions, comments] = await Promise.all([
+        FileService.getUserImages(currentUser.id),
+        PostService.getUserReactions(currentUser.id),
+        PostService.getUserComments(currentUser.id),
+      ]);
+      if (cancelled) return;
+      setProfileImage(
+        images[0] ? `data:${images[0].type};base64,${images[0].data}` : null
+      );
+      setReactedPostIds(reactions?.data || []);
+      setUserComments(comments?.data || {});
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [currentUser]);
 
   const handlePostSubmit = async () => {
-    if (!postContent && !uploadedFile) {
-      alert("Post content or image is required.");
+    if (!postContent.trim() && !uploadedFile) {
+      setPostError('Post content or media is required.');
       return;
     }
-
+    setPostError(null);
     try {
       await PostService.createPost(currentUser.id, postContent, uploadedFile?.file);
-      setPostContent("");
+      setPostContent('');
       setUploadedFile(null);
       fetchPosts();
     } catch (error) {
-      console.error("Error submitting post:", error);
-      alert("Failed to submit post.");
+      console.error('Error submitting post:', error);
     }
   };
 
   const handleCommentInputChange = (postId, value) => {
-    setCommentInputs((prev) => ({
-      ...prev,
-      [postId]: value,
-    }));
+    setCommentInputs((prev) => ({ ...prev, [postId]: value }));
+    if (value.trim()) {
+      setCommentErrors((prev) => ({ ...prev, [postId]: null }));
+    }
   };
 
   const handleCommentSubmit = async (postId) => {
     const comment = commentInputs[postId];
-    if (!comment) {
-      alert("Comment cannot be empty.");
+    if (!comment?.trim()) {
+      setCommentErrors((prev) => ({ ...prev, [postId]: 'Comment cannot be empty.' }));
       return;
     }
-
+    setCommentErrors((prev) => ({ ...prev, [postId]: null }));
     try {
       const post = postsMap[postId];
-
-      if (post) {
-        const commentId = await PostService.createComment(currentUser.id, postId, comment);
-        setCommentInputs((prev) => ({
-          ...prev,
-          [postId]: "",
-        }));
-
-        fetchPosts();
-
-        if (post.userId !== currentUser.id) {
-          await NotificationAPI.createNotification(
-            post.userId,
-            "COMMENT",
-            currentUser.id,
-            commentId.data
-          );
-        }
-      } else {
-        alert("Failed to submit comment");
-        console.error("Post not found for the given postId:", postId);
+      if (!post) {
+        console.error('Post not found for the given postId:', postId);
+        return;
+      }
+      const commentId = await PostService.createComment(currentUser.id, postId, comment);
+      setCommentInputs((prev) => ({ ...prev, [postId]: '' }));
+      setUserComments((prev) => ({
+        ...prev,
+        [postId]: [...(prev[postId] || []), commentId.data],
+      }));
+      fetchPosts();
+      if (post.userId !== currentUser.id) {
+        await NotificationAPI.createNotification(
+          post.userId,
+          'COMMENT',
+          currentUser.id,
+          commentId.data
+        );
       }
     } catch (error) {
-      console.error("Error submitting comment:", error);
-      alert("Failed to submit comment.");
+      console.error('Error submitting comment:', error);
+      alert('Failed to submit comment.');
     }
   };
 
@@ -238,8 +196,8 @@ useEffect(() => {
       await PostService.deletePost(currentUser.id, postId);
       fetchPosts();
     } catch (error) {
-      console.error("Error deleting post:", error);
-      alert("Failed to delete post.");
+      console.error('Error deleting post:', error);
+      alert('Failed to delete post.');
     }
   };
 
@@ -247,7 +205,6 @@ useEffect(() => {
     try {
       const hasReacted = reactedPostIds.includes(postId);
       const post = postsMap[postId];
-
       if (hasReacted) {
         await PostService.deleteReaction(currentUser.id, postId);
         setReactedPostIds((prev) => prev.filter((id) => id !== postId));
@@ -258,7 +215,7 @@ useEffect(() => {
         if (post.userId !== currentUser.id) {
           await NotificationAPI.createNotification(
             post.userId,
-            "REACTION",
+            'REACTION',
             currentUser.id,
             postId
           );
@@ -266,7 +223,7 @@ useEffect(() => {
       }
       fetchPosts();
     } catch (error) {
-      console.error("Error handling reaction:", error);
+      console.error('Error handling reaction:', error);
     }
   };
 
@@ -276,8 +233,8 @@ useEffect(() => {
       await NotificationAPI.deleteNotificationByObjectId(commentId);
       await fetchPosts();
     } catch (error) {
-      console.error("Error deleting comment:", error);
-      alert("Failed to delete comment.");
+      console.error('Error deleting comment:', error);
+      alert('Failed to delete comment.');
     }
   };
 
@@ -287,320 +244,52 @@ useEffect(() => {
       <MDBContainer fluid className="home-container">
         <MDBRow>
           <MDBCol md="4" className="left-column">
-            <ProfileCard
-              currentUser={currentUser}
-              profileImage={profileImage}
-            />
-            <MDBCard className="flex mt-4 mb-4 p-3"
-                  style={{
-                    margin:"20%",
-                    height: "9rem",
-                    flexDirection: "column",
-                    justifyContent: "center",
-                    display: "flex",
-                  }}>
-              <MDBTypography tag="h6" className="mb-3"
-              style={{alignSelf: "center", fontWeight:"bold"}}>
-                Show Posts By:
-              </MDBTypography>
-              <div className="d-flex align-items-center mb-2">
-                <input
-                  type="radio"
-                  id="date"
-                  name="sorting"
-                  className="me-2"
-                  checked={sortingMethod === "date"}
-                  onClick={() => handleSortChange("date")}
-                />
-                <label htmlFor="date" className="mb-0"
-                style={{alignSelf: "center"}}>
-                 📅 Date Posted
-                </label>
-              </div>
-              <div className="d-flex align-items-center">
-                <input
-                  type="radio"
-                  id="relevance"
-                  name="sorting"
-                  className="me-2"
-                  onClick={() => handleSortChange("relevance")}
-                />
-                <label htmlFor="relevance" className="mb-0"
-                style={{alignSelf: "center"}}>
-                   🔍 Relevance
-                </label>
-              </div>
-            </MDBCard>
+            <ProfileCard currentUser={currentUser} profileImage={profileImage} />
           </MDBCol>
-          <MDBCol
-            md="6"
-            className="center-column"
-            style={{ marginBottom: "1rem" }}
-          >
-            <MDBCard className="new-post-container shadow-0">
-              <MDBCardBody className="pb-2 w-100">
-                <div className="d-flex new-post-input-container">
-                  <OptimizedImage
-                    src={profileImage}
-                    className="rounded-circle"
-                    style={{ width: 60, height: 60 }}
-                    alt="Avatar"
-                  />
-                  <div className="w-100 ps-3 ">
-                    <input
-                      type="text"
-                      className="form-control form-status"
-                      placeholder="Create a Post"
-                      value={postContent}
-                      onChange={(e) => setPostContent(e.target.value)}
-                    />
+          <MDBCol md="6" className="center-column" style={{ marginBottom: '1rem' }}>
+            <CreatePostCard
+              profileImage={profileImage}
+              postContent={postContent}
+              setPostContent={(val) => { setPostContent(val); if (val.trim()) setPostError(null); }}
+              uploadedFile={uploadedFile}
+              setUploadedFile={(val) => { setUploadedFile(val); if (val) setPostError(null); }}
+              postError={postError}
+              onSubmit={handlePostSubmit}
+            />
+            <SortingCard
+              sortingMethod={sortingMethod}
+              onSortChange={setSortingMethod}
+            />
+            {loadingPosts ? (
+              [1, 2, 3].map((n) => (
+                <div key={n} className="post-skeleton">
+                  <div className="post-skeleton-header">
+                    <div className="skeleton-avatar" />
+                    <div className="skeleton-lines">
+                      <div className="skeleton-line skeleton-line--name" />
+                      <div className="skeleton-line skeleton-line--date" />
+                    </div>
                   </div>
+                  <div className="skeleton-line skeleton-line--body" />
+                  <div className="skeleton-line skeleton-line--body skeleton-line--short" />
                 </div>
-
-                <div className="media-options d-flex flex-column">
-                  <MDBTypography
-                    listUnStyled
-                    className="d-flex flex-row ps-5 pt-3 mb-3 media-upload-btn"
-                  >
-                    <MDBBtn
-                      className="d-flex align-items-center me-4 image-btn"
-                      onClick={handleImageClick}
-                    >
-                      <MDBIcon far icon="image" className="me-2" />
-                      <span>  Image</span>
-                    </MDBBtn>
-                    <MDBBtn
-                      className="d-flex align-items-center me-4 video-btn"
-                      onClick={handleImageClick}
-                    >
-                      <MDBIcon fas icon="video" className="me-2" />
-                      <span> Video</span>
-                    </MDBBtn>
-                    <MDBBtn
-                      className="d-flex align-items-center audio-btn"
-                      onClick={handleImageClick}
-                    >
-                      <MDBIcon fas icon="microphone" className="me-2" />
-                      <span>Audio</span>
-                    </MDBBtn>
-                  </MDBTypography>
-
-                  <input
-                    type="file"
-                    accept="image/*,video/*,audio/*"
-                    ref={fileInputRef}
-                    style={{ display: "none" }}
-                    onChange={handleFileChange}
-                  />
-                  {uploadedFile && (
-                    <div className="media-preview-container">
-                      {uploadedFile.type.startsWith("image/") && (
-                        <img
-                          src={uploadedFile.previewUrl}
-                          alt="Preview"
-                          className="img-thumbnail mt-2"
-                          width={120}
-                        />
-                      )}
-                      {uploadedFile.type.startsWith("video/") && (
-                        <video controls width="100%">
-                          <source
-                            src={uploadedFile.previewUrl}
-                            type={uploadedFile.type}
-                          />
-                          Your browser does not support the video tag.
-                        </video>
-                      )}
-                      {uploadedFile.type.startsWith("audio/") && (
-                        <audio controls>
-                          <source
-                            src={uploadedFile.previewUrl}
-                            type={uploadedFile.type}
-                          />
-                          Your browser does not support the audio element.
-                        </audio>
-                      )}
-                      <MDBBtn
-                        style={{
-                          padding: "10px",
-                          maxHeight: "1.9rem",
-                          textAlign: "center",
-                          marginLeft: "0.6rem",
-                        }}
-                        className="remove-media-btn"
-                        color="danger"
-                        onClick={handleRemoveImage}
-                      >
-                        <MDBIcon style={{ display: "flex" }} fas icon="times" />
-                      </MDBBtn>
-                    </div>
-                  )}
-
-                  <MDBBtn
-                    className="submit-post-btn"
-                    onClick={handlePostSubmit}
-                  >
-                    POST
-                  </MDBBtn>
-                </div>
-              </MDBCardBody>
-            </MDBCard>
-            {posts.length > 0 ? (
+              ))
+            ) : posts.length > 0 ? (
               posts.map((post) => (
-                <MDBCard
+                <PostCard
                   key={post.id}
-                  data-post-id={post.id}
-                  className="mt-3 shadow-0 feed-post"
-                >
-                  <MDBCardBody>
-                    <div className="poster-info">
-                      <OptimizedImage
-                        src={post.posterImage}
-                        className="rounded-circle"
-                        style={{ width: 45, height: 45 }}
-                        alt="Poster Avatar"
-                      />
-                      <div className="poster-text">
-                        <strong>{post.posterName}</strong>
-                      </div>
-                      {currentUser?.id === post.userId && (
-                        <MDBBtn
-                          className="btn-sm delete-post-btn"
-                          color="secondary"
-                          onClick={() => handleDeletePost(post.id)}
-                        >
-                          <MDBIcon fas icon="times" />
-                        </MDBBtn>
-                      )}
-                    </div>
-                    <h5>{post.content}</h5>
-
-                    {post.file && (
-                      <div className="post-media-container">
-                        {post.file.type.startsWith("image/") && (
-                          <OptimizedImage
-                            src={`data:${post.file.type};base64,${post.file.data}`}
-                            alt="Post content"
-                            style={{
-                              width: "100%",
-                              height: "auto",
-                              border: "1px solid #ddd",
-                            }}
-                          />
-                        )}
-
-                        {post.file.type.startsWith("video/") && (
-                          <video controls width="100%" className="post-video">
-                            <source
-                              src={`data:${post.file.type};base64,${post.file.data}`}
-                              type={post.file.type}
-                            />
-                            Your browser does not support the video tag.
-                          </video>
-                        )}
-
-                        {post.file.type.startsWith("audio/") && (
-                          <audio controls className="post-audio">
-                            <source
-                              src={`data:${post.file.type};base64,${post.file.data}`}
-                              type={post.file.type}
-                            />
-                            Your browser does not support the audio element.
-                          </audio>
-                        )}
-                      </div>
-                    )}
-                    <p
-                      className="text-muted"
-                      style={{
-                        display: "flex",
-                        margin: "0",
-                        fontSize: "0.8rem",
-                      }}
-                    >
-                      Posted at: {new Date(post.createdAt).toLocaleString()}
-                    </p>
-                    <div className="reaction-button-container">
-                      <MDBBtn
-                        className={
-                          reactedPostIds.includes(post.id)
-                            ? "custom-success"
-                            : "custom-primary"
-                        }
-                        style={{ marginTop: "1rem" }}
-                        onClick={() => handleReactionToggle(post.id)}
-                      >
-                        {reactedPostIds.includes(post.id) ? "👌🏻 Reacted" : "👆🏻 React"}
-                      </MDBBtn>
-                    </div>
-                    <div className="add-comment-container">
-                      <input
-                        type="text"
-                        className="form-control"
-                        placeholder="Add a comment..."
-                        value={commentInputs[post.id] || ""}
-                        onChange={(e) =>
-                          handleCommentInputChange(post.id, e.target.value)
-                        }
-                      />
-                      <MDBBtn
-                        className="submit-post-btn"
-                        color="primary"
-                        onClick={() => handleCommentSubmit(post.id)}
-                      >
-                         💬 Comment
-                      </MDBBtn>
-                    </div>
-
-                    <div className="comments-section">
-                      {post.comments && post.comments.length > 0 ? (
-                        post.comments.map((comment) => (
-                          <div
-                            key={comment.commentId}
-                            className="comment d-flex align-items-center mb-3"
-                          >
-                            <OptimizedImage
-                              src={comment.profileImage || "https://via.placeholder.com/40"}
-                              className="rounded-circle"
-                              style={{ width: 35, height: 35 }}
-                              alt="Commenter's Avatar"
-                            />
-                            <div className="ms-3 comment-container">
-                              <strong>{comment.username}</strong>
-                              <p>{comment.content}</p>
-                            </div>
-                            <div className="comment-date text-muted">
-                              {new Date(comment.createdAt).toLocaleString()}
-                              {userComments[post.id] &&
-                                userComments[post.id].includes(
-                                  comment.commentId
-                                ) && (
-                                  <button
-                                    className="btn btn-secondary btn-sm "
-                                    style={{
-                                      fontSize: "12px",
-                                      padding: "2px 5px",
-                                      marginLeft: "4px",
-                                    }}
-                                    onClick={() =>
-                                      handleDeleteComment(
-                                        post.id,
-                                        comment.commentId
-                                      )
-                                    }
-                                  >
-                                    &#10005;
-                                  </button>
-                                )}
-                            </div>
-                          </div>
-                        ))
-                      ) : (
-                        <p>No comments yet.</p>
-                      )}
-                    </div>
-                  </MDBCardBody>
-                </MDBCard>
+                  post={post}
+                  currentUser={currentUser}
+                  hasReacted={reactedPostIds.includes(post.id)}
+                  commentInput={commentInputs[post.id]}
+                  commentError={commentErrors[post.id]}
+                  userComments={userComments}
+                  onReactionToggle={handleReactionToggle}
+                  onCommentInputChange={handleCommentInputChange}
+                  onCommentSubmit={handleCommentSubmit}
+                  onDeletePost={handleDeletePost}
+                  onDeleteComment={handleDeleteComment}
+                />
               ))
             ) : (
               <p>No posts available.</p>
