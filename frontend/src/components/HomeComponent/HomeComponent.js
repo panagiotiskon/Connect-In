@@ -111,7 +111,7 @@ const HomeComponent = () => {
 
   useEffect(() => {
     if (currentUser) fetchPosts();
-  }, [currentUser, sortingMethod]);
+  }, [currentUser, sortingMethod, fetchPosts]);
 
   useEffect(() => {
     if (!currentUser?.id) return;
@@ -141,7 +141,11 @@ const HomeComponent = () => {
     }
     setPostError(null);
     try {
-      await PostService.createPost(currentUser.id, postContent, uploadedFile?.file);
+      await PostService.createPost(
+        currentUser.id,
+        postContent,
+        uploadedFile?.file
+      );
       setPostContent('');
       setUploadedFile(null);
       fetchPosts();
@@ -160,7 +164,10 @@ const HomeComponent = () => {
   const handleCommentSubmit = async (postId) => {
     const comment = commentInputs[postId];
     if (!comment?.trim()) {
-      setCommentErrors((prev) => ({ ...prev, [postId]: 'Comment cannot be empty.' }));
+      setCommentErrors((prev) => ({
+        ...prev,
+        [postId]: 'Comment cannot be empty.',
+      }));
       return;
     }
     setCommentErrors((prev) => ({ ...prev, [postId]: null }));
@@ -170,7 +177,11 @@ const HomeComponent = () => {
         console.error('Post not found for the given postId:', postId);
         return;
       }
-      const commentId = await PostService.createComment(currentUser.id, postId, comment);
+      const commentId = await PostService.createComment(
+        currentUser.id,
+        postId,
+        comment
+      );
       setCommentInputs((prev) => ({ ...prev, [postId]: '' }));
       setUserComments((prev) => ({
         ...prev,
@@ -244,15 +255,28 @@ const HomeComponent = () => {
       <MDBContainer fluid className="home-container">
         <MDBRow>
           <MDBCol md="4" className="left-column">
-            <ProfileCard currentUser={currentUser} profileImage={profileImage} />
+            <ProfileCard
+              currentUser={currentUser}
+              profileImage={profileImage}
+            />
           </MDBCol>
-          <MDBCol md="6" className="center-column" style={{ marginBottom: '1rem' }}>
+          <MDBCol
+            md="6"
+            className="center-column"
+            style={{ marginBottom: '1rem' }}
+          >
             <CreatePostCard
               profileImage={profileImage}
               postContent={postContent}
-              setPostContent={(val) => { setPostContent(val); if (val.trim()) setPostError(null); }}
+              setPostContent={(val) => {
+                setPostContent(val);
+                if (val.trim()) setPostError(null);
+              }}
               uploadedFile={uploadedFile}
-              setUploadedFile={(val) => { setUploadedFile(val); if (val) setPostError(null); }}
+              setUploadedFile={(val) => {
+                setUploadedFile(val);
+                if (val) setPostError(null);
+              }}
               postError={postError}
               onSubmit={handlePostSubmit}
             />
