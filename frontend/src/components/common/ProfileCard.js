@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from "react";
-import { MDBCard, MDBCardBody } from "mdb-react-ui-kit";
-import { useNavigate } from "react-router-dom";
-import FileService from "../../api/UserFilesApi";
-import OptimizedImage from "./OptimizedImage";
+import React, { useEffect, useState } from 'react';
+import { MDBCard, MDBCardBody } from 'mdb-react-ui-kit';
+import { useNavigate } from 'react-router-dom';
+import FileService from '../../api/UserFilesApi';
+import OptimizedImage from './OptimizedImage';
 
 const ProfileCard = ({ currentUser }) => {
   const navigate = useNavigate();
@@ -18,10 +18,10 @@ const ProfileCard = ({ currentUser }) => {
             const { type, data } = images[0]; // Assume the first image is the profile image
             setProfileImage(`data:${type};base64,${data}`); // Dynamically set image type and data
           } else {
-            setProfileImage("/path/to/default-image.png"); // Fallback to default if no image
+            setProfileImage('/path/to/default-image.png'); // Fallback to default if no image
           }
         } catch (error) {
-          console.error("Error fetching profile image:", error);
+          console.error('Error fetching profile image:', error);
         }
       }
     };
@@ -30,11 +30,11 @@ const ProfileCard = ({ currentUser }) => {
   }, [currentUser]);
 
   const handleProfileClick = () => navigate(`/profile`);
-  const handleConnectionsClick = () => navigate("/network");
+  const handleConnectionsClick = () => navigate('/network');
 
   if (!currentUser) {
     return (
-      <div style={{ textAlign: "center", padding: "2rem" }}>
+      <div style={{ textAlign: 'center', padding: '2rem' }}>
         Loading profile...
       </div>
     );
@@ -44,14 +44,13 @@ const ProfileCard = ({ currentUser }) => {
     <MDBCard
       className="mb-4"
       style={{
-        height: "500px",
-        marginTop: "7%",
-        margin: "12%",
-        display: "flex",
+        height: '500px',
+        marginTop: '7%',
+        margin: '12%',
+        display: 'flex',
       }}
     >
-      <MDBCardBody
-      >
+      <MDBCardBody>
         <OptimizedImage
           src={profileImage}
           alt="avatar"
@@ -59,23 +58,23 @@ const ProfileCard = ({ currentUser }) => {
           style={{
             width: 150,
             height: 150,
-            objectFit: "cover",
-            display: "block",
-            alignSelf: "center",
-            margin: "0 auto",
-            marginTop: "3rem",
-            marginBottom: "3rem",
+            objectFit: 'cover',
+            display: 'block',
+            alignSelf: 'center',
+            margin: '0 auto',
+            marginTop: '3rem',
+            marginBottom: '3rem',
           }}
         />
         <p
           onClick={handleProfileClick}
           style={{
-            fontWeight: "bold",
-            fontSize: "1.8rem",
-            cursor: "pointer",
-            textAlign: "center",
-            font: "Segoe UI",
-            marginBottom:"2rem",
+            fontWeight: 'bold',
+            fontSize: '1.8rem',
+            cursor: 'pointer',
+            textAlign: 'center',
+            font: 'Segoe UI',
+            marginBottom: '2rem',
           }}
         >
           {currentUser.firstName} {currentUser.lastName}
@@ -83,12 +82,12 @@ const ProfileCard = ({ currentUser }) => {
         <p
           onClick={handleConnectionsClick}
           style={{
-            fontWeight: "bold",
-            fontSize: "1.3rem",
-            cursor: "pointer",
-            textAlign: "center",
-            marginBottom: "1rem",
-            font: "Segoe UI",
+            fontWeight: 'bold',
+            fontSize: '1.3rem',
+            cursor: 'pointer',
+            textAlign: 'center',
+            marginBottom: '1rem',
+            font: 'Segoe UI',
           }}
         >
           Your Connections

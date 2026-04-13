@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState } from 'react';
 import {
   MDBCard,
   MDBCardBody,
@@ -6,13 +6,18 @@ import {
   MDBDropdownToggle,
   MDBDropdownMenu,
   MDBDropdownItem,
-} from "mdb-react-ui-kit";
-import FileService from "../../api/UserFilesApi";
-import OptimizedImage from "./OptimizedImage";
+} from 'mdb-react-ui-kit';
+import FileService from '../../api/UserFilesApi';
+import OptimizedImage from './OptimizedImage';
 
-const ViewProfileCard = ({ viewedUser, connections, onNavigateToProfile, currentUser }) => {
+const ViewProfileCard = ({
+  viewedUser,
+  connections,
+  onNavigateToProfile,
+  currentUser,
+}) => {
   const [profileImage, setProfileImage] = useState(null);
-  const isAdmin = currentUser?.role === "ROLE_ADMIN";
+  const isAdmin = currentUser?.role === 'ROLE_ADMIN';
 
   useEffect(() => {
     const fetchProfileImage = async () => {
@@ -23,10 +28,10 @@ const ViewProfileCard = ({ viewedUser, connections, onNavigateToProfile, current
             const { type, data } = images[0];
             setProfileImage(`data:${type};base64,${data}`);
           } else {
-            setProfileImage("/path/to/default-image.png");
+            setProfileImage('/path/to/default-image.png');
           }
         } catch (error) {
-          console.error("Error fetching profile image:", error);
+          console.error('Error fetching profile image:', error);
         }
       }
     };
@@ -46,11 +51,11 @@ const ViewProfileCard = ({ viewedUser, connections, onNavigateToProfile, current
     <MDBCard
       className="mb-4"
       style={{
-        width: "70%",
-        margin: "2rem",
-        marginLeft: "2rem",
-        height: "450px",
-        display: "flex",
+        width: '70%',
+        margin: '2rem',
+        marginLeft: '2rem',
+        height: '450px',
+        display: 'flex',
       }}
     >
       <MDBCardBody>
@@ -61,21 +66,21 @@ const ViewProfileCard = ({ viewedUser, connections, onNavigateToProfile, current
           style={{
             width: 150,
             height: 150,
-            objectFit: "cover",
-            display: "block",
-            alignSelf: "center",
-            margin: "0 auto",
-            marginTop: "3rem",
-            marginBottom: "3rem",
+            objectFit: 'cover',
+            display: 'block',
+            alignSelf: 'center',
+            margin: '0 auto',
+            marginTop: '3rem',
+            marginBottom: '3rem',
           }}
         />
         <p
           style={{
-            fontWeight: "bold",
-            fontSize: "1.8rem",
-            textAlign: "center",
-            marginBottom: "2rem",
-            font: "Segoe UI",
+            fontWeight: 'bold',
+            fontSize: '1.8rem',
+            textAlign: 'center',
+            marginBottom: '2rem',
+            font: 'Segoe UI',
           }}
         >
           {`${viewedUser.firstName} ${viewedUser.lastName}`}
@@ -84,9 +89,9 @@ const ViewProfileCard = ({ viewedUser, connections, onNavigateToProfile, current
           (isCurrentUserInConnections && connections.length > 0)) && (
           <div
             style={{
-              display: "flex",
-              justifyContent: "center",
-              width: "100%",
+              display: 'flex',
+              justifyContent: 'center',
+              width: '100%',
             }}
           >
             <MDBDropdown>
@@ -94,11 +99,11 @@ const ViewProfileCard = ({ viewedUser, connections, onNavigateToProfile, current
                 tag="a"
                 className="btn btn-primary mt-3"
                 style={{
-                  fontWeight: "bold",
-                  fontSize: "1rem",
-                  textAlign: "center",
-                  font: "Segoe UI",
-                  backgroundColor: "#35677e",
+                  fontWeight: 'bold',
+                  fontSize: '1rem',
+                  textAlign: 'center',
+                  font: 'Segoe UI',
+                  backgroundColor: '#35677e',
                 }}
               >
                 Connections
@@ -109,12 +114,12 @@ const ViewProfileCard = ({ viewedUser, connections, onNavigateToProfile, current
                     key={connection.userId}
                     onClick={() => onNavigateToProfile(connection.userId)}
                     style={{
-                      fontWeight: "bold",
-                      fontSize: "1rem",
-                      cursor: "pointer",
-                      textAlign: "start",
-                      font: "Segoe UI",
-                      padding: "1.1rem",
+                      fontWeight: 'bold',
+                      fontSize: '1rem',
+                      cursor: 'pointer',
+                      textAlign: 'start',
+                      font: 'Segoe UI',
+                      padding: '1.1rem',
                     }}
                   >
                     <div>
@@ -122,12 +127,12 @@ const ViewProfileCard = ({ viewedUser, connections, onNavigateToProfile, current
                         src={`data:${connection.profileType};base64,${connection.profilePic}`}
                         alt={`${connection.firstName} ${connection.lastName}`}
                         style={{
-                          width: "30px",
-                          height: "30px",
-                          objectFit: "cover",
-                          borderRadius: "50%",
-                          marginRight: "10px",
-                          backgroundColor: "#35677e",
+                          width: '30px',
+                          height: '30px',
+                          objectFit: 'cover',
+                          borderRadius: '50%',
+                          marginRight: '10px',
+                          backgroundColor: '#35677e',
                         }}
                       />
                     </div>

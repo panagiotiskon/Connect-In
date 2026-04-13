@@ -1,31 +1,30 @@
-import React, { useState, useCallback } from "react";
-import "./OptimizedImage.css";
+import React, { useState, useCallback } from 'react';
+import './OptimizedImage.css';
 
 const WRAPPER_BASE_STYLE = {
-  position: "relative",
-  display: "inline-block",
-  overflow: "hidden",
+  position: 'relative',
+  display: 'inline-block',
+  overflow: 'hidden',
   lineHeight: 0,
 };
 
 const IMG_BASE_STYLE = {
-  display: "block",
-  width: "100%",
-  height: "100%",
+  display: 'block',
+  width: '100%',
+  height: '100%',
 };
 
 const PLACEHOLDER_STYLE = {
-  position: "absolute",
+  position: 'absolute',
   inset: 0,
-  background:
-    "linear-gradient(90deg, #eeeeee 25%, #f5f5f5 50%, #eeeeee 75%)",
-  backgroundSize: "200% 100%",
-  animation: "optimized-image-shimmer 1.2s infinite linear",
-  borderRadius: "inherit",
+  background: 'linear-gradient(90deg, #eeeeee 25%, #f5f5f5 50%, #eeeeee 75%)',
+  backgroundSize: '200% 100%',
+  animation: 'optimized-image-shimmer 1.2s infinite linear',
+  borderRadius: 'inherit',
 };
 
 const IMG_HIDDEN = { opacity: 0 };
-const IMG_VISIBLE = { opacity: 1, transition: "opacity 200ms ease-in" };
+const IMG_VISIBLE = { opacity: 1, transition: 'opacity 200ms ease-in' };
 
 const mergeStyles = (...parts) => {
   const result = {};
@@ -48,31 +47,28 @@ const shallowEqualStyle = (a, b) => {
   return true;
 };
 
-const OptimizedImage = ({ src, alt = "", className, style, fallbackSrc }) => {
-  const [status, setStatus] = useState("loading");
+const OptimizedImage = ({ src, alt = '', className, style, fallbackSrc }) => {
+  const [status, setStatus] = useState('loading');
   const [trackedSrc, setTrackedSrc] = useState(src);
 
   if (src !== trackedSrc) {
     setTrackedSrc(src);
-    setStatus("loading");
+    setStatus('loading');
   }
 
-  const handleLoad = useCallback(() => setStatus("loaded"), []);
-  const handleError = useCallback(() => setStatus("error"), []);
+  const handleLoad = useCallback(() => setStatus('loaded'), []);
+  const handleError = useCallback(() => setStatus('error'), []);
 
-  if (status === "error" && !fallbackSrc) {
+  if (status === 'error' && !fallbackSrc) {
     return null;
   }
 
-  const currentSrc = status === "error" ? fallbackSrc : src;
-  const imgVisibility = status === "loading" ? IMG_HIDDEN : IMG_VISIBLE;
+  const currentSrc = status === 'error' ? fallbackSrc : src;
+  const imgVisibility = status === 'loading' ? IMG_HIDDEN : IMG_VISIBLE;
 
   return (
-    <span
-      className={className}
-      style={mergeStyles(WRAPPER_BASE_STYLE, style)}
-    >
-      {status === "loading" && (
+    <span className={className} style={mergeStyles(WRAPPER_BASE_STYLE, style)}>
+      {status === 'loading' && (
         <span style={PLACEHOLDER_STYLE} aria-hidden="true" />
       )}
       <img
