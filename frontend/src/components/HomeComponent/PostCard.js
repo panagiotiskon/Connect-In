@@ -18,7 +18,6 @@ const PostCard = ({
   return (
     <MDBCard data-post-id={post.id} className="post-card shadow-0">
       <MDBCardBody className="post-card-body">
-
         {/* Header: avatar + name + timestamp + delete */}
         <div className="post-header">
           <OptimizedImage
@@ -44,9 +43,7 @@ const PostCard = ({
         </div>
 
         {/* Post text */}
-        {post.content && (
-          <p className="post-content-text">{post.content}</p>
-        )}
+        {post.content && <p className="post-content-text">{post.content}</p>}
 
         {/* Media */}
         {post.file && (
@@ -106,9 +103,7 @@ const PostCard = ({
             Comment
           </MDBBtn>
         </div>
-        {commentError && (
-          <p className="comment-error">{commentError}</p>
-        )}
+        {commentError && <p className="comment-error">{commentError}</p>}
 
         {/* Comments list */}
         {post.comments?.length > 0 && (
@@ -116,12 +111,14 @@ const PostCard = ({
             {post.comments.map((comment) => (
               <div key={comment.commentId} className="comment-item">
                 <OptimizedImage
-                  src={comment.profileImage || 'https://via.placeholder.com/40'}
+                  src={comment.profileImage || '/593.jpg'}
                   className="comment-item-avatar"
                   alt="Commenter Avatar"
                 />
                 <div className="comment-bubble">
-                  <span className="comment-bubble-author">{comment.username}</span>
+                  <span className="comment-bubble-author">
+                    {comment.username}
+                  </span>
                   <p className="comment-bubble-text">{comment.content}</p>
                   <div className="comment-meta">
                     <span className="comment-time">
@@ -130,7 +127,9 @@ const PostCard = ({
                     {userComments[post.id]?.includes(comment.commentId) && (
                       <button
                         className="delete-comment-btn"
-                        onClick={() => onDeleteComment(post.id, comment.commentId)}
+                        onClick={() =>
+                          onDeleteComment(post.id, comment.commentId)
+                        }
                         aria-label="Delete comment"
                       >
                         &#10005;
@@ -142,7 +141,6 @@ const PostCard = ({
             ))}
           </div>
         )}
-
       </MDBCardBody>
     </MDBCard>
   );

@@ -14,7 +14,7 @@ import './HomeComponent.scss';
 
 const HomeComponent = () => {
   const { user: currentUser } = useAuth();
-  const [profileImage, setProfileImage] = useState(null);
+  const [profileImage, setProfileImage] = useState('/593.jpg');
   const [postContent, setPostContent] = useState('');
   const [uploadedFile, setUploadedFile] = useState(null);
   const [posts, setPosts] = useState([]);
@@ -62,7 +62,7 @@ const HomeComponent = () => {
             posterName: poster.firstName + ' ' + poster.lastName,
             posterImage: poster?.profilePictureData
               ? `data:image/jpeg;base64,${poster.profilePictureData}`
-              : 'https://via.placeholder.com/40',
+              : '/593.jpg',
             comments: commentsWithPhotos,
           };
 
@@ -124,7 +124,9 @@ const HomeComponent = () => {
       ]);
       if (cancelled) return;
       setProfileImage(
-        images[0] ? `data:${images[0].type};base64,${images[0].data}` : null
+        images[0]
+          ? `data:${images[0].type};base64,${images[0].data}`
+          : '/593.jpg'
       );
       setReactedPostIds(reactions?.data || []);
       setUserComments(comments?.data || {});

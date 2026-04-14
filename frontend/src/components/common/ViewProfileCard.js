@@ -24,11 +24,11 @@ const ViewProfileCard = ({
       if (viewedUser) {
         try {
           const images = await FileService.getUserImages(viewedUser.id);
-          if (images.length > 0) {
+          if (images?.length > 0) {
             const { type, data } = images[0];
             setProfileImage(`data:${type};base64,${data}`);
           } else {
-            setProfileImage('/path/to/default-image.png');
+            setProfileImage('/593.jpg');
           }
         } catch (error) {
           console.error('Error fetching profile image:', error);
