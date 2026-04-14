@@ -16,7 +16,7 @@ const ViewProfileCard = ({
   onNavigateToProfile,
   currentUser,
 }) => {
-  const [profileImage, setProfileImage] = useState(null);
+  const [profileImage, setProfileImage] = useState('/593.jpg');
   const isAdmin = currentUser?.role === 'ROLE_ADMIN';
 
   useEffect(() => {

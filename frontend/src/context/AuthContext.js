@@ -102,7 +102,8 @@ export const AuthProvider = ({ children }) => {
       formData.append("firstName", name);
       formData.append("lastName", surname);
       formData.append("password", password);
-      formData.append("phoneNumber", phoneNumber);
+      if (phoneNumber)
+        formData.append("phoneNumber", phoneNumber);
       if (photo)
         formData.append("profilePicture", photo);
 

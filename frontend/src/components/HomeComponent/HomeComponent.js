@@ -261,7 +261,7 @@ const HomeComponent = () => {
             />
           </MDBCol>
           <MDBCol
-            md="6"
+            md="8"
             className="center-column"
             style={{ marginBottom: '1rem' }}
           >

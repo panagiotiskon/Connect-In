@@ -1,9 +1,9 @@
-import React, { useState, useEffect, useRef } from "react";
-import NavbarComponent from "../common/NavBar";
-import OptimizedImage from "../common/OptimizedImage";
-import MessagingAPI from "../../api/MessagingAPI";
-import { useAuth } from "../../context/AuthContext";
-import FileService from "../../api/UserFilesApi";
+import React, { useState, useEffect, useRef } from 'react';
+import NavbarComponent from '../common/NavBar';
+import OptimizedImage from '../common/OptimizedImage';
+import MessagingAPI from '../../api/MessagingAPI';
+import { useAuth } from '../../context/AuthContext';
+import FileService from '../../api/UserFilesApi';
 import {
   MDBContainer,
   MDBRow,
@@ -13,7 +13,7 @@ import {
   MDBTypography,
   MDBIcon,
   MDBInputGroup,
-} from "mdb-react-ui-kit";
+} from 'mdb-react-ui-kit';
 
 const base64ToDataURL = (base64String, picType) =>
   `data:${picType};base64,${base64String}`;
@@ -23,10 +23,10 @@ export default function ChatComponent() {
   const [filteredConversations, setFilteredConversations] = useState([]);
   const { user: currentUser } = useAuth();
   const [conversationMessages, setConversationMessages] = useState([]);
-  const [messageInput, setMessageInput] = useState("");
+  const [messageInput, setMessageInput] = useState('');
   const [selectedUser, setSelectedUser] = useState(null);
-  const [profileImage, setProfileImage] = useState("");
-  const [searchTerm, setSearchTerm] = useState("");
+  const [profileImage, setProfileImage] = useState('/593.jpg');
+  const [searchTerm, setSearchTerm] = useState('');
   const messageContainerRef = useRef(null);
 
   useEffect(() => {
@@ -38,7 +38,7 @@ export default function ChatComponent() {
         setConversations(data);
         setFilteredConversations(data);
       } catch (error) {
-        console.error("Error fetching conversations:", error);
+        console.error('Error fetching conversations:', error);
       }
     };
 
@@ -55,7 +55,7 @@ export default function ChatComponent() {
           );
           setConversationMessages(messages);
         } catch (error) {
-          console.error("Error fetching conversation messages:", error);
+          console.error('Error fetching conversation messages:', error);
         }
       };
 
@@ -75,7 +75,7 @@ export default function ChatComponent() {
             setProfileImage(`data:${type};base64,${data}`);
           }
         } catch (error) {
-          console.error("Error fetching user images:", error);
+          console.error('Error fetching user images:', error);
         }
       }
     };
@@ -84,7 +84,7 @@ export default function ChatComponent() {
   }, [selectedUser, currentUser]);
 
   const sendMessage = async () => {
-    if (messageInput.trim() !== "" && currentUser && selectedUser) {
+    if (messageInput.trim() !== '' && currentUser && selectedUser) {
       try {
         await MessagingAPI.sendMessage(
           currentUser.id,
@@ -92,14 +92,14 @@ export default function ChatComponent() {
           messageInput
         );
 
-        setMessageInput("");
+        setMessageInput('');
         const updatedMessages = await MessagingAPI.getConversation(
           currentUser.id,
           selectedUser.userId
         );
         setConversationMessages(updatedMessages);
       } catch (error) {
-        console.error("Error sending message:", error);
+        console.error('Error sending message:', error);
       }
     }
   };
@@ -114,7 +114,7 @@ export default function ChatComponent() {
         );
         setConversationMessages(messages);
       } catch (error) {
-        console.error("Error fetching conversation messages:", error);
+        console.error('Error fetching conversation messages:', error);
         setConversationMessages([]);
       }
     }
@@ -125,7 +125,7 @@ export default function ChatComponent() {
       const lowercasedSearchTerm = searchTerm.toLowerCase();
       const filtered = conversations.filter((user) => {
         const [firstNameSearch, lastNameSearch] =
-          lowercasedSearchTerm.split(" ");
+          lowercasedSearchTerm.split(' ');
         if (lastNameSearch) {
           return (
             user.firstName.toLowerCase().startsWith(firstNameSearch) &&
@@ -154,19 +154,24 @@ export default function ChatComponent() {
     <div>
       <NavbarComponent />
       <MDBContainer fluid className="py-5">
-        <MDBRow style={{margin:"2%", marginTop:"1%"}}>
+        <MDBRow style={{ margin: '2%', marginTop: '1%' }}>
           <MDBCol md="12">
             <MDBCard
               id="chat3"
-              style={{ borderRadius: "20px", height: "550px" }}
+              style={{ borderRadius: '20px', height: '550px' }}
             >
               <MDBCardBody>
                 <MDBRow>
-                  <MDBCol md="6" lg="5" xl="4" className="mb-4 mb-md-0"
-                    style ={{
-                      border: "1px solid #ccc",
-                      borderRadius: "6px",
-                    }}>
+                  <MDBCol
+                    md="6"
+                    lg="5"
+                    xl="4"
+                    className="mb-4 mb-md-0"
+                    style={{
+                      border: '1px solid #ccc',
+                      borderRadius: '6px',
+                    }}
+                  >
                     <div className="p-3">
                       <MDBInputGroup className="rounded mb-3">
                         <input
@@ -186,9 +191,9 @@ export default function ChatComponent() {
 
                       <div
                         style={{
-                          position: "relative",
-                          height: "400px",
-                          overflowY: "auto",
+                          position: 'relative',
+                          height: '400px',
+                          overflowY: 'auto',
                         }}
                       >
                         <MDBTypography listUnStyled className="mb-0">
@@ -240,9 +245,9 @@ export default function ChatComponent() {
                         <div
                           ref={messageContainerRef}
                           style={{
-                            position: "relative",
-                            height: "400px",
-                            overflowY: "auto",
+                            position: 'relative',
+                            height: '400px',
+                            overflowY: 'auto',
                           }}
                           className="pt-3 pe-3"
                         >
@@ -264,10 +269,10 @@ export default function ChatComponent() {
                                 key={index}
                                 className={`d-flex flex-row ${
                                   isCurrentUser
-                                    ? "justify-content-end"
-                                    : "justify-content-start"
+                                    ? 'justify-content-end'
+                                    : 'justify-content-start'
                                 } mb-2`}
-                                style={{ alignItems: "flex-start" }}
+                                style={{ alignItems: 'flex-start' }}
                               >
                                 {!isCurrentUser && (
                                   <OptimizedImage
@@ -277,33 +282,33 @@ export default function ChatComponent() {
                                     )}
                                     alt="avatar"
                                     style={{
-                                      width: "45px",
-                                      height: "45px",
-                                      marginRight: "10px",
+                                      width: '45px',
+                                      height: '45px',
+                                      marginRight: '10px',
                                     }}
                                   />
                                 )}
                                 <div
                                   style={{
-                                    maxWidth: "70%",
-                                    wordWrap: "break-word",
-                                    whiteSpace: "pre-wrap",
-                                    display: "flex",
-                                    flexDirection: "column",
+                                    maxWidth: '70%',
+                                    wordWrap: 'break-word',
+                                    whiteSpace: 'pre-wrap',
+                                    display: 'flex',
+                                    flexDirection: 'column',
                                     alignItems: isCurrentUser
-                                      ? "flex-end"
-                                      : "flex-start",
+                                      ? 'flex-end'
+                                      : 'flex-start',
                                   }}
                                 >
                                   <p
                                     className={`small p-2 mb-1 rounded-3`}
                                     style={{
                                       backgroundColor: isCurrentUser
-                                        ? "#d1e7dd"
-                                        : "#f5f6f7",
+                                        ? '#d1e7dd'
+                                        : '#f5f6f7',
                                       textAlign: isCurrentUser
-                                        ? "left"
-                                        : "right",
+                                        ? 'left'
+                                        : 'right',
                                       margin: 0,
                                     }}
                                   >
@@ -314,8 +319,8 @@ export default function ChatComponent() {
                                     style={{
                                       margin: 0,
                                       alignSelf: isCurrentUser
-                                        ? "flex-end"
-                                        : "flex-start",
+                                        ? 'flex-end'
+                                        : 'flex-start',
                                     }}
                                   >
                                     {new Date(
@@ -332,10 +337,10 @@ export default function ChatComponent() {
                             src={profileImage}
                             alt="avatar 3"
                             style={{
-                              width: "50px",
-                              height: "50px",
-                              padding: "5px",
-                              marginTop: "-15px",
+                              width: '50px',
+                              height: '50px',
+                              padding: '5px',
+                              marginTop: '-15px',
                             }}
                           />
                           <input
@@ -350,7 +355,7 @@ export default function ChatComponent() {
                             className="ms-1 text-muted"
                             href="#!"
                             onClick={sendMessage}
-                            style={{ marginTop: "-15px" }}
+                            style={{ marginTop: '-15px' }}
                           >
                             <MDBIcon fas icon="paper-plane" />
                           </a>

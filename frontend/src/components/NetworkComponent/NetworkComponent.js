@@ -11,6 +11,7 @@ import { useNavigate } from 'react-router-dom';
 import PendingUsersCardComponent from './PendingUserCardComponent';
 import { useSearchUsers } from '../../hooks/useSearchUsers';
 import ConfirmActionModal from '../common/ConfirmActionModal';
+import SearchInput from '../common/SearchInput';
 import './NetworkComponent.scss';
 
 const NetworkComponent = () => {
@@ -152,16 +153,12 @@ const NetworkComponent = () => {
         {/* Search Bar */}
         <div className="search-section">
           <div className="search-bar-wrapper">
-            <input
-              type="text"
-              className="search-input-modern"
-              placeholder="Search users by name, job title, or company..."
+            <SearchInput
               value={searchTerm}
-              onChange={(e) => handleSearchChange(e.target.value)}
+              onChange={handleSearchChange}
+              placeholder="Search users by name, job title, or company..."
+              isLoading={isSearchActive && isLoading}
             />
-            {isSearchActive && isLoading && (
-              <div className="search-loading">Searching...</div>
-            )}
           </div>
         </div>
 

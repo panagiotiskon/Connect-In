@@ -33,19 +33,13 @@ const RegisterComponent = () => {
       return;
     }
 
-    if (!photo) {
-      setPhotoError('Photo is required.');
-      setLoading(false);
-      return;
-    }
-
     try {
       await register(
         data.email,
         data.name,
         data.surname,
         data.password,
-        data.phoneNumber,
+        data.phoneNumber || null,
         photo
       );
       navigate('/home');
@@ -199,16 +193,14 @@ const RegisterComponent = () => {
                 placeholder="Repeat Password"
                 {...formRegister('repeatPassword', {
                   required: 'Please confirm your password',
+                  validate: (value) =>
+                    value === watch('password') || 'Passwords do not match',
                 })}
-                className={
-                  watch('password') !== watch('repeatPassword')
-                    ? 'is-invalid'
-                    : ''
-                }
+                className={errors.repeatPassword ? 'is-invalid' : ''}
               />
-              {watch('password') !== watch('repeatPassword') && (
+              {errors.repeatPassword && (
                 <div className="invalid-feedback d-block">
-                  Passwords do not match.
+                  {errors.repeatPassword.message}
                 </div>
               )}
             </div>
@@ -225,7 +217,6 @@ const RegisterComponent = () => {
                     : 'Phone Number'
                 }
                 {...formRegister('phoneNumber', {
-                  required: 'Phone number is required',
                   pattern: {
                     value: /^[0-9]{10}$/,
                     message: 'Phone number must contain 10 digits',

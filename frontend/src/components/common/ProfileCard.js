@@ -5,9 +5,9 @@ import FileService from '../../api/UserFilesApi';
 import OptimizedImage from './OptimizedImage';
 import './ProfileCard.scss';
 
-const ProfileCard = ({ currentUser }) => {
+const ProfileCard = ({ currentUser, isViewOnly = false }) => {
   const navigate = useNavigate();
-  const [profileImage, setProfileImage] = useState(null);
+  const [profileImage, setProfileImage] = useState('/593.jpg');
 
   useEffect(() => {
     if (!currentUser) return;
@@ -43,23 +43,31 @@ const ProfileCard = ({ currentUser }) => {
         </p>
         <p className="profile-card__email">{currentUser.email}</p>
 
-        <div className="profile-card__divider" />
+        {!isViewOnly && (
+          <>
+            <div className="profile-card__divider" />
 
-        <div
-          className="profile-card__network"
-          onClick={() => navigate('/network')}
-        >
-          <MDBIcon fas icon="user-friends" />
-          <span className="profile-card__network-label">Your Network</span>
-          <MDBIcon fas icon="chevron-right" className="profile-card__network-chevron" />
-        </div>
+            <div
+              className="profile-card__network"
+              onClick={() => navigate('/network')}
+            >
+              <MDBIcon fas icon="user-friends" />
+              <span className="profile-card__network-label">Your Network</span>
+              <MDBIcon
+                fas
+                icon="chevron-right"
+                className="profile-card__network-chevron"
+              />
+            </div>
 
-        <button
-          className="profile-card__cta"
-          onClick={() => navigate('/profile')}
-        >
-          View Profile
-        </button>
+            <button
+              className="profile-card__cta"
+              onClick={() => navigate('/profile')}
+            >
+              View Profile
+            </button>
+          </>
+        )}
       </div>
     </div>
   );

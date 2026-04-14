@@ -58,29 +58,37 @@ const LoginComponent = () => {
         <h2 className="subheading">Welcome to your professional community! </h2>
         <form onSubmit={handleSubmit(onSubmit)}>
           <MDBContainer>
-            <MDBInput
-              size="lg"
-              wrapperClass="mb-4 wide-input"
-              label="Email"
-              id="form1"
-              type="email"
-              placeholder={errors.email ? errors.email.message : 'Email'}
-              {...register('email', { required: 'Email is required' })}
-              className={errors.email ? 'is-invalid' : ''}
-            />
+            <div className="form-group mb-4">
+              <MDBInput
+                size="lg"
+                label="Email"
+                id="form1"
+                type="email"
+                {...register('email', { required: 'Email is required' })}
+                className={errors.email ? 'is-invalid' : ''}
+              />
+              {errors.email && (
+                <div className="invalid-feedback d-block">
+                  {errors.email.message}
+                </div>
+              )}
+            </div>
 
-            <MDBInput
-              size="lg"
-              wrapperClass="mb-4 wide-input"
-              label="Password"
-              id="form2"
-              type="password"
-              placeholder={
-                errors.password ? errors.password.message : 'Password'
-              }
-              {...register('password', { required: 'Password is required' })}
-              className={errors.password ? 'is-invalid' : ''}
-            />
+            <div className="form-group mb-4">
+              <MDBInput
+                size="lg"
+                label="Password"
+                id="form2"
+                type="password"
+                {...register('password', { required: 'Password is required' })}
+                className={errors.password ? 'is-invalid' : ''}
+              />
+              {errors.password && (
+                <div className="invalid-feedback d-block">
+                  {errors.password.message}
+                </div>
+              )}
+            </div>
             <div className="text-center">
               <MDBBtn
                 type="submit"

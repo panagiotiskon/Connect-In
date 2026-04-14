@@ -18,6 +18,7 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
@@ -89,10 +90,13 @@ public class UserService {
         } catch (ResponseStatusException e) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Email already exists");
         }
-        try {
-            fileService.store(userRegisterRequest.getProfilePicture(), true, user.getId()); // Adjusted to directly use the MultipartFile
-        } catch (IOException e) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Profile picture cannot be saved");
+        MultipartFile profilePicture = userRegisterRequest.getProfilePicture();
+        if (profilePicture != null && !profilePicture.isEmpty()) {
+            try {
+                fileService.store(profilePicture, true, user.getId());
+            } catch (IOException e) {
+                throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Profile picture cannot be saved");
+            }
         }
 
     }
