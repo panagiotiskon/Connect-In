@@ -430,8 +430,6 @@ const ProfileComponent = () => {
           </MDBCol>
         </MDBRow>
       </MDBContainer>
-
-      {/* Add / Edit Modal */}
       <AddEditModal
         showModal={showModal}
         handleModalClose={handleModalClose}

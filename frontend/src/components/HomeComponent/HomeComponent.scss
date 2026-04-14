@@ -1,12 +1,16 @@
 .home-container {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 0 1rem;
+  padding: 1.5rem 1rem 0;
 }
 
 @keyframes skeleton-shimmer {
-  0% { background-position: -400px 0; }
-  100% { background-position: 400px 0; }
+  0% {
+    background-position: -400px 0;
+  }
+  100% {
+    background-position: 400px 0;
+  }
 }
 
 .post-skeleton {
@@ -49,8 +53,19 @@
 .skeleton-line {
   height: 12px;
 
-  &--name  { width: 40%; }
-  &--date  { width: 25%; height: 10px; }
-  &--body  { width: 100%; height: 14px; margin-bottom: 0.5rem; }
-  &--short { width: 65%; }
+  &--name {
+    width: 40%;
+  }
+  &--date {
+    width: 25%;
+    height: 10px;
+  }
+  &--body {
+    width: 100%;
+    height: 14px;
+    margin-bottom: 0.5rem;
+  }
+  &--short {
+    width: 65%;
+  }
 }
