@@ -104,7 +104,7 @@ const RegisterComponent = () => {
                   type="text"
                   placeholder="First Name"
                   {...formRegister('name', {
-                    required: '',
+                    required: 'First name is required',
                     minLength: {
                       value: 3,
                       message: 'First name must be at least 3 characters long',
