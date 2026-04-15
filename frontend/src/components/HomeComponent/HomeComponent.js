@@ -14,7 +14,7 @@ import './HomeComponent.scss';
 
 const HomeComponent = () => {
   const { user: currentUser } = useAuth();
-  const [profileImage, setProfileImage] = useState('/593.jpg');
+  const [profileImage, setProfileImage] = useState('');
   const [postContent, setPostContent] = useState('');
   const [uploadedFile, setUploadedFile] = useState(null);
   const [posts, setPosts] = useState([]);

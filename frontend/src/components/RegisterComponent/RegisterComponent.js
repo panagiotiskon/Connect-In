@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { MDBContainer, MDBInput, MDBBtn, MDBSpinner } from 'mdb-react-ui-kit';
+import { Form, Row, Col } from 'react-bootstrap';
+import { MDBSpinner } from 'mdb-react-ui-kit';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { useAuth } from '../../context/AuthContext';
@@ -7,6 +8,8 @@ import ConnectInLogo from '../../assets/ConnectIn.png';
 import PhotoUpload from './PhotoUpload';
 import FooterComponent from '../common/FooterComponent';
 import './RegisterComponent.scss';
+
+const Required = () => <span className="required-mark">*</span>;
 
 const RegisterComponent = () => {
   const {
@@ -69,204 +72,177 @@ const RegisterComponent = () => {
 
   return (
     <div className="register-wrapper">
-      <div className="width-100 d-flex align-items-start">
-        <img
-          src={ConnectInLogo}
-          alt="ConnectIn Logo"
-          className="connectInLogo"
-        />
-      </div>
+      <img src={ConnectInLogo} alt="ConnectIn Logo" className="connectInLogo" />
       <div className="form-container">
-        <h2 className="subheading">Make the most of your professional life</h2>
-        <form onSubmit={handleSubmit(onSubmit)}>
-          <MDBContainer>
-            <div className="form-group mb-4">
-              <MDBInput
-                size="lg"
-                label="Email"
-                id="form2"
-                type="email"
-                placeholder={errors.email ? errors.email.message : 'Email'}
-                {...formRegister('email', {
-                  required: 'Email is required',
-                })}
-                className={errors.email ? 'is-invalid' : ''}
-              />
-              {errors.email && (
-                <div className="invalid-feedback d-block">
-                  {errors.email.message}
-                </div>
-              )}
-            </div>
+        <h2 className="form-subheading">
+          Make the most of your professional life
+        </h2>
 
-            <div className="form-group mb-4">
-              <MDBInput
-                size="lg"
-                label="First Name"
-                id="form1"
-                type="text"
-                placeholder={errors.name ? errors.name.message : 'First Name'}
-                {...formRegister('name', {
-                  required: 'First name is required',
-                  minLength: {
-                    value: 3,
-                    message: 'First name must be at least 3 characters long',
-                  },
-                  maxLength: {
-                    value: 20,
-                    message: 'First name must be less than 20 characters long',
-                  },
-                })}
-                className={errors.name ? 'is-invalid' : ''}
-              />
-              {errors.name && (
-                <div className="invalid-feedback d-block">
-                  {errors.name.message}
-                </div>
-              )}
-            </div>
+        <form className="auth-form" onSubmit={handleSubmit(onSubmit)}>
+          <Form.Group className="mb-3" controlId="registerEmail">
+            <Form.Label>
+              Email <Required />
+            </Form.Label>
+            <Form.Control
+              type="email"
+              placeholder="Email"
+              {...formRegister('email', { required: 'Email is required' })}
+              isInvalid={!!errors.email}
+            />
+            <Form.Control.Feedback type="invalid">
+              {errors.email?.message}
+            </Form.Control.Feedback>
+          </Form.Group>
 
-            <div className="form-group mb-4">
-              <MDBInput
-                size="lg"
-                label="Last Name"
-                id="form1"
-                type="text"
-                placeholder={
-                  errors.surname ? errors.surname.message : 'Last Name'
-                }
-                {...formRegister('surname', {
-                  required: 'Last name is required',
-                  minLength: {
-                    value: 3,
-                    message: 'Last name must be at least 3 characters long',
-                  },
-                  maxLength: {
-                    value: 20,
-                    message: 'Last name must be less than 20 characters long',
-                  },
-                })}
-                className={errors.surname ? 'is-invalid' : ''}
-              />
-              {errors.surname && (
-                <div className="invalid-feedback d-block">
-                  {errors.surname.message}
-                </div>
-              )}
-            </div>
+          <Row>
+            <Col xs={12} sm={6}>
+              <Form.Group className="mb-3" controlId="registerName">
+                <Form.Label>
+                  First Name <Required />
+                </Form.Label>
+                <Form.Control
+                  type="text"
+                  placeholder="First Name"
+                  {...formRegister('name', {
+                    required: '',
+                    minLength: {
+                      value: 3,
+                      message: 'First name must be at least 3 characters long',
+                    },
+                    maxLength: {
+                      value: 20,
+                      message:
+                        'First name must be less than 20 characters long',
+                    },
+                  })}
+                  isInvalid={!!errors.name}
+                />
+                <Form.Control.Feedback type="invalid">
+                  {errors.name?.message}
+                </Form.Control.Feedback>
+              </Form.Group>
+            </Col>
 
-            <div className="form-group mb-4">
-              <MDBInput
-                size="lg"
-                label="Password"
-                id="form3"
-                type="password"
-                placeholder={
-                  errors.password ? errors.password.message : 'Password'
-                }
-                {...formRegister('password', {
-                  required: 'Password is required',
-                  minLength: {
-                    value: 6,
-                    message: 'Password must be at least 6 characters long',
-                  },
-                  maxLength: {
-                    value: 20,
-                    message: 'Password must be less than 20 characters long',
-                  },
-                })}
-                className={errors.password ? 'is-invalid' : ''}
-              />
-              {errors.password && (
-                <div className="invalid-feedback d-block">
-                  {errors.password.message}
-                </div>
-              )}
-            </div>
+            <Col xs={12} sm={6}>
+              <Form.Group controlId="registerSurname">
+                <Form.Label>
+                  Last Name <Required />
+                </Form.Label>
+                <Form.Control
+                  type="text"
+                  placeholder="Last Name"
+                  {...formRegister('surname', {
+                    required: 'Last name is required',
+                    minLength: {
+                      value: 3,
+                      message: 'Last name must be at least 3 characters long',
+                    },
+                    maxLength: {
+                      value: 20,
+                      message: 'Last name must be less than 20 characters long',
+                    },
+                  })}
+                  isInvalid={!!errors.surname}
+                />
+                <Form.Control.Feedback type="invalid">
+                  {errors.surname?.message}
+                </Form.Control.Feedback>
+              </Form.Group>
+            </Col>
+          </Row>
 
-            <div className="form-group mb-4">
-              <MDBInput
-                size="lg"
-                label="Repeat Password"
-                id="form4"
-                type="password"
-                placeholder="Repeat Password"
-                {...formRegister('repeatPassword', {
-                  required: 'Please confirm your password',
-                  validate: (value) =>
-                    value === watch('password') || 'Passwords do not match',
-                })}
-                className={errors.repeatPassword ? 'is-invalid' : ''}
-              />
-              {errors.repeatPassword && (
-                <div className="invalid-feedback d-block">
-                  {errors.repeatPassword.message}
-                </div>
-              )}
-            </div>
+          <Form.Group className="mb-3" controlId="registerPassword">
+            <Form.Label>
+              Password <Required />
+            </Form.Label>
+            <Form.Control
+              type="password"
+              placeholder="Password"
+              {...formRegister('password', {
+                required: 'Password is required',
+                minLength: {
+                  value: 6,
+                  message: 'Password must be at least 6 characters long',
+                },
+                maxLength: {
+                  value: 20,
+                  message: 'Password must be less than 20 characters long',
+                },
+              })}
+              isInvalid={!!errors.password}
+            />
+            <Form.Control.Feedback type="invalid">
+              {errors.password?.message}
+            </Form.Control.Feedback>
+          </Form.Group>
 
-            <div className="form-group mb-4">
-              <MDBInput
-                size="lg"
-                label="Phone Number"
-                id="form1"
-                type="tel"
-                placeholder={
-                  errors.phoneNumber
-                    ? errors.phoneNumber.message
-                    : 'Phone Number'
-                }
-                {...formRegister('phoneNumber', {
-                  pattern: {
-                    value: /^[0-9]{10}$/,
-                    message: 'Phone number must contain 10 digits',
-                  },
-                })}
-                className={errors.phoneNumber ? 'is-invalid' : ''}
-              />
-              {errors.phoneNumber && (
-                <div className="invalid-feedback d-block">
-                  {errors.phoneNumber.message}
-                </div>
-              )}
-            </div>
+          <Form.Group className="mb-3" controlId="registerRepeatPassword">
+            <Form.Label>
+              Repeat Password <Required />
+            </Form.Label>
+            <Form.Control
+              type="password"
+              placeholder="Repeat Password"
+              {...formRegister('repeatPassword', {
+                required: 'Please confirm your password',
+                validate: (value) =>
+                  value === watch('password') || 'Passwords do not match',
+              })}
+              isInvalid={!!errors.repeatPassword}
+            />
+            <Form.Control.Feedback type="invalid">
+              {errors.repeatPassword?.message}
+            </Form.Control.Feedback>
+          </Form.Group>
 
-            <div className="form-group mb-4">
+          <Form.Group className="mb-3" controlId="registerPhone">
+            <Form.Label>
+              Phone Number <span className="optional-mark">(optional)</span>
+            </Form.Label>
+            <Form.Control
+              type="tel"
+              placeholder="Phone Number"
+              {...formRegister('phoneNumber', {
+                pattern: {
+                  value: /^[0-9]{10}$/,
+                  message: 'Phone number must contain 10 digits',
+                },
+              })}
+              isInvalid={!!errors.phoneNumber}
+            />
+            <Form.Control.Feedback type="invalid">
+              {errors.phoneNumber?.message}
+            </Form.Control.Feedback>
+          </Form.Group>
+
+          <Form.Group className="mb-3">
+            <Form.Label>
+              Profile Photo <span className="optional-mark">(optional)</span>
+            </Form.Label>
+            <div>
               <PhotoUpload onFileUpload={handleFileUpload} />
-              {photoError && (
-                <div
-                  style={{ marginTop: '8px' }}
-                  className="invalid-feedback d-block"
-                >
-                  {photoError}
-                </div>
-              )}
             </div>
-
-            <div className="text-center">
-              <MDBBtn
-                type="submit"
-                size="lg"
-                className="sign-in-button"
-                disabled={loading}
-              >
-                {loading && (
-                  <MDBSpinner className="mx-2" size="sm" color="secondary">
-                    <span className="visually-hidden"></span>
-                  </MDBSpinner>
-                )}
-                <span>Register</span>
-              </MDBBtn>
-            </div>
-
-            {message && (
-              <div className="form-group">
-                <div className="alert alert-danger" role="alert">
-                  {message}
-                </div>
-              </div>
+            {photoError && (
+              <div className="invalid-feedback d-block">{photoError}</div>
             )}
-          </MDBContainer>
+          </Form.Group>
+
+          <div className="text-center">
+            <button type="submit" className="btn-gradient" disabled={loading}>
+              {loading && (
+                <MDBSpinner size="sm" color="light">
+                  <span className="visually-hidden" />
+                </MDBSpinner>
+              )}
+              Register
+            </button>
+          </div>
+
+          {message && (
+            <div className="alert alert-danger mt-3" role="alert">
+              {message}
+            </div>
+          )}
         </form>
 
         <div

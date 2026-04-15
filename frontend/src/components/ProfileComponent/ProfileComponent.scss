@@ -263,6 +263,21 @@
       border-color: #35677e;
       box-shadow: 0 0 0 3px rgba(53, 103, 126, 0.1);
     }
+
+    &.is-invalid {
+      border-color: #dc3545;
+      background-image: none;     // suppress Bootstrap's warning icon
+      padding-right: 0.9rem;      // reset Bootstrap's extra icon padding
+
+      &:focus {
+        border-color: #dc3545;
+        box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.12);
+      }
+    }
+  }
+
+  .invalid-feedback {
+    font-size: 0.8rem;
   }
 
   .form-check-input {

@@ -3,38 +3,49 @@ import OptimizedImage from '../common/OptimizedImage';
 import './PostCard.scss';
 
 const PostCard = ({
-  post,
+  post = {},
   currentUser,
-  hasReacted,
-  commentInput,
-  commentError,
-  userComments,
-  onReactionToggle,
-  onCommentInputChange,
-  onCommentSubmit,
-  onDeletePost,
-  onDeleteComment,
+  hasReacted = false,
+  commentInput = '',
+  commentError = null,
+  userComments = {},
+  onReactionToggle = () => {},
+  onCommentInputChange = () => {},
+  onCommentSubmit = () => {},
+  onDeletePost = () => {},
+  onDeleteComment = () => {},
 }) => {
+  const {
+    id,
+    userId,
+    posterImage,
+    posterName,
+    createdAt,
+    content,
+    file,
+    comments,
+  } = post;
+
   return (
-    <MDBCard data-post-id={post.id} className="post-card shadow-0">
+    <MDBCard data-post-id={id} className="post-card shadow-0">
       <MDBCardBody className="post-card-body">
         {/* Header: avatar + name + timestamp + delete */}
         <div className="post-header">
           <OptimizedImage
-            src={post.posterImage}
+            src={posterImage}
             className="post-header-avatar"
             alt="Poster Avatar"
           />
           <div className="post-header-info">
-            <span className="post-author">{post.posterName}</span>
+            <span className="post-author">{posterName}</span>
             <span className="post-timestamp">
-              {new Date(post.createdAt).toLocaleString()}
+              {createdAt && new Date(createdAt).toLocaleString()}
             </span>
           </div>
-          {currentUser?.id === post.userId && (
+          {currentUser?.id === userId && (
             <button
               className="post-delete-btn"
-              onClick={() => onDeletePost(post.id)}
+              onClick={() => onDeletePost(id)}
               aria-label="Delete post"
             >
               <MDBIcon fas icon="times" />
@@ -43,30 +54,30 @@ const PostCard = ({
         </div>
 
         {/* Post text */}
-        {post.content && <p className="post-content-text">{post.content}</p>}
+        {content && <p className="post-content-text">{content}</p>}
 
         {/* Media */}
-        {post.file && (
+        {file && (
           <div className="post-media">
-            {post.file.type.startsWith('image/') && (
+            {file?.type?.startsWith('image/') && (
               <OptimizedImage
-                src={`data:${post.file.type};base64,${post.file.data}`}
+                src={`data:${file.type};base64,${file.data}`}
                 alt="Post content"
               />
             )}
-            {post.file.type.startsWith('video/') && (
+            {file?.type?.startsWith('video/') && (
               <video controls>
                 <source
-                  src={`data:${post.file.type};base64,${post.file.data}`}
-                  type={post.file.type}
+                  src={`data:${file.type};base64,${file.data}`}
+                  type={file.type}
                 />
               </video>
             )}
-            {post.file.type.startsWith('audio/') && (
+            {file?.type?.startsWith('audio/') && (
               <audio controls>
                 <source
-                  src={`data:${post.file.type};base64,${post.file.data}`}
-                  type={post.file.type}
+                  src={`data:${file.type};base64,${file.data}`}
+                  type={file.type}
                 />
               </audio>
             )}
@@ -79,7 +90,7 @@ const PostCard = ({
         <div className="post-actions">
           <button
             className={`reaction-btn${hasReacted ? ' reacted' : ''}`}
-            onClick={() => onReactionToggle(post.id)}
+            onClick={() => onReactionToggle(id)}
           >
             {hasReacted ? '👌🏻 Reacted' : '👆🏻 React'}
           </button>
@@ -94,11 +105,11 @@ const PostCard = ({
             className={`comment-input${commentError ? ' comment-input--error' : ''}`}
             placeholder="Add a comment..."
             value={commentInput || ''}
-            onChange={(e) => onCommentInputChange(post.id, e.target.value)}
+            onChange={(e) => onCommentInputChange(id, e.target.value)}
           />
           <MDBBtn
             className="comment-submit-btn"
-            onClick={() => onCommentSubmit(post.id)}
+            onClick={() => onCommentSubmit(id)}
           >
             Comment
           </MDBBtn>
@@ -106,39 +117,39 @@ const PostCard = ({
         {commentError && <p className="comment-error">{commentError}</p>}
 
         {/* Comments list */}
-        {post.comments?.length > 0 && (
+        {comments?.length > 0 && (
           <div className="comments-list">
-            {post.comments.map((comment) => (
-              <div key={comment.commentId} className="comment-item">
-                <OptimizedImage
-                  src={comment.profileImage || '/593.jpg'}
-                  className="comment-item-avatar"
-                  alt="Commenter Avatar"
-                />
-                <div className="comment-bubble">
-                  <span className="comment-bubble-author">
-                    {comment.username}
-                  </span>
-                  <p className="comment-bubble-text">{comment.content}</p>
-                  <div className="comment-meta">
-                    <span className="comment-time">
-                      {new Date(comment.createdAt).toLocaleString()}
-                    </span>
-                    {userComments[post.id]?.includes(comment.commentId) && (
-                      <button
-                        className="delete-comment-btn"
-                        onClick={() =>
-                          onDeleteComment(post.id, comment.commentId)
-                        }
-                        aria-label="Delete comment"
-                      >
-                        &#10005;
-                      </button>
-                    )}
+            {comments.map((comment) => {
+              const { commentId, username, profileImage, content, createdAt } =
+                comment;
+              return (
+                <div key={commentId} className="comment-item">
+                  <OptimizedImage
+                    src={profileImage || '/593.jpg'}
+                    className="comment-item-avatar"
+                    alt="Commenter Avatar"
+                  />
+                  <div className="comment-bubble">
+                    <span className="comment-bubble-author">{username}</span>
+                    <p className="comment-bubble-text">{content}</p>
+                    <div className="comment-meta">
+                      <span className="comment-time">
+                        {createdAt && new Date(createdAt).toLocaleString()}
+                      </span>
+                      {userComments[id]?.includes(commentId) && (
+                        <button
+                          className="delete-comment-btn"
+                          onClick={() => onDeleteComment(id, commentId)}
+                          aria-label="Delete comment"
+                        >
+                          &#10005;
+                        </button>
+                      )}
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </MDBCardBody>

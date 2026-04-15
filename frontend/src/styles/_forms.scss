@@ -1,0 +1,154 @@
+// ── Shared Auth Form Styles ──────────────────────────────────────────────────
+// Used by LoginComponent and RegisterComponent.
+// Profile modal has its own scoped styles in ProfileComponent.scss but uses
+// the same visual tokens (colours, radii, focus ring) for consistency.
+
+// ── Page background ──
+body {
+  background-color: #f3f2ef;
+}
+
+// ── Logo ──
+.connectInLogo {
+  width: 200px;
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 0 auto 20px auto;
+}
+
+// ── Card container ──
+.form-container {
+  background-color: #fff;
+  padding: 40px;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 400px;
+}
+
+// ── Heading inside the card ──
+.form-subheading {
+  color: #35677e;
+  font-size: 25px;
+  font-weight: 550;
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+// ── Input group (scoped to avoid colliding with other Bootstrap controls) ──
+.auth-form {
+  .form-label {
+    font-weight: 600;
+    color: #374151;
+    font-size: 0.875rem;
+    margin-bottom: 0.4rem;
+  }
+
+  // Required field asterisk
+  .required-mark {
+    color: #ef4444;
+    margin-left: 3px;
+    font-weight: 700;
+  }
+
+  .form-control {
+    border: 1.5px solid #e8e8e8;
+    border-radius: 8px;
+    padding: 0.65rem 0.9rem;
+    font-size: 0.9rem;
+    transition: border-color 0.2s, box-shadow 0.2s;
+
+    &:focus {
+      border-color: #35677e;
+      box-shadow: 0 0 0 3px rgba(53, 103, 126, 0.1);
+      outline: none;
+    }
+
+    &.is-invalid {
+      border-color: #dc3545;
+      background-image: none;   // suppress Bootstrap's warning icon
+      padding-right: 0.9rem;    // reset Bootstrap's extra icon padding
+
+      &:focus {
+        border-color: #dc3545;
+        box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.12);
+      }
+    }
+  }
+
+  .invalid-feedback {
+    font-size: 0.8rem;
+  }
+}
+
+// ── Shared gradient button ──
+.btn-gradient {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  margin: 5% auto;
+  width: 100%;
+  max-width: 350px;
+  height: 45px;
+  background: linear-gradient(135deg, #1a8a9a 0%, #35677e 50%, #5b4fcf 100%);
+  background-size: 200% 200%;
+  background-position: left center;
+  border: none;
+  border-radius: 8px;
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-position 0.4s ease;
+
+  &:hover:not(:disabled) {
+    background-position: right center;
+  }
+
+  &:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+  }
+}
+
+// ── Bottom link (sign in / join now) ──
+.link {
+  color: #35677e;
+  text-decoration: none;
+  font-size: 15px;
+  margin-top: 15px;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.inner-footer-text {
+  text-align: center;
+  font-size: 15px;
+  color: #666;
+  margin-top: 30px;
+}
+
+// ── Page footer ──
+.footer {
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+  color: #fff;
+  background-color: #35677e;
+  text-align: center;
+  font-size: 10pt;
+  overflow: hidden;
+  display: flex;
+  align-items: center !important;
+  justify-content: center;
+  margin-top: 5px;
+}
+
+.footer-text {
+  margin-top: 5px;
+  margin-bottom: 5px;
+}

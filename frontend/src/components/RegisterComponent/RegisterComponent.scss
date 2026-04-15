@@ -1,47 +1,35 @@
-body {
-  background-color: #f3f2ef;
-}
+@use '../../styles/forms';
 
+// Mobile-first: baseline rules target the smallest viewport,
+// then enhance upwards at the Bootstrap `sm` breakpoint (≥576 px).
 .register-wrapper {
-  margin-top: auto;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
   min-height: 100vh;
-  padding: 20px;
+  // Don't vertically center — the form is taller than most viewports.
+  // Top padding gives breathing room, bottom padding clears the fixed footer.
+  padding: 24px 16px 120px;
+
+  @media (min-width: 576px) {
+    padding: 48px 20px 140px;
+  }
 }
 
-.form-container {
-  margin-bottom: 100px;
-  background-color: white;
-  border-radius: 10px;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-  width: 100%;
-  max-width: 400px;
+// Wider card for the register form (login stays at 400 px)
+.register-wrapper .form-container {
+  max-width: 560px;
+  padding: 24px 20px;
+
+  @media (min-width: 576px) {
+    padding: 32px 40px;
+  }
 }
 
-.connectInLogo {
-  width: 200px;
+// Let the submit button fill the full content width on the wider card
+.register-wrapper .btn-gradient {
   max-width: 100%;
-  height: auto;
-  position: static;
-  display: block;
-  margin: 0 auto 20px auto;
-}
-
-.register-message {
-  color: #35677e;
-  font-size: 25px;
-  font-weight: 550;
-  text-align: center;
-  margin-bottom: 20px;
-}
-
-.wide-input {
-  width: 100%;
-  max-width: 350px;
-  margin-bottom: 20px;
+  margin: 1rem 0 0;
 }
 
 .text-center {
@@ -50,57 +38,10 @@ body {
   margin-top: 10px;
 }
 
-.register-button {
-  margin-bottom: 15px;
-  width: 100%;
-  max-width: 350px;
-  height: 45px;
-  background: linear-gradient(135deg, #1a8a9a 0%, #35677e 50%, #5b4fcf 100%) !important;
-  background-size: 200% 200% !important;
-  background-position: left center !important;
-  color: white;
-  cursor: pointer;
-  transition: background-position 0.4s ease !important;
-}
-
-.register-button:hover {
-  background-position: right center !important;
-}
-
-.link {
-  color: #35677e;
-  text-decoration: none;
-  font-size: 15px;
-  margin-top: 15px;
-}
-
-.link:hover {
-  text-decoration: underline;
-}
-
-.inner-footer-text {
-  text-align: center;
-  font-size: 15px;
-  color: #666;
-  margin-top: 30px;
-}
-
-.footer {
-  position: fixed;
-  bottom: 0;
-  width: 100%;
-  color: white;
-  background-color: #35677e;
-  text-align: center;
-  font-size: 10pt;
-  overflow: hidden;
-  display: flex;
-  align-items: center !important;
-  justify-content: center;
-  margin-top: 5px;
-}
-
-.footer-text {
-  margin-top: 5px;
-  margin-bottom: 5px;
+// "(optional)" label annotation
+.optional-mark {
+  font-size: 0.775rem;
+  font-weight: 400;
+  color: #9ca3af;
+  margin-left: 4px;
 }

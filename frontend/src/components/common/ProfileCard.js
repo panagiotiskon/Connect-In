@@ -7,7 +7,7 @@ import './ProfileCard.scss';
 
 const ProfileCard = ({ currentUser, isViewOnly = false }) => {
   const navigate = useNavigate();
-  const [profileImage, setProfileImage] = useState('/593.jpg');
+  const [profileImage, setProfileImage] = useState('');
 
   useEffect(() => {
     if (!currentUser) return;
@@ -16,6 +16,8 @@ const ProfileCard = ({ currentUser, isViewOnly = false }) => {
         const images = await FileService.getUserImages(currentUser.id);
         if (images?.length > 0) {
           setProfileImage(`data:${images[0].type};base64,${images[0].data}`);
+        } else {
+          setProfileImage('/593.jpg');
         }
       } catch (e) {
         console.error('Error fetching profile image:', e);

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { MDBContainer, MDBInput, MDBBtn, MDBSpinner } from 'mdb-react-ui-kit';
+import { Form } from 'react-bootstrap';
+import { MDBSpinner } from 'mdb-react-ui-kit';
 import { useNavigate } from 'react-router-dom';
 import './LoginComponent.scss';
 import { useAuth } from '../../context/AuthContext';
@@ -55,65 +56,54 @@ const LoginComponent = () => {
     <div className="login-wrapper">
       <img src={ConnectInLogo} alt="ConnectIn Logo" className="connectInLogo" />
       <div className="form-container">
-        <h2 className="subheading">Welcome to your professional community! </h2>
-        <form onSubmit={handleSubmit(onSubmit)}>
-          <MDBContainer>
-            <div className="form-group mb-4">
-              <MDBInput
-                size="lg"
-                label="Email"
-                id="form1"
-                type="email"
-                {...register('email', { required: 'Email is required' })}
-                className={errors.email ? 'is-invalid' : ''}
-              />
-              {errors.email && (
-                <div className="invalid-feedback d-block">
-                  {errors.email.message}
-                </div>
-              )}
-            </div>
+        <h2 className="form-subheading">
+          Welcome to your professional community!
+        </h2>
+        <form className="auth-form" onSubmit={handleSubmit(onSubmit)}>
+          <Form.Group className="mb-3" controlId="loginEmail">
+            <Form.Label>Email</Form.Label>
+            <Form.Control
+              type="email"
+              placeholder="Email"
+              {...register('email', { required: 'Email is required' })}
+              isInvalid={!!errors.email}
+            />
+            <Form.Control.Feedback type="invalid">
+              {errors.email?.message}
+            </Form.Control.Feedback>
+          </Form.Group>
 
-            <div className="form-group mb-4">
-              <MDBInput
-                size="lg"
-                label="Password"
-                id="form2"
-                type="password"
-                {...register('password', { required: 'Password is required' })}
-                className={errors.password ? 'is-invalid' : ''}
-              />
-              {errors.password && (
-                <div className="invalid-feedback d-block">
-                  {errors.password.message}
-                </div>
-              )}
-            </div>
-            <div className="text-center">
-              <MDBBtn
-                type="submit"
-                size="lg"
-                className="sign-in-button"
-                disabled={loading}
-              >
-                {loading && (
-                  <MDBSpinner className="mx-2" size="sm" color="secondary">
-                    <span className="visually-hidden"></span>
-                  </MDBSpinner>
-                )}
-                <span>Sign in</span>
-              </MDBBtn>
-            </div>
+          <Form.Group className="mb-3" controlId="loginPassword">
+            <Form.Label>Password</Form.Label>
+            <Form.Control
+              type="password"
+              placeholder="Password"
+              {...register('password', { required: 'Password is required' })}
+              isInvalid={!!errors.password}
+            />
+            <Form.Control.Feedback type="invalid">
+              {errors.password?.message}
+            </Form.Control.Feedback>
+          </Form.Group>
 
-            {message && (
-              <div className="form-group">
-                <div className="alert alert-danger" role="alert">
-                  {message}
-                </div>
-              </div>
-            )}
-          </MDBContainer>
+          <div className="text-center">
+            <button type="submit" className="btn-gradient" disabled={loading}>
+              {loading && (
+                <MDBSpinner size="sm" color="light">
+                  <span className="visually-hidden" />
+                </MDBSpinner>
+              )}
+              Sign in
+            </button>
+          </div>
+
+          {message && (
+            <div className="alert alert-danger mt-3" role="alert">
+              {message}
+            </div>
+          )}
         </form>
+
         <div
           className="text-center"
           onClick={() => {
@@ -122,7 +112,7 @@ const LoginComponent = () => {
           }}
         >
           <p className="inner-footer-text">
-            New to ConnectIn?{' '}
+            New to ConnectIn?
             <a href="#!" className="link">
               Join now
             </a>
