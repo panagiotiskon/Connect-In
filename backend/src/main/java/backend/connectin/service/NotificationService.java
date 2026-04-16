@@ -15,10 +15,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
@@ -59,7 +60,6 @@ public class NotificationService {
         // check if the user exists and is not a connection
 
         if (type == NotificationType.CONNECTION) {
-            userService.findUserOrThrow(connectionUserId);
             List<Long> ids = connectionService.getConnectedUserIds(userId);
             if (ids.contains(connectionUserId)) {
                 throw new RuntimeException("users already connected");
@@ -81,25 +81,29 @@ public class NotificationService {
     public List<NotificationResource> getNotifications(long userId) {
         userService.findUserOrThrow(userId);
 
-        List<Notification> notifications = notificationRepository.getNotificationsByUserId(userId);
+        List<Notification> notifications = notificationRepository.findByUserIdOrderByCreatedAtDesc(userId);
 
         if (notifications.isEmpty()) {
             return List.of();
         }
 
+        Set<Long> connectedUserIds = notifications.stream()
+                .map(Notification::getConnectionUserId)
+                .collect(Collectors.toSet());
+
+        Map<Long, User> userMap = userService.findUsersByIds(connectedUserIds).stream()
+                .collect(Collectors.toMap(User::getId, Function.identity()));
+
         return notifications.stream()
-                .map(notificationMapper::mapToNotificationResource)
-                .sorted(Comparator.comparing(NotificationResource::createdAt).reversed())
+                .map(n -> notificationMapper.mapToNotificationResource(n, userMap.get(n.getConnectionUserId())))
                 .toList();
     }
 
     @Transactional
     public void acceptNotification(long userId, long notificationId) {
         userService.findUserOrThrow(userId);
-        if (notificationRepository.findById(notificationId).isEmpty()) {
-            throw new RuntimeException("notification does not exist");
-        }
-        Notification notification = notificationRepository.findById(notificationId).get();
+        Notification notification = notificationRepository.findById(notificationId)
+                .orElseThrow(() -> new RuntimeException("notification does not exist"));
         connectionService.changeConnectionStatusToAccepted(userId, notification.getConnectionUserId());
         notificationRepository.delete(notification);
     }
@@ -107,18 +111,15 @@ public class NotificationService {
     @Transactional
     public void declineNotification(long userId, long notificationId) {
         userService.findUserOrThrow(userId);
-        if (notificationRepository.findById(notificationId).isEmpty()) {
-            throw new RuntimeException("notification does not exist");
-        }
-        Notification notification = notificationRepository.findById(notificationId).get();
+        Notification notification = notificationRepository.findById(notificationId)
+                .orElseThrow(() -> new RuntimeException("notification does not exist"));
         connectionService.deleteConnection(userId, notification.getConnectionUserId());
         notificationRepository.delete(notification);
     }
 
     public long getNumberOfNotifications(long userId) {
         userService.findUserOrThrow(userId);
-        List<Notification> notifications = notificationRepository.getNotificationsByUserId(userId);
-        return notifications.size();
+        return notificationRepository.countByUserId(userId);
     }
 
     @Transactional
@@ -146,10 +147,9 @@ public class NotificationService {
 
     @Transactional
     public void deleteNotificationById(long notificationId) {
-        if (notificationRepository.findById(notificationId).isEmpty()) {
-            throw new RuntimeException("notification does not exist");
-        }
-        notificationRepository.delete(notificationRepository.findById(notificationId).get());
+        Notification notification = notificationRepository.findById(notificationId)
+                .orElseThrow(() -> new RuntimeException("notification does not exist"));
+        notificationRepository.delete(notification);
     }
 
 

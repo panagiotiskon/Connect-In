@@ -83,6 +83,10 @@ public class UserService {
         return userRepository.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
     }
 
+    public List<User> findUsersByIds(Collection<Long> ids) {
+        return userRepository.findAllById(ids);
+    }
+
     @Transactional
     public void registerUser(UserRegisterRequest userRegisterRequest) {
         String email = userRegisterRequest.getEmail();
