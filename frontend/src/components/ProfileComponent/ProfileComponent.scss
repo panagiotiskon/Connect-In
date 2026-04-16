@@ -266,8 +266,8 @@
 
     &.is-invalid {
       border-color: #dc3545;
-      background-image: none;     // suppress Bootstrap's warning icon
-      padding-right: 0.9rem;      // reset Bootstrap's extra icon padding
+      background-image: none; // suppress Bootstrap's warning icon
+      padding-right: 0.9rem; // reset Bootstrap's extra icon padding
 
       &:focus {
         border-color: #dc3545;

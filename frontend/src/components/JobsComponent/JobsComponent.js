@@ -5,6 +5,7 @@ import NavbarComponent from "../common/NavBar";
 import ProfileCard from "../common/ProfileCard";
 import SortingCard from "../common/SortingCard";
 import ConfirmActionModal from "../common/ConfirmActionModal";
+import SkeletonCard from "../common/SkeletonCard";
 import { useAuth } from "../../context/AuthContext";
 import JobAPI from "../../api/JobAPI";
 import { useNavigate } from "react-router-dom";
@@ -22,6 +23,7 @@ const JobsComponent = () => {
   const [openApplicantsId, setOpenApplicantsId] = useState(null);
   const [pendingDeleteId, setPendingDeleteId] = useState(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [loadingJobs, setLoadingJobs] = useState(false);
   const { user: currentUser } = useAuth();
   const [sortingMethod, setSortingMethod] = useState("date");
   const navigate = useNavigate();
@@ -42,12 +44,20 @@ const JobsComponent = () => {
   useEffect(() => {
     const fetchJobs = async () => {
       if (currentUser) {
-        if (sortingMethod === "date") {
-          const response = await JobAPI.getJobPosts(currentUser.id);
-          setJobs(response || []);
-        } else if (sortingMethod === "relevance") {
-          const response = await JobAPI.getRecommendedJobs(currentUser.id);
-          setJobs(response || []);
+        setLoadingJobs(true);
+        try {
+          if (sortingMethod === "date") {
+            const response = await JobAPI.getJobPosts(currentUser.id);
+            setJobs(response || []);
+          } else if (sortingMethod === "relevance") {
+            const response = await JobAPI.getRecommendedJobs(currentUser.id);
+            setJobs(response || []);
+          }
+        } catch (error) {
+          console.error("Error fetching jobs:", error);
+          setJobs([]);
+        } finally {
+          setLoadingJobs(false);
         }
       }
     };
@@ -222,7 +232,9 @@ const JobsComponent = () => {
                 </button>
               </div>
               <div className="jobs-section-body">
-                {yourJobs.length === 0 ? (
+                {loadingJobs ? (
+                  <SkeletonCard count={2} />
+                ) : yourJobs.length === 0 ? (
                   <p className="jobs-empty-state">No jobs created by you.</p>
                 ) : (
                   yourJobs.map((job) => (
@@ -302,7 +314,9 @@ const JobsComponent = () => {
                 <h2 className="jobs-section-title">Other Jobs</h2>
               </div>
               <div className="jobs-section-body">
-                {otherJobs.length === 0 ? (
+                {loadingJobs ? (
+                  <SkeletonCard count={3} />
+                ) : otherJobs.length === 0 ? (
                   <p className="jobs-empty-state">No other jobs available.</p>
                 ) : (
                   otherJobs.map((job) => (

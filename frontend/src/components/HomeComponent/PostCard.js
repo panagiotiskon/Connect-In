@@ -1,5 +1,7 @@
+import { useState } from 'react';
 import { MDBCard, MDBCardBody, MDBBtn, MDBIcon } from 'mdb-react-ui-kit';
 import OptimizedImage from '../common/OptimizedImage';
+import ConfirmActionModal from '../common/ConfirmActionModal';
 import './PostCard.scss';
 
 const PostCard = ({
@@ -15,6 +17,8 @@ const PostCard = ({
   onDeletePost = () => {},
   onDeleteComment = () => {},
 }) => {
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+
   const {
     id,
     userId,
@@ -27,6 +31,15 @@ const PostCard = ({
   } = post;
 
   return (
+    <>
+    <ConfirmActionModal
+      isOpen={showDeleteModal}
+      title="Delete Post"
+      message="Are you sure you want to delete this post? This action cannot be undone."
+      confirmText="Delete"
+      onConfirm={() => { setShowDeleteModal(false); onDeletePost(id); }}
+      onCancel={() => setShowDeleteModal(false)}
+    />
     <MDBCard data-post-id={id} className="post-card shadow-0">
       <MDBCardBody className="post-card-body">
         {/* Header: avatar + name + timestamp + delete */}
@@ -45,7 +58,7 @@ const PostCard = ({
           {currentUser?.id === userId && (
             <button
               className="post-delete-btn"
-              onClick={() => onDeletePost(id)}
+              onClick={() => setShowDeleteModal(true)}
               aria-label="Delete post"
             >
               <MDBIcon fas icon="times" />
@@ -154,6 +167,7 @@ const PostCard = ({
         )}
       </MDBCardBody>
     </MDBCard>
+    </>
   );
 };
 

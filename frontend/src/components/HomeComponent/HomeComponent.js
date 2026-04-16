@@ -5,6 +5,7 @@ import ProfileCard from '../common/ProfileCard';
 import CreatePostCard from './CreatePostCard';
 import SortingCard from '../common/SortingCard';
 import PostCard from './PostCard';
+import SkeletonCard from '../common/SkeletonCard';
 import { useAuth } from '../../context/AuthContext';
 import PostService from '../../api/PostApi';
 import FileService from '../../api/UserFilesApi';
@@ -282,19 +283,7 @@ const HomeComponent = () => {
               onSortChange={setSortingMethod}
             />
             {loadingPosts ? (
-              [1, 2, 3].map((n) => (
-                <div key={n} className="post-skeleton">
-                  <div className="post-skeleton-header">
-                    <div className="skeleton-avatar" />
-                    <div className="skeleton-lines">
-                      <div className="skeleton-line skeleton-line--name" />
-                      <div className="skeleton-line skeleton-line--date" />
-                    </div>
-                  </div>
-                  <div className="skeleton-line skeleton-line--body" />
-                  <div className="skeleton-line skeleton-line--body skeleton-line--short" />
-                </div>
-              ))
+              <SkeletonCard count={3} />
             ) : posts.length > 0 ? (
               posts.map((post) => (
                 <PostCard
