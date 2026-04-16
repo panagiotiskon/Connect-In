@@ -23,15 +23,10 @@ const getUser = async (userId) => {
 
 const getEducation = async (userId) => {
   requireUserId(userId);
-  try {
-    const response = await api.get(`${BASE}/${userId}/personal-info/education`, {
-      headers: { "Content-Type": "application/json" },
-    });
-    return response.data;
-  } catch (error) {
-    console.error("Error fetching education data:", error);
-    return [];
-  }
+  const response = await api.get(`${BASE}/${userId}/personal-info/education`, {
+    headers: { "Content-Type": "application/json" },
+  });
+  return response.data;
 };
 
 const addEducation = async (userId, educationDTO) => {
@@ -63,15 +58,10 @@ const addEducation = async (userId, educationDTO) => {
 
 const getExperience = async (userId) => {
   requireUserId(userId);
-  try {
-    const response = await api.get(`${BASE}/${userId}/personal-info/experience`, {
-      headers: { "Content-Type": "application/json" },
-    });
-    return response.data;
-  } catch (error) {
-    console.error("Error fetching experience data:", error);
-    return [];
-  }
+  const response = await api.get(`${BASE}/${userId}/personal-info/experience`, {
+    headers: { "Content-Type": "application/json" },
+  });
+  return response.data;
 };
 
 const addExperience = async (userId, experienceDTO) => {
@@ -103,15 +93,10 @@ const addExperience = async (userId, experienceDTO) => {
 
 const getSkills = async (userId) => {
   requireUserId(userId);
-  try {
-    const response = await api.get(`${BASE}/${userId}/personal-info/skills`, {
-      headers: { "Content-Type": "application/json" },
-    });
-    return response.data;
-  } catch (error) {
-    console.error("Error fetching skills data:", error);
-    return [];
-  }
+  const response = await api.get(`${BASE}/${userId}/personal-info/skills`, {
+    headers: { "Content-Type": "application/json" },
+  });
+  return response.data;
 };
 
 const addSkill = async (userId, skillDTO) => {

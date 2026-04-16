@@ -21,6 +21,8 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+
+import java.security.Principal;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -101,13 +103,12 @@ public class AuthController {
     }
 
     @GetMapping("/current-user")
-    public ResponseEntity<UserDTO> getCurrentUser(@CookieValue(value = "accessToken", required = false) String token) {
-        if (token == null || token.isEmpty()) {
+    public ResponseEntity<UserDTO> getCurrentUser(Principal principal) {
+        if (principal == null) {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
         try {
-            String email = jwtGenerator.getUsernameFromJWT(token);
-            User user = userService.findUserByEmail(email)
+            User user = userService.findUserByEmail(principal.getName())
                     .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
 
             UserDTO userDTO = userMapper.mapToUserDTO(user);

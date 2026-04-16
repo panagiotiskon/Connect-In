@@ -32,7 +32,7 @@ public interface ConnectionRepository extends JpaRepository<Connection, Long> {
 
     @Modifying
     @Query("UPDATE Connection c SET c.status = :status WHERE (c.userId1 = :userId1 AND c.userId2 = :userId2) OR (c.userId1 = :userId2 AND c.userId2 = :userId1)")
-    void updateConnectionStatus(Long userId1, Long userId2, ConnectionStatus status);
+    void updateConnectionStatus(@Param("userId1") Long userId1, @Param("userId2") Long userId2, @Param("status") ConnectionStatus status);
 
     @Modifying
     @Query("DELETE FROM Connection c WHERE (c.userId1 = :userId AND c.userId2 = :connectionUserId) OR (c.userId1 = :connectionUserId AND c.userId2 = :userId)")

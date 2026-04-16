@@ -1,15 +1,17 @@
 import React from 'react';
 import { MDBCheckbox } from 'mdb-react-ui-kit';
 import OptimizedImage from '../common/OptimizedImage';
+import useProfileImage from '../../hooks/useProfileImage';
 import './AdminUserCard.scss';
 
 const AdminUserCard = ({
   user,
-  profileImage,
   isSelected,
   onSelect,
   onViewProfile,
 }) => {
+  const { profileImage } = useProfileImage(user?.id);
+
   return (
     <div className="admin-user-card">
       <div className="admin-user-card__banner" />
@@ -17,7 +19,7 @@ const AdminUserCard = ({
       <div className="admin-user-card__body">
         <div className="admin-user-card__avatar-wrap">
           <OptimizedImage
-            src={profileImage || 'https://via.placeholder.com/150'}
+            src={profileImage}
             alt={`${user.firstName} ${user.lastName}`}
             className="admin-user-card__avatar"
           />

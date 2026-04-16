@@ -152,11 +152,11 @@ public class UserService {
 
     public List<Skill> getSkills(long userId) {
         if (userRepository.findById(userId).isEmpty()) {
-            return List.of();
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found");
         }
         PersonalInfo personalInfo = personalInfoRepository.findByUserId(userId);
         if (personalInfo == null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Personal Info not found");
+            return List.of();
         }
         return personalInfo.getSkills();
     }

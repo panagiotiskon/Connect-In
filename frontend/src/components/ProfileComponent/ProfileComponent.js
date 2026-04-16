@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from 'react';
-import { MDBContainer, MDBRow, MDBCol, MDBIcon } from 'mdb-react-ui-kit';
+import { MDBContainer, MDBRow, MDBCol } from 'mdb-react-ui-kit';
 import { Toast } from 'react-bootstrap';
 import NavbarComponent from '../common/NavBar';
 import ProfileCard from '../common/ProfileCard';
@@ -8,6 +8,10 @@ import PersonalInfoService from '../../api/UserPersonalInformationAPI';
 import './ProfileComponent.scss';
 import AddEditModal from './AddEditModal';
 import useProfileForm from './useProfileForm';
+import ConfirmActionModal from '../common/ConfirmActionModal';
+import WorkExperienceSection from './WorkExperienceSection';
+import EducationSection from './EducationSection';
+import SkillsSection from './SkillsSection';
 
 const ProfileComponent = () => {
   const { user: currentUser } = useAuth();
@@ -32,6 +36,8 @@ const ProfileComponent = () => {
   });
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
+  const [pendingDelete, setPendingDelete] = useState(null); // { id, category }
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const userId = currentUser?.id;
 
@@ -102,16 +108,11 @@ const ProfileComponent = () => {
 
   const handleSave = async () => {
     if (selectedCard === 'Education') {
-      if (
-        !formData.universityName ||
-        !formData.fieldOfStudy ||
-        !formData.startDate
-      ) {
+      if (!formData.universityName || !formData.fieldOfStudy || !formData.startDate) {
         setErrorMessage('Please fill out all required fields.');
         return;
       }
       if (!validateDates()) return;
-
       try {
         const response = await PersonalInfoService.addEducation(userId, {
           universityName: formData.universityName,
@@ -120,7 +121,6 @@ const ProfileComponent = () => {
           endDate: formData.endDate,
           isPublic: formData.isPublic,
         });
-
         if (response?.status === 200) {
           const updated = await PersonalInfoService.getEducation(userId);
           setCardsContent((prev) => ({
@@ -151,7 +151,6 @@ const ProfileComponent = () => {
         return;
       }
       if (!validateDates()) return;
-
       try {
         const response = await PersonalInfoService.addExperience(userId, {
           jobTitle: formData.jobTitle,
@@ -160,7 +159,6 @@ const ProfileComponent = () => {
           endDate: formData.endDate,
           isPublic: formData.isPublic,
         });
-
         if (response?.status === 200) {
           const updated = await PersonalInfoService.getExperience(userId);
           setCardsContent((prev) => ({
@@ -190,14 +188,12 @@ const ProfileComponent = () => {
         setErrorMessage('Please fill out all required fields.');
         return;
       }
-
       try {
         const response = await PersonalInfoService.addSkill(userId, {
           skillTitle: formData.skillTitle,
           skillDescription: formData.skillDescription,
           isPublic: formData.isPublic,
         });
-
         if (response?.status === 200) {
           const updated = await PersonalInfoService.getSkills(userId);
           setCardsContent((prev) => ({
@@ -223,7 +219,10 @@ const ProfileComponent = () => {
     }
   };
 
-  const handleDelete = async (id, category) => {
+  const handleConfirmDelete = async () => {
+    if (!pendingDelete) return;
+    const { id, category } = pendingDelete;
+    setIsDeleting(true);
     try {
       if (category === 'Education') {
         await PersonalInfoService.deleteEducation(userId, id);
@@ -236,13 +235,9 @@ const ProfileComponent = () => {
       setCardsContent((prev) => {
         let updatedContent = [];
         if (category === 'Education') {
-          updatedContent = prev['Education'].filter(
-            (item) => item.educationId !== id
-          );
+          updatedContent = prev['Education'].filter((item) => item.educationId !== id);
         } else if (category === 'Work Experience') {
-          updatedContent = prev['Work Experience'].filter(
-            (item) => item.experienceId !== id
-          );
+          updatedContent = prev['Work Experience'].filter((item) => item.experienceId !== id);
         } else if (category === 'Skills') {
           updatedContent = prev['Skills'].filter((item) => item.skillId !== id);
         }
@@ -253,6 +248,9 @@ const ProfileComponent = () => {
       setShowToast(true);
     } catch {
       setErrorMessage(`Failed to delete ${category.slice(0, -1)}.`);
+    } finally {
+      setIsDeleting(false);
+      setPendingDelete(null);
     }
   };
 
@@ -270,166 +268,35 @@ const ProfileComponent = () => {
 
           <MDBCol md="8">
             <div className="profile-sections">
-              {/* Work Experience */}
-              <div className="profile-section-card">
-                <div className="profile-section-header">
-                  <h2 className="profile-section-title">Work Experience</h2>
-                  <button
-                    className="profile-add-btn"
-                    onClick={() => handleAddClick('Work Experience')}
-                  >
-                    + Add
-                  </button>
-                </div>
-                <div className="profile-section-body">
-                  {cardsContent['Work Experience'].length === 0 ? (
-                    <p className="profile-empty-state">
-                      No work experience added yet.
-                    </p>
-                  ) : (
-                    cardsContent['Work Experience'].map((exp) => (
-                      <div className="profile-entry" key={exp.experienceId}>
-                        <div className="profile-entry-content">
-                          <div className="profile-entry-title">
-                            {exp?.jobTitle}
-                          </div>
-                          <div className="profile-entry-subtitle">
-                            {exp?.companyName}
-                          </div>
-                          <div className="profile-entry-meta">
-                            {exp?.startDate}
-                            {exp?.endDate ? ` – ${exp.endDate}` : ' – Present'}
-                          </div>
-                          <span
-                            className={
-                              exp?.isPublic
-                                ? 'profile-entry-visibility'
-                                : 'profile-entry-visibility--private'
-                            }
-                          >
-                            {exp?.isPublic ? 'Public' : 'Private'}
-                          </span>
-                        </div>
-                        <button
-                          className="profile-entry-delete"
-                          onClick={() =>
-                            handleDelete(exp?.experienceId, 'Work Experience')
-                          }
-                          aria-label="Delete"
-                        >
-                          <MDBIcon fas icon="times" />
-                        </button>
-                      </div>
-                    ))
-                  )}
-                </div>
-              </div>
-
-              {/* Education */}
-              <div className="profile-section-card">
-                <div className="profile-section-header">
-                  <h2 className="profile-section-title">Education</h2>
-                  <button
-                    className="profile-add-btn"
-                    onClick={() => handleAddClick('Education')}
-                  >
-                    + Add
-                  </button>
-                </div>
-                <div className="profile-section-body">
-                  {cardsContent.Education.length === 0 ? (
-                    <p className="profile-empty-state">
-                      No education added yet.
-                    </p>
-                  ) : (
-                    cardsContent.Education.map((edu) => (
-                      <div className="profile-entry" key={edu?.educationId}>
-                        <div className="profile-entry-content">
-                          <div className="profile-entry-title">
-                            {edu?.universityName}
-                          </div>
-                          <div className="profile-entry-subtitle">
-                            {edu?.fieldOfStudy}
-                          </div>
-                          <div className="profile-entry-meta">
-                            {edu?.startDate}
-                            {edu?.endDate ? ` – ${edu.endDate}` : ' – Present'}
-                          </div>
-                          <span
-                            className={
-                              edu?.isPublic
-                                ? 'profile-entry-visibility'
-                                : 'profile-entry-visibility--private'
-                            }
-                          >
-                            {edu?.isPublic ? 'Public' : 'Private'}
-                          </span>
-                        </div>
-                        <button
-                          className="profile-entry-delete"
-                          onClick={() =>
-                            handleDelete(edu?.educationId, 'Education')
-                          }
-                          aria-label="Delete"
-                        >
-                          <MDBIcon fas icon="times" />
-                        </button>
-                      </div>
-                    ))
-                  )}
-                </div>
-              </div>
-
-              {/* Skills */}
-              <div className="profile-section-card">
-                <div className="profile-section-header">
-                  <h2 className="profile-section-title">Skills</h2>
-                  <button
-                    className="profile-add-btn"
-                    onClick={() => handleAddClick('Skills')}
-                  >
-                    + Add
-                  </button>
-                </div>
-                <div className="profile-section-body">
-                  {cardsContent.Skills.length === 0 ? (
-                    <p className="profile-empty-state">No skills added yet.</p>
-                  ) : (
-                    cardsContent.Skills.map((skill) => (
-                      <div className="profile-entry" key={skill?.skillId}>
-                        <div className="profile-entry-content">
-                          <div className="profile-entry-title">
-                            {skill?.skillTitle}
-                          </div>
-                          <div className="profile-entry-subtitle">
-                            {skill?.skillDescription}
-                          </div>
-                          <span
-                            className={
-                              skill?.isPublic
-                                ? 'profile-entry-visibility'
-                                : 'profile-entry-visibility--private'
-                            }
-                          >
-                            {skill?.isPublic ? 'Public' : 'Private'}
-                          </span>
-                        </div>
-                        <button
-                          className="profile-entry-delete"
-                          onClick={() => handleDelete(skill?.skillId, 'Skills')}
-                          aria-label="Delete"
-                        >
-                          <MDBIcon fas icon="times" />
-                        </button>
-                      </div>
-                    ))
-                  )}
-                </div>
-              </div>
+              <WorkExperienceSection
+                items={cardsContent['Work Experience']}
+                onAdd={() => handleAddClick('Work Experience')}
+                onDelete={(id) => setPendingDelete({ id, category: 'Work Experience' })}
+              />
+              <EducationSection
+                items={cardsContent.Education}
+                onAdd={() => handleAddClick('Education')}
+                onDelete={(id) => setPendingDelete({ id, category: 'Education' })}
+              />
+              <SkillsSection
+                items={cardsContent.Skills}
+                onAdd={() => handleAddClick('Skills')}
+                onDelete={(id) => setPendingDelete({ id, category: 'Skills' })}
+              />
             </div>
           </MDBCol>
         </MDBRow>
       </MDBContainer>
+
+      <ConfirmActionModal
+        isOpen={pendingDelete !== null}
+        title={`Delete ${pendingDelete?.category?.slice(0, -1) ?? ''}`}
+        message="Are you sure you want to delete this entry? This action cannot be undone."
+        confirmText="Delete"
+        onConfirm={handleConfirmDelete}
+        onCancel={() => setPendingDelete(null)}
+        isLoading={isDeleting}
+      />
       <AddEditModal
         showModal={showModal}
         handleModalClose={handleModalClose}

@@ -1,4 +1,3 @@
-import React, { useEffect, useState } from 'react';
 import {
   MDBCard,
   MDBCardBody,
@@ -7,8 +6,8 @@ import {
   MDBDropdownMenu,
   MDBDropdownItem,
 } from 'mdb-react-ui-kit';
-import FileService from '../../api/UserFilesApi';
 import OptimizedImage from './OptimizedImage';
+import useProfileImage from '../../hooks/useProfileImage';
 
 const ViewProfileCard = ({
   viewedUser,
@@ -16,28 +15,8 @@ const ViewProfileCard = ({
   onNavigateToProfile,
   currentUser,
 }) => {
-  const [profileImage, setProfileImage] = useState('/593.jpg');
+  const { profileImage } = useProfileImage(viewedUser?.id);
   const isAdmin = currentUser?.role === 'ROLE_ADMIN';
-
-  useEffect(() => {
-    const fetchProfileImage = async () => {
-      if (viewedUser) {
-        try {
-          const images = await FileService.getUserImages(viewedUser.id);
-          if (images?.length > 0) {
-            const { type, data } = images[0];
-            setProfileImage(`data:${type};base64,${data}`);
-          } else {
-            setProfileImage('/593.jpg');
-          }
-        } catch (error) {
-          console.error('Error fetching profile image:', error);
-        }
-      }
-    };
-
-    fetchProfileImage();
-  }, [viewedUser]);
 
   if (!viewedUser) {
     return <div>Loading...</div>;

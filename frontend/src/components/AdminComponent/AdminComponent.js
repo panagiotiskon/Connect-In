@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AdminAPI from '../../api/AdminAPI';
-import FileService from '../../api/UserFilesApi';
 import NavBarAdminComponent from './NavBarAdminComponent';
 import { MDBContainer, MDBBtn } from 'mdb-react-ui-kit';
 import AdminUserCard from './AdminUserCard';
@@ -12,7 +11,6 @@ import './AdminComponent.scss';
 export default function AdminComponent() {
   const [users, setUsers] = useState([]);
   const [selectedUsers, setSelectedUsers] = useState([]);
-  const [profileImages, setProfileImages] = useState({}); // Map to store profile images
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -32,39 +30,6 @@ export default function AdminComponent() {
     fetchUsers();
   }, []);
 
-  // Fetch profile images for each user
-  useEffect(() => {
-    const fetchProfileImages = async () => {
-      try {
-        const imagePromises = users.map(async (user) => {
-          try {
-            const images = await FileService.getUserImages(user.id);
-            if (images.length > 0) {
-              const { type, data } = images[0];
-              return { id: user.id, image: `data:${type};base64,${data}` };
-            }
-            return { id: user.id, image: null };
-          } catch (error) {
-            console.error(`Error fetching images for user ${user.id}:`, error);
-            return { id: user.id, image: null };
-          }
-        });
-
-        const results = await Promise.all(imagePromises);
-        const imagesMap = results.reduce((acc, { id, image }) => {
-          acc[id] = image;
-          return acc;
-        }, {});
-        setProfileImages(imagesMap);
-      } catch (error) {
-        console.error('Error fetching profile images:', error);
-      }
-    };
-
-    if (users.length > 0) {
-      fetchProfileImages();
-    }
-  }, [users]);
 
   // Handle checkbox change
   const handleCheckboxChange = (userId) => {
@@ -151,7 +116,6 @@ export default function AdminComponent() {
             <AdminUserCard
               key={user.id}
               user={user}
-              profileImage={profileImages[user.id]}
               isSelected={selectedUsers.includes(user.id)}
               onSelect={() => handleCheckboxChange(user.id)}
               onViewProfile={() => handleShowProfile(user.id)}

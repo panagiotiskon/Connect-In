@@ -3,7 +3,7 @@ import NavbarComponent from '../common/NavBar';
 import OptimizedImage from '../common/OptimizedImage';
 import MessagingAPI from '../../api/MessagingAPI';
 import { useAuth } from '../../context/AuthContext';
-import FileService from '../../api/UserFilesApi';
+import useProfileImage from '../../hooks/useProfileImage';
 import {
   MDBContainer,
   MDBRow,
@@ -25,7 +25,7 @@ export default function ChatComponent() {
   const [conversationMessages, setConversationMessages] = useState([]);
   const [messageInput, setMessageInput] = useState('');
   const [selectedUser, setSelectedUser] = useState(null);
-  const [profileImage, setProfileImage] = useState('/593.jpg');
+  const { profileImage } = useProfileImage(currentUser?.id);
   const [searchTerm, setSearchTerm] = useState('');
   const messageContainerRef = useRef(null);
 
@@ -65,23 +65,6 @@ export default function ChatComponent() {
     }
   }, [selectedUser, currentUser]);
 
-  useEffect(() => {
-    const fetchProfileImage = async () => {
-      if (selectedUser && currentUser) {
-        try {
-          const images = await FileService.getUserImages(currentUser.id);
-          if (images.length > 0) {
-            const { type, data } = images[0];
-            setProfileImage(`data:${type};base64,${data}`);
-          }
-        } catch (error) {
-          console.error('Error fetching user images:', error);
-        }
-      }
-    };
-
-    fetchProfileImage();
-  }, [selectedUser, currentUser]);
 
   const sendMessage = async () => {
     if (messageInput.trim() !== '' && currentUser && selectedUser) {

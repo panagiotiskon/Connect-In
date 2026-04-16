@@ -43,9 +43,6 @@ public class MessageService {
     public List<MessageDTO> getConversation(long senderId,long receiverId){
         userService.findUserOrThrow(senderId);
         userService.findUserOrThrow(receiverId);
-        if(connectionService.getConnectedUserIds(senderId).stream().noneMatch(connectionId -> connectionId.equals(receiverId))){
-            throw new RuntimeException("You are not connected to any connection");
-        }
         List<Message> messages = messageRepository.findMessagesBetweenUsers(senderId, receiverId);
         if(messages.isEmpty()){
             return List.of();
@@ -63,7 +60,7 @@ public class MessageService {
                     ))
                     // Get the first image (if any)
                     .findFirst()
-                    .orElse(null);
+                    .orElse(Map.of());
             MessageDTO messageDTO = new MessageDTO(message.getSenderId(),message.getContent(),profilePicture.get("data"),profilePicture.get("type"),message.getSentAt());
             messageDTOS.add(messageDTO);
         }
@@ -106,7 +103,7 @@ public class MessageService {
                     ))
                     // Get the first image (if any)
                     .findFirst()
-                    .orElse(null);
+                    .orElse(Map.of());
             ConversationDTO conversationDTO = new ConversationDTO(uniqueUserId,profilePicture.get("data"),profilePicture.get("type"),user.getFirstName(),user.getLastName());
             conversationDTOS.add(conversationDTO);
         }

@@ -38,7 +38,9 @@
     background-position: left center;
     color: #fff;
     font-weight: 600;
-    transition: background-position 0.4s ease, color 0.18s;
+    transition:
+      background-position 0.4s ease,
+      color 0.18s;
 
     &:hover {
       background-position: right center;

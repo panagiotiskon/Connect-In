@@ -3,18 +3,19 @@ import { MDBContainer, MDBRow, MDBCol } from 'mdb-react-ui-kit';
 import NavbarComponent from '../common/NavBar';
 import ProfileCard from '../common/ProfileCard';
 import CreatePostCard from './CreatePostCard';
-import SortingCard from './SortingCard';
+import SortingCard from '../common/SortingCard';
 import PostCard from './PostCard';
 import { useAuth } from '../../context/AuthContext';
 import PostService from '../../api/PostApi';
 import FileService from '../../api/UserFilesApi';
 import PersonalInfoService from '../../api/UserPersonalInformationAPI';
 import NotificationAPI from '../../api/NotificationAPI';
+import useProfileImage from '../../hooks/useProfileImage';
 import './HomeComponent.scss';
 
 const HomeComponent = () => {
   const { user: currentUser } = useAuth();
-  const [profileImage, setProfileImage] = useState('');
+  const { profileImage } = useProfileImage(currentUser?.id);
   const [postContent, setPostContent] = useState('');
   const [uploadedFile, setUploadedFile] = useState(null);
   const [posts, setPosts] = useState([]);
@@ -117,17 +118,11 @@ const HomeComponent = () => {
     if (!currentUser?.id) return;
     let cancelled = false;
     (async () => {
-      const [images, reactions, comments] = await Promise.all([
-        FileService.getUserImages(currentUser.id),
+      const [reactions, comments] = await Promise.all([
         PostService.getUserReactions(currentUser.id),
         PostService.getUserComments(currentUser.id),
       ]);
       if (cancelled) return;
-      setProfileImage(
-        images[0]
-          ? `data:${images[0].type};base64,${images[0].data}`
-          : '/593.jpg'
-      );
       setReactedPostIds(reactions?.data || []);
       setUserComments(comments?.data || {});
     })();

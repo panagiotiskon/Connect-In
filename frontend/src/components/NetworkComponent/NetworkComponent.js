@@ -175,7 +175,7 @@ const NetworkComponent = () => {
                   <RegisteredUsersCardComponent
                     user={{
                       id: user.userId,
-                      profileImage: `data:${user.profileType};base64,${user.profilePic}`,
+                      profileImage: user.profilePic ? `data:${user.profileType};base64,${user.profilePic}` : '/593.jpg',
                       firstName: user.firstName,
                       lastName: user.lastName,
                       job: user.jobTitle,
@@ -188,7 +188,7 @@ const NetworkComponent = () => {
                   <PendingUsersCardComponent
                     user={{
                       id: user.userId,
-                      profileImage: `data:${user.profileType};base64,${user.profilePic}`,
+                      profileImage: user.profilePic ? `data:${user.profileType};base64,${user.profilePic}` : '/593.jpg',
                       firstName: user.firstName,
                       lastName: user.lastName,
                       job: user.jobTitle,
@@ -201,7 +201,7 @@ const NetworkComponent = () => {
                   <ConnectedUsersCardComponent
                     user={{
                       id: user.userId,
-                      profileImage: `data:${user.profileType};base64,${user.profilePic}`,
+                      profileImage: user.profilePic ? `data:${user.profileType};base64,${user.profilePic}` : '/593.jpg',
                       firstName: user.firstName,
                       lastName: user.lastName,
                       job: user.jobTitle,

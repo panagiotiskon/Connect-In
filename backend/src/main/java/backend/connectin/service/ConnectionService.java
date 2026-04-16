@@ -58,10 +58,10 @@ public class ConnectionService {
                 jobTitle = experiences.getFirst().getJobTitle();
                 companyName = experiences.getFirst().getCompanyName();
             }
-            FileDB profilePicture = fileService.getProfilePicture(user.getId()).get();
+            FileDB profilePicture = fileService.getProfilePicture(user.getId()).orElse(null);
             String profilePic;
             String profilePicType;
-            if (profilePicture.getType().startsWith("image/")) {
+            if (profilePicture != null && profilePicture.getType().startsWith("image/")) {
                 profilePic = Base64.getEncoder().encodeToString(profilePicture.getData());
                 profilePicType = profilePicture.getType();
             } else {
@@ -99,10 +99,10 @@ public class ConnectionService {
                 jobTitle = experiences.getFirst().getJobTitle();
                 companyName = experiences.getFirst().getCompanyName();
             }
-            FileDB profilePicture = fileService.getProfilePicture(user.getId()).get();
+            FileDB profilePicture = fileService.getProfilePicture(user.getId()).orElse(null);
             String profilePic;
             String profilePicType;
-            if (profilePicture.getType().startsWith("image/")) {
+            if (profilePicture != null && profilePicture.getType().startsWith("image/")) {
                 profilePic = Base64.getEncoder().encodeToString(profilePicture.getData());
                 profilePicType = profilePicture.getType();
             } else {
@@ -184,10 +184,10 @@ public class ConnectionService {
                 jobTitle = experiences.getFirst().getJobTitle();
                 companyName = experiences.getFirst().getCompanyName();
             }
-            FileDB profilePicture = fileService.getProfilePicture(user.getId()).get();
+            FileDB profilePicture = fileService.getProfilePicture(user.getId()).orElse(null);
             String profilePic;
             String profilePicType;
-            if (profilePicture.getType().startsWith("image/")) {
+            if (profilePicture != null && profilePicture.getType().startsWith("image/")) {
                 profilePic = Base64.getEncoder().encodeToString(profilePicture.getData());
                 profilePicType = profilePicture.getType();
             } else {

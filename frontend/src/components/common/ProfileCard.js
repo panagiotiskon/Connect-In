@@ -1,29 +1,12 @@
-import { useEffect, useState } from 'react';
 import { MDBIcon } from 'mdb-react-ui-kit';
 import { useNavigate } from 'react-router-dom';
-import FileService from '../../api/UserFilesApi';
 import OptimizedImage from './OptimizedImage';
+import useProfileImage from '../../hooks/useProfileImage';
 import './ProfileCard.scss';
 
 const ProfileCard = ({ currentUser, isViewOnly = false }) => {
   const navigate = useNavigate();
-  const [profileImage, setProfileImage] = useState('');
-
-  useEffect(() => {
-    if (!currentUser) return;
-    (async () => {
-      try {
-        const images = await FileService.getUserImages(currentUser.id);
-        if (images?.length > 0) {
-          setProfileImage(`data:${images[0].type};base64,${images[0].data}`);
-        } else {
-          setProfileImage('/593.jpg');
-        }
-      } catch (e) {
-        console.error('Error fetching profile image:', e);
-      }
-    })();
-  }, [currentUser]);
+  const { profileImage } = useProfileImage(currentUser?.id);
 
   if (!currentUser) return null;
 
