@@ -23,4 +23,7 @@ public interface FileRepository extends JpaRepository<FileDB, String> {
     @Query("SELECT f FROM FileDB f WHERE f.userId = :userId AND f.isProfilePicture = TRUE")
     Optional<FileDB> findProfilePicture(@Param("userId") Long userId);
 
+    @Query("SELECT f FROM FileDB f WHERE f.userId IN :userIds AND f.isProfilePicture = TRUE")
+    List<FileDB> findProfilePicturesByUserIds(@Param("userIds") List<Long> userIds);
+
 }

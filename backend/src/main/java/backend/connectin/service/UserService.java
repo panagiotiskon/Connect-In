@@ -5,6 +5,7 @@ import backend.connectin.web.mappers.PostMapper;
 import backend.connectin.web.resources.*;
 
 import backend.connectin.domain.*;
+import backend.connectin.domain.repository.FileRepository;
 import backend.connectin.domain.repository.PersonalInfoRepository;
 import backend.connectin.domain.repository.UserRepository;
 import backend.connectin.web.dto.*;
@@ -29,6 +30,7 @@ import java.util.stream.Collectors;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final FileRepository fileRepository;
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
     private final FileService fileService;
@@ -42,6 +44,7 @@ public class UserService {
     private final ConnectionService connectionService;
 
     public UserService(UserRepository userRepository,
+                       FileRepository fileRepository,
                        UserMapper userMapper,
                        PasswordEncoder passwordEncoder,
                        FileService fileService,
@@ -55,6 +58,7 @@ public class UserService {
                        @Lazy ConnectionService connectionService) {
 
         this.userRepository = userRepository;
+        this.fileRepository = fileRepository;
         this.userMapper = userMapper;
         this.passwordEncoder = passwordEncoder;
         this.fileService = fileService;
@@ -102,9 +106,21 @@ public class UserService {
     }
 
     public List<User> fetchAll() {
-        List<User> users = userRepository.findAll(); // Fetch all users
-        return users.stream()  // fetch users without admin
+        List<User> users = userRepository.findAll();
+        return users.stream()
                 .filter(user -> user.getRoles().stream().noneMatch(role -> role.getName().equalsIgnoreCase("ROLE_ADMIN")))
+                .toList();
+    }
+
+    // Efficient version for admin listing: filters at DB level + batch-loads profile pictures
+    public List<UserDTO> fetchAllDTOs() {
+        List<User> users = userRepository.findUsersExcludingRole("ROLE_ADMIN");
+        List<Long> userIds = users.stream().map(User::getId).toList();
+        Map<Long, byte[]> pictureMap = fileRepository.findProfilePicturesByUserIds(userIds)
+                .stream()
+                .collect(Collectors.toMap(FileDB::getUserId, FileDB::getData));
+        return users.stream()
+                .map(u -> userMapper.mapToUserDTO(u, pictureMap.get(u.getId())))
                 .toList();
     }
 
@@ -294,11 +310,47 @@ public class UserService {
     }
 
     public Map<Long, UserDetailDTO> getUsersDetails(List<Long> userIds) {
+        // Validate all user IDs in one query instead of one findById per user
+        Set<Long> existingIds = userRepository.findAllById(userIds).stream()
+                .map(User::getId)
+                .collect(Collectors.toSet());
+        List<Long> notFound = userIds.stream().filter(id -> !existingIds.contains(id)).toList();
+        if (!notFound.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Users not found: " + notFound);
+        }
         return userIds.stream()
                 .collect(Collectors.toMap(
                         userId -> userId,
-                        this::getUserDetails
+                        this::getUserDetailsSkipExistenceCheck
                 ));
+    }
+
+    private UserDetailDTO getUserDetailsSkipExistenceCheck(long userId) {
+        PersonalInfo personalInfo = personalInfoRepository.findByUserId(userId);
+        UserDetailDTO userDetailDTO = new UserDetailDTO();
+
+        if (personalInfo != null) {
+            List<SkillDTO> skillDTOS = personalInfo.getSkills().stream()
+                    .map(personalInfoMapper::mapToSkillDTO)
+                    .toList();
+            List<ExperienceDTO> experienceDTOS = personalInfo.getExperiences().stream()
+                    .map(personalInfoMapper::mapToExperienceDTO)
+                    .toList();
+            List<EducationDTO> educationDTOS = personalInfo.getEducations().stream()
+                    .map(personalInfoMapper::mapToEducationDTO)
+                    .toList();
+            userDetailDTO.setSkills(skillDTOS);
+            userDetailDTO.setExperiences(experienceDTOS);
+            userDetailDTO.setEducation(educationDTOS);
+        }
+        userDetailDTO.setConnectedUsers(connectionService.getConnectedUsers(userId));
+        userDetailDTO.setJobApplications(jobService.getJobApplications(userId));
+        userDetailDTO.setJobPosts(jobService.getUserJobPosts(userId));
+        userDetailDTO.setPosts(postService.fetchUserPosts(userId).stream()
+                .map(postMapper::mapToPostResource).toList());
+        userDetailDTO.setComments(commentService.fetchUserCommentResources(userId));
+        userDetailDTO.setReactions(reactionService.fetchUserReactions(userId));
+        return userDetailDTO;
     }
 
     public List<Long> getFilteredUsers(String searchTerm, long userId) {

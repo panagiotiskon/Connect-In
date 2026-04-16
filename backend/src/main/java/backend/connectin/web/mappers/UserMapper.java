@@ -44,10 +44,11 @@ public class UserMapper {
 
     public UserDTO mapToUserDTO(User user) {
         Optional<FileDB> fileDB = fileRepository.findProfilePicture(user.getId());
-        byte[] profilePicture = null;
-        if (fileDB.isPresent()) {
-            profilePicture = fileDB.get().getData();
-        }
+        byte[] profilePicture = fileDB.map(FileDB::getData).orElse(null);
+        return mapToUserDTO(user, profilePicture);
+    }
+
+    public UserDTO mapToUserDTO(User user, byte[] profilePicture) {
         return new UserDTO(
                 user.getId(),
                 user.getEmail(),

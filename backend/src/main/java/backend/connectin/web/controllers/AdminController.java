@@ -1,10 +1,8 @@
 package backend.connectin.web.controllers;
 
-import backend.connectin.domain.User;
 import backend.connectin.service.UserService;
 import backend.connectin.web.dto.UserDTO;
 import backend.connectin.web.dto.UserDetailDTO;
-import backend.connectin.web.mappers.UserMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -18,11 +16,9 @@ import java.util.Map;
 public class AdminController {
 
     private final UserService userService;
-    private final UserMapper userMapper;
 
-    public AdminController(UserService userService, UserMapper userMapper) {
+    public AdminController(UserService userService) {
         this.userService = userService;
-        this.userMapper = userMapper;
     }
 
     @GetMapping("")
@@ -34,9 +30,7 @@ public class AdminController {
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
     public List<UserDTO> getUsers() {
-        List<User> users = userService.fetchAll();
-        return users.stream().map(userMapper::mapToUserDTO).toList();
-
+        return userService.fetchAllDTOs();
     }
     @GetMapping("/users/details")
     @ResponseStatus(HttpStatus.OK)
