@@ -17,7 +17,7 @@ const NavbarComponent = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [openNavSecond, setOpenNavSecond] = useState(false);
-  const { logout } = useAuth();
+  const { logout, notificationCount } = useAuth();
 
   const isActivePage = (path) => location.pathname === path;
   const handleLogout = async () => {
@@ -99,6 +99,11 @@ const NavbarComponent = () => {
                           }}
                         >
                           {iconComponent}
+                          {notificationCount > 0 && (
+                            <span className="notif-navbar-badge">
+                              {notificationCount}
+                            </span>
+                          )}
                         </div>
                       ) : (
                         iconComponent

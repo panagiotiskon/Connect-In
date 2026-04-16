@@ -11,8 +11,11 @@
   border: 1px solid #e8e8e8;
   border-radius: 16px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
-  overflow: hidden;
   margin-bottom: 1rem;
+}
+
+.center-column > .jobs-section-card:first-child {
+  margin-top: 1.25rem;
 }
 
 .jobs-section-header {
@@ -154,40 +157,116 @@
   margin: 0;
 }
 
-/* ── Custom Applicants Dropdown ── */
+/* ── Applicants Inline Panel ── */
 .jobs-applicants-wrapper {
-  position: relative;
-  display: inline-block;
-  margin-top: 0.25rem;
+  margin-top: 0.75rem;
 }
 
-.jobs-applicants-dropdown {
-  position: absolute;
-  top: calc(100% + 4px);
-  left: 0;
-  z-index: 1000;
-  background: #fff;
+.jobs-applicants-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.35rem 0.85rem;
+  border-radius: 20px;
+  border: 1.5px solid #e0e7ef;
+  background: #f8fafc;
+  color: #35677e;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.18s, border-color 0.18s;
+
+  &:hover {
+    background: #eaf2f7;
+    border-color: #35677e;
+  }
+}
+
+.jobs-applicants-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.35rem;
+  height: 1.35rem;
+  border-radius: 50%;
+  background: #35677e;
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.jobs-applicants-chevron {
+  font-size: 0.65rem;
+  margin-left: 0.1rem;
+}
+
+.jobs-applicants-panel {
+  margin-top: 0.5rem;
   border: 1px solid #e8e8e8;
-  border-radius: 10px;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1);
-  min-width: 180px;
+  border-radius: 12px;
   overflow: hidden;
+  background: #fff;
 }
 
-.jobs-applicants-item {
-  padding: 0.5rem 0.85rem;
-  font-size: 0.875rem;
-  color: #374151;
+.jobs-applicant-row {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.6rem 0.85rem;
   cursor: pointer;
   transition: background 0.15s;
 
-  &:hover {
-    background: #f3f4f6;
+  &--disabled {
+    cursor: default;
+    opacity: 0.5;
   }
 
   & + & {
     border-top: 1px solid #f0f0f0;
   }
+
+  &:hover {
+    background: #f8fafc;
+
+    .jobs-applicant-arrow {
+      opacity: 1;
+      transform: translateX(2px);
+    }
+  }
+}
+
+.jobs-applicant-avatar {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #1a8a9a, #5b4fcf);
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.jobs-applicant-name {
+  flex: 1;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #111;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.jobs-applicant-arrow {
+  font-size: 0.7rem;
+  color: #9ca3af;
+  opacity: 0;
+  transition: opacity 0.15s, transform 0.15s;
+  flex-shrink: 0;
 }
 
 /* ── Modal Buttons (matches profile modal buttons) ── */

@@ -1,185 +1,146 @@
-import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
-import NavbarComponent from "../common/NavBar";
-import { useAuth } from "../../context/AuthContext";
-import NotificationAPI from "../../api/NotificationAPI";
-
-import {
-  MDBContainer,
-  MDBRow,
-  MDBCol,
-  MDBCard,
-  MDBCardBody,
-  MDBIcon,
-  MDBBtn,
-} from "mdb-react-ui-kit";
+import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import NavbarComponent from '../common/NavBar';
+import { useAuth } from '../../context/AuthContext';
+import NotificationAPI from '../../api/NotificationAPI';
+import { MDBIcon } from 'mdb-react-ui-kit';
 import './NotificationsComponent.scss';
 
 export default function NotificationComponent() {
-  const [connectionRequests, setConnectionRequests] = useState([]);
-  const [commentsAndReactions, setCommentsAndReactions] = useState([]);
-  const { user: currentUser } = useAuth();
+  const [notifications, setNotifications] = useState([]);
+  const { user: currentUser, decrementNotificationCount } = useAuth();
 
   useEffect(() => {
     const fetchNotifications = async () => {
       if (!currentUser) return;
-
       try {
-        const notifications = await NotificationAPI.getNotifications(currentUser.id);
-
-        const connectionRequests = notifications.filter(
-          (notification) => notification.notificationType === "CONNECTION"
-        );
-        setConnectionRequests(connectionRequests);
-
-        const commentsAndReactions = notifications.filter(
-          (notification) =>
-            notification.notificationType === "COMMENT" ||
-            notification.notificationType === "REACTION"
-        );
-        setCommentsAndReactions(commentsAndReactions);
+        const data = await NotificationAPI.getNotifications(currentUser.id);
+        setNotifications(data);
       } catch (error) {
-        console.error("Error fetching notifications:", error);
+        console.error('Error fetching notifications:', error);
       }
     };
-
     fetchNotifications();
   }, [currentUser]);
 
   const handleAccept = async (userId, notificationId) => {
+    setNotifications((prev) => prev.filter((n) => n.id !== notificationId));
+    decrementNotificationCount();
     try {
       await NotificationAPI.acceptNotification(currentUser.id, notificationId);
-      setConnectionRequests((prev) =>
-        prev.filter((notification) => notification.id !== notificationId)
-      );
     } catch (error) {
-      console.error("Error accepting notification:", error);
+      console.error('Error accepting notification:', error);
     }
   };
 
   const handleDecline = async (userId, notificationId) => {
+    setNotifications((prev) => prev.filter((n) => n.id !== notificationId));
+    decrementNotificationCount();
     try {
       await NotificationAPI.declineNotification(currentUser.id, notificationId);
-      setConnectionRequests((prev) =>
-        prev.filter((notification) => notification.id !== notificationId)
-      );
     } catch (error) {
-      console.error("Error declining notification:", error);
+      console.error('Error declining notification:', error);
     }
   };
 
   const handleDelete = async (notificationId) => {
+    setNotifications((prev) => prev.filter((n) => n.id !== notificationId));
+    decrementNotificationCount();
     try {
       await NotificationAPI.deleteNotificationById(notificationId);
-      setCommentsAndReactions((prev) =>
-        prev.filter((notification) => notification.id !== notificationId)
-      );
     } catch (error) {
-      console.error("Error deleting notification:", error);
+      console.error('Error deleting notification:', error);
     }
   };
 
-  const renderCommentOrReactionMessage = (notification) => {
-    const { firstName, lastName, userId, notificationType, id } = notification;
-    const action =
-      notificationType === "REACTION" ? "reacted to" : "commented on";
-    const icon = notificationType === "REACTION" ? "thumbs-up" : "comment";
+  const renderNotification = (notification) => {
+    const { id, userId, firstName, lastName, notificationType } = notification;
 
-    return (
-      <MDBCard className="notification-card">
-        <MDBCardBody className="notification-card-body d-flex justify-content-between align-items-center">
-          <div>
-            <Link
-              to={`/profile/${userId}`}
-              className="notification-link"
-            >
-              {firstName} {lastName}
-            </Link>{" "}
-            {action} your post.
+    if (notificationType === 'CONNECTION') {
+      return (
+        <div key={id} className="notif-item">
+          <div className="notif-item-left">
+            <div className="notif-icon notif-icon--connection">
+              <MDBIcon fas icon="user-plus" />
+            </div>
+            <div className="notif-text">
+              <Link to={`/profile/${userId}`} className="notif-name">
+                {firstName} {lastName}
+              </Link>
+              <span> wants to connect with you.</span>
+            </div>
           </div>
-          <div className="d-flex">
-            <MDBIcon fas icon={icon} size="md" className="me-3" />
-            <MDBBtn
-              className="btn-sm delete-button"
-              color="secondary"
-              onClick={() => handleDelete(id)}
+          <div className="notif-actions">
+            <button
+              className="notif-btn notif-btn--accept"
+              onClick={() => handleAccept(userId, id)}
+            >
+              <MDBIcon fas icon="check" />
+            </button>
+            <button
+              className="notif-btn notif-btn--decline"
+              onClick={() => handleDecline(userId, id)}
             >
               <MDBIcon fas icon="times" />
-            </MDBBtn>
+            </button>
           </div>
-        </MDBCardBody>
-      </MDBCard>
+        </div>
+      );
+    }
+
+    const action =
+      notificationType === 'REACTION' ? 'reacted to' : 'commented on';
+    const icon = notificationType === 'REACTION' ? 'thumbs-up' : 'comment';
+    const iconClass =
+      notificationType === 'REACTION'
+        ? 'notif-icon--reaction'
+        : 'notif-icon--comment';
+
+    return (
+      <div key={id} className="notif-item">
+        <div className="notif-item-left">
+          <div className={`notif-icon ${iconClass}`}>
+            <MDBIcon fas icon={icon} />
+          </div>
+          <div className="notif-text">
+            <Link to={`/profile/${userId}`} className="notif-name">
+              {firstName} {lastName}
+            </Link>
+            <span> {action} your post.</span>
+          </div>
+        </div>
+        <div className="notif-actions">
+          <button
+            className="notif-btn notif-btn--delete"
+            onClick={() => handleDelete(id)}
+          >
+            <MDBIcon fas icon="times" />
+          </button>
+        </div>
+      </div>
     );
   };
 
   return (
     <div>
       <NavbarComponent />
-      <MDBContainer fluid className="mt-5">
-        <MDBRow>
-          <MDBCol md="8" className="mx-auto">
-            <h2>Connection Requests</h2>
-            {connectionRequests.length > 0 ? (
-              connectionRequests.map((notification) => (
-                <MDBCard key={notification.id} className="my-3 ">
-                  <MDBCardBody className="d-flex justify-content-between align-items-center">
-                    <div>
-                      <Link
-                        to={`/profile/${notification.userId}`}
-                        className="notification-link"
-                      >
-                        <p style={{ display: "inline", fontWeight: "bold" }}>
-                          {notification.firstName} {notification.lastName}
-                        </p>
-                      </Link>{" "}
-                      <span>wants to connect</span>
-                    </div>
-                    <div className="d-flex">
-                      <MDBBtn
-                        className="btn-sm accept-btn me-2"
-                        style={{
-                          backgroundColor: "#35677e"
-                        }}
-                        onClick={() =>
-                          handleAccept(notification.userId, notification.id)
-                        }
-                      >
-                        <MDBIcon fas icon="check" />
-                      </MDBBtn>
-                      <MDBBtn
-                        className="btn-sm decline-btn"
-                        color="danger"
-                        onClick={() =>
-                          handleDecline(notification.userId, notification.id)
-                        }
-                      >
-                        <MDBIcon fas icon="times" />
-                      </MDBBtn>
-                    </div>
-                  </MDBCardBody>
-                </MDBCard>
-              ))
-            ) : (
-              <p className="connection-requests-message">
-                No new connection requests
-              </p>
+      <div className="notifications-page">
+        <div className="notifications-card">
+          <div className="notifications-card-header">
+            <h2 className="notifications-card-title">Notifications</h2>
+            {notifications.length > 0 && (
+              <span className="notif-count-badge">{notifications.length}</span>
             )}
-
-            <h2 className="mt-5">Reactions and Comments</h2>
-            {commentsAndReactions.length > 0 ? (
-              commentsAndReactions.map((notification) => (
-                <div key={notification.id} className="comments-reactions-section">
-                  {renderCommentOrReactionMessage(notification)}
-                </div>
-              ))
+          </div>
+          <div className="notifications-card-body">
+            {notifications.length > 0 ? (
+              notifications.map((n) => renderNotification(n))
             ) : (
-              <p className="comments-reactions-message">
-                No new reactions or comments
-              </p>
+              <p className="notif-empty-state">No new notifications</p>
             )}
-          </MDBCol>
-        </MDBRow>
-      </MDBContainer>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
