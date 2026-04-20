@@ -7,30 +7,36 @@ import backend.connectin.domain.User;
 import backend.connectin.domain.repository.JobApplicationRepository;
 import backend.connectin.domain.repository.JobPostRepository;
 import backend.connectin.domain.repository.JobViewRepository;
+import backend.connectin.domain.repository.UserRepository;
 import backend.connectin.web.dto.JobApplicationDTO;
 import backend.connectin.web.dto.JobPostDTO;
 import backend.connectin.web.mappers.JobMapper;
-import org.springframework.boot.autoconfigure.batch.BatchProperties;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 public class JobService {
     private final JobPostRepository jobPostRepository;
     private final JobApplicationRepository jobApplicationRepository;
     private final UserService userService;
+    private final UserRepository userRepository;
     private final JobViewRepository jobViewRepository;
     private final ConnectionService connectionService;
     private final JobMapper jobMapper;
 
-    public JobService(JobPostRepository jobPostRepository, JobApplicationRepository jobApplicationRepository, UserService userService, JobViewRepository jobViewRepository, ConnectionService connectionService, JobMapper jobMapper) {
+    public JobService(JobPostRepository jobPostRepository, JobApplicationRepository jobApplicationRepository, UserService userService, UserRepository userRepository, JobViewRepository jobViewRepository, ConnectionService connectionService, JobMapper jobMapper) {
         this.jobPostRepository = jobPostRepository;
         this.jobApplicationRepository = jobApplicationRepository;
         this.userService = userService;
+        this.userRepository = userRepository;
         this.jobViewRepository = jobViewRepository;
         this.connectionService = connectionService;
         this.jobMapper = jobMapper;
@@ -78,7 +84,7 @@ public class JobService {
     }
 
     public List<JobPostDTO> getJobPosts(long userId){
-        List<JobPost> jobPosts = jobPostRepository.findAll();
+        List<JobPost> jobPosts = jobPostRepository.findAllByOrderByCreatedAtDesc();
         return getJobPostDTOS(userId, jobPosts);
     }
 
@@ -135,16 +141,22 @@ public class JobService {
     }
 
     private List<JobPostDTO> getJobPostDTOS(long userId, List<JobPost> jobPosts) {
-        if(jobPosts.isEmpty()){
+        if (jobPosts.isEmpty()) {
             return List.of();
         }
+        List<Long> authorIds = jobPosts.stream().map(JobPost::getUserId).distinct().toList();
+        Map<Long, User> usersById = userRepository.findAllById(authorIds).stream()
+                .collect(Collectors.toMap(User::getId, Function.identity()));
+
+        Set<Long> appliedJobIds = jobApplicationRepository.findJobApplicationByUserId(userId).stream()
+                .map(JobApplication::getJobPostId)
+                .collect(Collectors.toSet());
+
         List<JobPostDTO> jobPostDTOS = new ArrayList<>();
-        for(var jobPost : jobPosts){
-            User user = userService.findUserOrThrow(jobPost.getUserId());
-            List<JobApplication> jobApplications = jobApplicationRepository.findAll();
-            boolean hasApplied = jobApplications.stream().anyMatch(jobApplication -> jobApplication.getJobPostId() == jobPost.getId() && jobApplication.getUserId() == userId);
-            JobPostDTO jobPostDTO = jobMapper.mapToJopPostDto(jobPost, user, hasApplied);
-            jobPostDTOS.add(jobPostDTO);
+        for (JobPost jobPost : jobPosts) {
+            User user = usersById.get(jobPost.getUserId());
+            boolean hasApplied = appliedJobIds.contains(jobPost.getId());
+            jobPostDTOS.add(jobMapper.mapToJopPostDto(jobPost, user, hasApplied));
         }
         return jobPostDTOS;
     }

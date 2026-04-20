@@ -2,10 +2,10 @@ import api from "./axiosInstance";
 
 const BASE = "/auth";
 
-const getRegisteredUsers = async (searchTerm = "", userId) => {
+const getRegisteredUsers = async (searchTerm = "", userId, page = 0, size = 20) => {
   try {
     const response = await api.get(`${BASE}/connections/registered-users`, {
-      params: { search: searchTerm, userId },
+      params: { search: searchTerm, userId, page, size },
       headers: { "Content-Type": "application/json" },
     });
     return response.data;

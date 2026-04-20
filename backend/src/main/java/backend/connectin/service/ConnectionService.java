@@ -133,21 +133,29 @@ public class ConnectionService {
 
     @Transactional
     public List<Connection> requestToConnect(long userId, long connectionId) {
-        List<Connection> connectionList = new ArrayList<>();
+        if (userId == connectionId) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cannot connect to self");
+        }
         if (userRepository.findById(userId).isEmpty()) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found");
         }
         if (userRepository.findById(connectionId).isEmpty()) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found");
         }
+        // Guard against a connection already existing in either direction. This
+        // avoids the DB-level duplicate-key error and surfaces a clear 409 when
+        // the client UI has stale data or when one side of a legacy two-row
+        // connection exists without its mirror.
+        if (connectionRepository.existsBetween(userId, connectionId)) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Connection already exists");
+        }
+
         Connection connection1 = connectionMapper.mapToConnection(userId, connectionId, ConnectionStatus.PENDING);
         Connection connection2 = connectionMapper.mapToConnection(connectionId, userId, ConnectionStatus.PENDING);
 
         connectionRepository.save(connection1);
         connectionRepository.save(connection2);
-        connectionList.add(connection1);
-        connectionList.add(connection2);
-        return connectionList;
+        return List.of(connection1, connection2);
     }
 
     @Transactional
@@ -194,7 +202,7 @@ public class ConnectionService {
                 profilePic = null;
                 profilePicType = null;
             }
-            RegisteredUserDTO registeredUserDTO = new RegisteredUserDTO(user.getId(), user.getFirstName(), user.getLastName(), jobTitle, companyName, profilePic, profilePicType);
+            RegisteredUserDTO registeredUserDTO = new RegisteredUserDTO(user.getId(), user.getFirstName(), user.getLastName(), jobTitle, companyName, profilePic, profilePicType, null);
             registeredUserDTOS.add(registeredUserDTO);
         }
         return registeredUserDTOS;

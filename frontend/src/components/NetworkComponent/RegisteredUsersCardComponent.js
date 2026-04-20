@@ -2,7 +2,7 @@ import { MDBIcon } from 'mdb-react-ui-kit';
 import OptimizedImage from '../common/OptimizedImage';
 import './NetworkUserCards.scss';
 
-const RegisteredUsersCardComponent = ({ user, onConnect, onShowProfile }) => {
+const RegisteredUsersCardComponent = ({ user, onConnect, onShowProfile, isConnecting = false }) => {
   const { firstName, lastName, profileImage = '', job, companyName } = user;
 
   return (
@@ -38,9 +38,19 @@ const RegisteredUsersCardComponent = ({ user, onConnect, onShowProfile }) => {
           <button
             className="user-card__action-btn user-card__action-btn--success"
             onClick={onConnect}
+            disabled={isConnecting}
           >
-            <MDBIcon fas icon="user-plus" />
-            <span>Connect</span>
+            {isConnecting ? (
+              <>
+                <MDBIcon fas icon="spinner" spin />
+                <span>Connecting…</span>
+              </>
+            ) : (
+              <>
+                <MDBIcon fas icon="user-plus" />
+                <span>Connect</span>
+              </>
+            )}
           </button>
         </div>
       </div>

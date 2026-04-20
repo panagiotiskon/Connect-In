@@ -1,12 +1,17 @@
 import { useState, useCallback, useEffect } from 'react';
 import useSWR from 'swr';
+import useSWRInfinite from 'swr/infinite';
 import ConnectionAPI from '../api/ConnectionAPI';
+
+export const SEARCH_PAGE_SIZE = 2;
 
 // Array keys are used instead of pipe-delimited strings to avoid collisions
 // when userId or searchTerm contain the '|' character.
-const searchFetcher = async ([, searchTerm, currentUserId]) => {
-  if (!searchTerm?.trim() || !currentUserId) return [];
-  return await ConnectionAPI.getRegisteredUsers(searchTerm, currentUserId);
+const searchFetcher = async ([, searchTerm, currentUserId, page]) => {
+  if (!searchTerm?.trim() || !currentUserId) {
+    return { content: [], page: 0, size: SEARCH_PAGE_SIZE, hasMore: false };
+  }
+  return await ConnectionAPI.getRegisteredUsers(searchTerm, currentUserId, page, SEARCH_PAGE_SIZE);
 };
 
 const connectionsFetcher = async ([, currentUserId]) => {
@@ -37,22 +42,44 @@ export const useSearchUsers = (currentUserId, debounceDelay = 300) => {
     return () => clearTimeout(timer);
   }, [searchTerm, debounceDelay]);
 
-  // Fetch search results — suspended when term is empty or currentUserId is missing
+  // Paginated search results. Key returns null to suspend fetching when the
+  // search term is empty or the previous page signaled no more results.
+  const getSearchKey = useCallback(
+    (pageIndex, previousPageData) => {
+      if (!debouncedSearchTerm.trim() || !currentUserId) return null;
+      if (previousPageData && !previousPageData.hasMore) return null;
+      return ['search', debouncedSearchTerm, currentUserId, pageIndex];
+    },
+    [debouncedSearchTerm, currentUserId]
+  );
+
   const {
-    data: searchResults = [],
+    data: searchPages,
+    size: searchPageSize,
+    setSize: setSearchPageSize,
     isLoading: isSearchLoading,
+    isValidating: isSearchValidating,
     error: searchError,
     mutate: mutateSearch,
-  } = useSWR(
-    debouncedSearchTerm.trim() && currentUserId
-      ? ['search', debouncedSearchTerm, currentUserId]
-      : null,
-    searchFetcher,
-    {
-      revalidateOnFocus: false,
-      dedupingInterval: 60000,
-    }
-  );
+  } = useSWRInfinite(getSearchKey, searchFetcher, {
+    revalidateOnFocus: false,
+    revalidateFirstPage: false,
+    dedupingInterval: 60000,
+  });
+
+  const searchResults = searchPages ? searchPages.flatMap((p) => p.content) : [];
+  const lastSearchPage = searchPages && searchPages.length > 0
+    ? searchPages[searchPages.length - 1]
+    : null;
+  const searchHasMore = lastSearchPage ? lastSearchPage.hasMore : false;
+  // Loading a subsequent page: already have data but asked for more.
+  const isLoadingMore =
+    isSearchValidating && searchPages && searchPages.length < searchPageSize;
+
+  const loadMoreSearch = useCallback(() => {
+    if (!searchHasMore || isLoadingMore) return;
+    setSearchPageSize((s) => s + 1);
+  }, [searchHasMore, isLoadingMore, setSearchPageSize]);
 
   // Fetch connected users — suspended while searching or when currentUserId is missing
   const {
@@ -99,14 +126,12 @@ export const useSearchUsers = (currentUserId, debounceDelay = 300) => {
 
   const isSearchActive = debouncedSearchTerm.trim() !== '';
   // True while the user has typed but the debounce timer hasn't fired yet.
-  // Consumers can use this to show a subtle "typing…" indicator.
   const isDebouncing = searchTerm !== debouncedSearchTerm;
 
   const isLoading = isSearchActive
     ? isSearchLoading
     : isConnectedLoading || isPendingLoading;
 
-  // Combined error for convenience; granular errors also exposed below.
   const error = isSearchActive ? searchError : connectionsError || pendingError;
 
   // Deduplicate by userId in case the API returns the same user in both
@@ -126,12 +151,15 @@ export const useSearchUsers = (currentUserId, debounceDelay = 300) => {
     connectedUsers,
     pendingUsers,
     isLoading,
+    isLoadingMore,
     isDebouncing,
     error,
     searchError,
     connectionsError,
     pendingError,
     isSearchActive,
+    hasMoreSearchResults: searchHasMore,
+    loadMoreSearch,
     handleSearchChange,
     clearSearch,
     mutateConnections,

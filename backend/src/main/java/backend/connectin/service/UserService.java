@@ -357,6 +357,69 @@ public class UserService {
         return userDetailDTO;
     }
 
+    private static final int SEARCH_MAX_PAGE_SIZE = 50;
+    private static final int SEARCH_DEFAULT_PAGE_SIZE = 20;
+
+    public UserSearchPageDTO searchUsers(String searchTerm, long currentUserId, int page, int size) {
+        int safePage = Math.max(page, 0);
+        int safeSize = size <= 0 ? SEARCH_DEFAULT_PAGE_SIZE : Math.min(size, SEARCH_MAX_PAGE_SIZE);
+
+        if (searchTerm == null || searchTerm.isBlank()) {
+            return new UserSearchPageDTO(List.of(), safePage, safeSize, false);
+        }
+        String term = searchTerm.trim();
+
+        // Fetch one extra row to determine hasMore without a separate count query.
+        int fetchLimit = safeSize + 1;
+        int offset = safePage * safeSize;
+        List<Object[]> rows = userRepository.searchUsersWithConnectionStatus(currentUserId, term, fetchLimit, offset);
+        if (rows.isEmpty()) {
+            return new UserSearchPageDTO(List.of(), safePage, safeSize, false);
+        }
+
+        boolean hasMore = rows.size() > safeSize;
+        if (hasMore) {
+            rows = rows.subList(0, safeSize);
+        }
+
+        List<Long> userIds = rows.stream().map(r -> ((Number) r[0]).longValue()).toList();
+
+        Map<Long, Object[]> experienceMap = personalInfoRepository.findLatestExperienceByUserIds(userIds)
+                .stream()
+                .collect(Collectors.toMap(
+                        r -> ((Number) r[0]).longValue(),
+                        r -> r,
+                        (a, b) -> a
+                ));
+
+        Map<Long, FileDB> pictureMap = fileRepository.findProfilePicturesByUserIds(userIds)
+                .stream()
+                .collect(Collectors.toMap(FileDB::getUserId, f -> f));
+
+        List<RegisteredUserDTO> results = new ArrayList<>();
+        for (Object[] row : rows) {
+            long userId = ((Number) row[0]).longValue();
+            String firstName = (String) row[1];
+            String lastName = (String) row[2];
+            String connectionStatus = row[3] != null ? row[3].toString() : null;
+
+            Object[] exp = experienceMap.get(userId);
+            String jobTitle = exp != null ? (String) exp[1] : null;
+            String companyName = exp != null ? (String) exp[2] : null;
+
+            FileDB pic = pictureMap.get(userId);
+            String profilePic = null;
+            String profileType = null;
+            if (pic != null && pic.getType().startsWith("image/")) {
+                profilePic = Base64.getEncoder().encodeToString(pic.getData());
+                profileType = pic.getType();
+            }
+
+            results.add(new RegisteredUserDTO(userId, firstName, lastName, jobTitle, companyName, profilePic, profileType, connectionStatus));
+        }
+        return new UserSearchPageDTO(results, safePage, safeSize, hasMore);
+    }
+
     public List<Long> getFilteredUsers(String searchTerm, long userId) {
         List<User> users = fetchAll();
 

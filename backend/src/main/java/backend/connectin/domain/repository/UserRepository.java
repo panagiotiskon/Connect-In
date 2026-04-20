@@ -20,4 +20,36 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     Optional<User> findUserByEmail(String email);
 
+    // Two LEFT JOINs + COALESCE detect a connection even when only one
+    // direction is present in the table (defensive against partial/legacy rows).
+    // Each join matches at most one row thanks to the UNIQUE(user_id_1, user_id_2)
+    // constraint, so no duplicate rows per user are produced.
+    @Query(value = """
+            SELECT u.id, u.first_name, u.last_name,
+                   COALESCE(c1.status, c2.status) AS connection_status
+            FROM users u
+            LEFT JOIN connections c1 ON c1.user_id_1 = :currentUserId AND c1.user_id_2 = u.id
+            LEFT JOIN connections c2 ON c2.user_id_2 = :currentUserId AND c2.user_id_1 = u.id
+            WHERE u.id != :currentUserId
+              AND u.id != 1
+              AND NOT EXISTS (
+                  SELECT 1 FROM user_roles ur
+                  JOIN roles r ON ur.role_id = r.id
+                  WHERE ur.user_id = u.id AND r.name = 'ROLE_ADMIN'
+              )
+              AND (
+                  LOWER(u.first_name) LIKE LOWER(CONCAT(:search, '%'))
+                  OR LOWER(u.last_name) LIKE LOWER(CONCAT(:search, '%'))
+                  OR CONCAT(LOWER(u.first_name), ' ', LOWER(u.last_name)) LIKE LOWER(CONCAT(:search, '%'))
+              )
+            ORDER BY u.first_name ASC, u.id ASC
+            LIMIT :limit OFFSET :offset
+            """, nativeQuery = true)
+    List<Object[]> searchUsersWithConnectionStatus(
+            @Param("currentUserId") Long currentUserId,
+            @Param("search") String search,
+            @Param("limit") int limit,
+            @Param("offset") int offset
+    );
+
 }

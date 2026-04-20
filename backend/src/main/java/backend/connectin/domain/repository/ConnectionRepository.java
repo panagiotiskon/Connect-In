@@ -37,4 +37,7 @@ public interface ConnectionRepository extends JpaRepository<Connection, Long> {
     @Modifying
     @Query("DELETE FROM Connection c WHERE (c.userId1 = :userId AND c.userId2 = :connectionUserId) OR (c.userId1 = :connectionUserId AND c.userId2 = :userId)")
     void deleteConnection(Long userId, Long connectionUserId);
+
+    @Query("SELECT COUNT(c) > 0 FROM Connection c WHERE (c.userId1 = :userA AND c.userId2 = :userB) OR (c.userId1 = :userB AND c.userId2 = :userA)")
+    boolean existsBetween(@Param("userA") Long userA, @Param("userB") Long userB);
 }

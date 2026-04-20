@@ -4,13 +4,11 @@ import backend.connectin.domain.Connection;
 import backend.connectin.service.ConnectionService;
 import backend.connectin.service.UserService;
 import backend.connectin.web.dto.ConnectedUserDTO;
-import backend.connectin.web.dto.RegisteredUserDTO;
-import backend.connectin.web.mappers.UserMapper;
+import backend.connectin.web.dto.UserSearchPageDTO;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import javax.swing.plaf.PanelUI;
 import java.util.List;
 
 @RestController
@@ -46,12 +44,13 @@ public class ConnectionController {
     @GetMapping("/connections/registered-users")
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
-    public List<RegisteredUserDTO> getSpecificRegisteredUsers(
+    public UserSearchPageDTO getSpecificRegisteredUsers(
             @RequestParam(value = "search", required = false) String searchTerm,
-            @RequestParam(value = "userId") long userId) {
+            @RequestParam(value = "userId") long userId,
+            @RequestParam(value = "page", defaultValue = "0") int page,
+            @RequestParam(value = "size", defaultValue = "20") int size) {
 
-        List<Long> users = userService.getFilteredUsers(searchTerm, userId);
-        return connectionService.removeConnectedAndPendingUsers(users,userId);
+        return userService.searchUsers(searchTerm, userId, page, size);
     }
 
     @DeleteMapping("connections/{userId}")

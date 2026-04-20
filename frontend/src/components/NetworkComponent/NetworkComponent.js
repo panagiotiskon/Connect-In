@@ -27,11 +27,18 @@ const NetworkComponent = () => {
     isLoading: false,
   });
 
+  // Tracks user ids whose Connect request is in flight. A Set (not a single
+  // id) so two cards can show their own spinners if the user clicks quickly.
+  const [connectingIds, setConnectingIds] = useState(() => new Set());
+
   const {
     searchTerm,
     displayedUsers,
     isLoading,
+    isLoadingMore,
     isSearchActive,
+    hasMoreSearchResults,
+    loadMoreSearch,
     handleSearchChange,
     mutateConnections,
     mutatePending,
@@ -42,6 +49,11 @@ const NetworkComponent = () => {
     async (connectionUserId) => {
       if (!currentUserId) return;
 
+      setConnectingIds((prev) => {
+        const next = new Set(prev);
+        next.add(connectionUserId);
+        return next;
+      });
       try {
         await ConnectionAPI.requestToConnect(currentUserId, connectionUserId);
         await NotificationAPI.createNotification(
@@ -49,17 +61,36 @@ const NetworkComponent = () => {
           'CONNECTION',
           currentUserId
         );
-        mutateSearch();
+        // Await the search revalidation so the spinner stays on the card until
+        // the refetched data flips the user's connectionStatus to "PENDING".
+        // Without the await, the button resets before SWR finishes refetching,
+        // causing a brief "Connect" flash before the card swaps to Pending.
+        await mutateSearch();
         mutatePending();
       } catch (error) {
         console.error(
           'Error sending connection request or notification:',
           error
         );
+      } finally {
+        setConnectingIds((prev) => {
+          const next = new Set(prev);
+          next.delete(connectionUserId);
+          return next;
+        });
       }
     },
     [currentUserId, mutateSearch, mutatePending]
   );
+
+  // Resolves the per-user connection state to a single discriminator so the
+  // search and network flows can share one rendering branch.
+  // - Search results expose it on `connectionStatus` ("ACCEPTED" | "PENDING" | null)
+  // - Non-search users come from the connected/pending endpoints with `isPending`
+  const resolveStatus = (user) => {
+    if (isSearchActive) return user.connectionStatus ?? null;
+    return user.isPending ? 'PENDING' : 'ACCEPTED';
+  };
 
   const handleMessage = useCallback(
     async (connectedUserId) => {
@@ -131,6 +162,9 @@ const NetworkComponent = () => {
       } else {
         mutateConnections();
       }
+      // Search results embed connection state, so they must also refetch when
+      // the user cancels a request or removes a connection from search mode.
+      mutateSearch();
 
       closeDeleteModal();
     } catch (error) {
@@ -143,6 +177,7 @@ const NetworkComponent = () => {
     deleteModal.type,
     mutateConnections,
     mutatePending,
+    mutateSearch,
     closeDeleteModal,
   ]);
 
@@ -169,51 +204,44 @@ const NetworkComponent = () => {
               <div>Loading users...</div>
             </div>
           ) : displayedUsers.length > 0 ? (
-            displayedUsers.map((user) => (
-              <div key={user.userId} className="card-network">
-                {isSearchActive ? (
-                  <RegisteredUsersCardComponent
-                    user={{
-                      id: user.userId,
-                      profileImage: user.profilePic ? `data:${user.profileType};base64,${user.profilePic}` : '/593.jpg',
-                      firstName: user.firstName,
-                      lastName: user.lastName,
-                      job: user.jobTitle,
-                      companyName: user.companyName,
-                    }}
-                    onConnect={() => handleConnect(user.userId)}
-                    onShowProfile={() => handleShowProfile(user.userId)}
-                  />
-                ) : user.isPending ? (
-                  <PendingUsersCardComponent
-                    user={{
-                      id: user.userId,
-                      profileImage: user.profilePic ? `data:${user.profileType};base64,${user.profilePic}` : '/593.jpg',
-                      firstName: user.firstName,
-                      lastName: user.lastName,
-                      job: user.jobTitle,
-                      companyName: user.companyName,
-                    }}
-                    onShowProfile={() => handleShowProfile(user.userId)}
-                    onDeletePending={() => openPendingDeleteModal(user.userId)}
-                  />
-                ) : (
-                  <ConnectedUsersCardComponent
-                    user={{
-                      id: user.userId,
-                      profileImage: user.profilePic ? `data:${user.profileType};base64,${user.profilePic}` : '/593.jpg',
-                      firstName: user.firstName,
-                      lastName: user.lastName,
-                      job: user.jobTitle,
-                      companyName: user.companyName,
-                    }}
-                    onMessage={() => handleMessage(user.userId)}
-                    onShowProfile={() => handleShowProfile(user.userId)}
-                    onDelete={() => openDeleteModal(user.userId)}
-                  />
-                )}
-              </div>
-            ))
+            displayedUsers.map((user) => {
+              const status = resolveStatus(user);
+              const cardUser = {
+                id: user.userId,
+                profileImage: user.profilePic
+                  ? `data:${user.profileType};base64,${user.profilePic}`
+                  : '/593.jpg',
+                firstName: user.firstName,
+                lastName: user.lastName,
+                job: user.jobTitle,
+                companyName: user.companyName,
+              };
+              return (
+                <div key={user.userId} className="card-network">
+                  {status === 'ACCEPTED' ? (
+                    <ConnectedUsersCardComponent
+                      user={cardUser}
+                      onMessage={() => handleMessage(user.userId)}
+                      onShowProfile={() => handleShowProfile(user.userId)}
+                      onDelete={() => openDeleteModal(user.userId)}
+                    />
+                  ) : status === 'PENDING' ? (
+                    <PendingUsersCardComponent
+                      user={cardUser}
+                      onShowProfile={() => handleShowProfile(user.userId)}
+                      onDeletePending={() => openPendingDeleteModal(user.userId)}
+                    />
+                  ) : (
+                    <RegisteredUsersCardComponent
+                      user={cardUser}
+                      isConnecting={connectingIds.has(user.userId)}
+                      onConnect={() => handleConnect(user.userId)}
+                      onShowProfile={() => handleShowProfile(user.userId)}
+                    />
+                  )}
+                </div>
+              );
+            })
           ) : (
             <div className="no-users-found">
               <div>
@@ -224,6 +252,18 @@ const NetworkComponent = () => {
             </div>
           )}
         </div>
+
+        {isSearchActive && hasMoreSearchResults && (
+          <div className="load-more-section">
+            <button
+              className="user-card__action-btn user-card__action-btn--primary load-more-btn"
+              onClick={loadMoreSearch}
+              disabled={isLoadingMore}
+            >
+              {isLoadingMore ? 'Loading…' : 'Load more'}
+            </button>
+          </div>
+        )}
       </MDBContainer>
 
       <ConfirmActionModal
