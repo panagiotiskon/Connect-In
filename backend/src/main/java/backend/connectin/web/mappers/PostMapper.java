@@ -2,7 +2,10 @@ package backend.connectin.web.mappers;
 
 import backend.connectin.domain.FileDB;
 import backend.connectin.domain.Post;
+import backend.connectin.domain.repository.FileRepository;
 import backend.connectin.service.FileService;
+import backend.connectin.util.FileUrlBuilder;
+import backend.connectin.web.dto.FileMetaDTO;
 import backend.connectin.web.requests.PostRequest;
 import backend.connectin.web.resources.CommentResource;
 import backend.connectin.web.resources.PostResource;
@@ -12,16 +15,22 @@ import org.springframework.stereotype.Component;
 import java.time.Instant;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 
 @Component
 public class PostMapper {
 
     private final FileService fileService;
+    private final FileRepository fileRepository;
     private final CommentMapper commentMapper;
+    private final FileUrlBuilder fileUrlBuilder;
 
-    public PostMapper(FileService fileService, CommentMapper commentMapper) {
+    public PostMapper(FileService fileService, FileRepository fileRepository,
+                      CommentMapper commentMapper, FileUrlBuilder fileUrlBuilder) {
         this.fileService = fileService;
+        this.fileRepository = fileRepository;
         this.commentMapper = commentMapper;
+        this.fileUrlBuilder = fileUrlBuilder;
     }
 
     public Post mapToPost(PostRequest postRequest, String fileId, Long userId) {
@@ -48,8 +57,7 @@ public class PostMapper {
         postResourceDetailed.setUserId(post.getUserId());
 
         if(post.getFileId() != null) {
-            FileDB fileDB = fileService.getFile(post.getFileId());
-            postResourceDetailed.setFile(fileDB);
+            loadFileMeta(post.getFileId()).ifPresent(postResourceDetailed::setFile);
         }
 
         List<CommentResource> commentResources = post.getComments().stream()
@@ -74,6 +82,14 @@ public class PostMapper {
             postResource.setFile(fileDB);
         }
         return postResource;
+    }
+
+    private Optional<FileMetaDTO> loadFileMeta(String fileId) {
+        return fileRepository.findMetaById(fileId)
+                .map(meta -> {
+                    meta.setUrl(fileUrlBuilder.build(meta.getId()));
+                    return meta;
+                });
     }
 
 }

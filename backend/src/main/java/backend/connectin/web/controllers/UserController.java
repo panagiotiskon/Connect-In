@@ -4,6 +4,7 @@ import backend.connectin.domain.*;
 import backend.connectin.service.*;
 import backend.connectin.web.dto.EducationDTO;
 import backend.connectin.web.dto.ExperienceDTO;
+import backend.connectin.web.dto.FeedPageDTO;
 import backend.connectin.web.dto.SkillDTO;
 import backend.connectin.web.dto.UserDTO;
 import backend.connectin.web.mappers.CommentMapper;
@@ -24,7 +25,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 
@@ -149,13 +149,12 @@ public class UserController {
 
 
     @GetMapping("/{userId}/feed")
-    public ResponseEntity<List<PostResourceDetailed>> getUserFeed(@PathVariable long userId) {
-        List<Post> posts = postService.fetchFeed(userId);
-        List<PostResourceDetailed> postResourceDetailed = posts.stream()
-                .map(postMapper::mapToPostResourceDetailed)
-                .sorted(Comparator.comparing(PostResourceDetailed::getCreatedAt).reversed())
-                .toList();
-        return new ResponseEntity<>(postResourceDetailed, HttpStatus.OK);
+    public ResponseEntity<FeedPageDTO> getUserFeed(
+            @PathVariable long userId,
+            @RequestParam(value = "page", defaultValue = "0") int page,
+            @RequestParam(value = "size", required = false) Integer size) {
+        FeedPageDTO feed = postService.fetchFeedPage(userId, page, size);
+        return new ResponseEntity<>(feed, HttpStatus.OK);
     }
 
     @GetMapping("/{userId}")

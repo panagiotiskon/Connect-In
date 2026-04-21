@@ -41,7 +41,7 @@ const HomeComponent = () => {
 
       const fetchedPosts = Array.isArray(response)
         ? response
-        : response?.data || [];
+        : response?.items || response?.data || [];
 
       const postsById = {};
 

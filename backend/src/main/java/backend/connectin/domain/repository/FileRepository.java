@@ -1,13 +1,12 @@
 package backend.connectin.domain.repository;
 
 import backend.connectin.domain.FileDB;
+import backend.connectin.web.dto.FileMetaDTO;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -25,5 +24,19 @@ public interface FileRepository extends JpaRepository<FileDB, String> {
 
     @Query("SELECT f FROM FileDB f WHERE f.userId IN :userIds AND f.isProfilePicture = TRUE")
     List<FileDB> findProfilePicturesByUserIds(@Param("userIds") List<Long> userIds);
+
+    @Query("""
+            SELECT new backend.connectin.web.dto.FileMetaDTO(f.id, f.type, f.name)
+            FROM FileDB f
+            WHERE f.id IN :ids
+            """)
+    List<FileMetaDTO> findMetaByIds(@Param("ids") List<String> ids);
+
+    @Query("""
+            SELECT new backend.connectin.web.dto.FileMetaDTO(f.id, f.type, f.name)
+            FROM FileDB f
+            WHERE f.id = :id
+            """)
+    Optional<FileMetaDTO> findMetaById(@Param("id") String id);
 
 }

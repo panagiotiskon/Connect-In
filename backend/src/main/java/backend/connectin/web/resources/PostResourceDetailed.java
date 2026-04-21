@@ -1,6 +1,6 @@
 package backend.connectin.web.resources;
 
-import backend.connectin.domain.FileDB;
+import backend.connectin.web.dto.FileMetaDTO;
 
 import java.time.Instant;
 import java.util.List;
@@ -11,7 +11,7 @@ public class PostResourceDetailed {
     private Long userId;
     private String content;
     private Instant createdAt;
-    private FileDB file;
+    private FileMetaDTO file;
     private List<CommentResource> comments;
     private Long ReactionCount;
 
@@ -39,11 +39,11 @@ public class PostResourceDetailed {
         this.createdAt = createdAt;
     }
 
-    public FileDB getFile() {
+    public FileMetaDTO getFile() {
         return file;
     }
 
-    public void setFile(FileDB file) {
+    public void setFile(FileMetaDTO file) {
         this.file = file;
     }
 

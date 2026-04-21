@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { MDBCard, MDBCardBody, MDBBtn, MDBIcon } from 'mdb-react-ui-kit';
 import OptimizedImage from '../common/OptimizedImage';
 import ConfirmActionModal from '../common/ConfirmActionModal';
+import PostMedia from './PostMedia';
 import './PostCard.scss';
 
 const PostCard = ({
@@ -70,32 +71,7 @@ const PostCard = ({
         {content && <p className="post-content-text">{content}</p>}
 
         {/* Media */}
-        {file && (
-          <div className="post-media">
-            {file?.type?.startsWith('image/') && (
-              <OptimizedImage
-                src={`data:${file.type};base64,${file.data}`}
-                alt="Post content"
-              />
-            )}
-            {file?.type?.startsWith('video/') && (
-              <video controls>
-                <source
-                  src={`data:${file.type};base64,${file.data}`}
-                  type={file.type}
-                />
-              </video>
-            )}
-            {file?.type?.startsWith('audio/') && (
-              <audio controls>
-                <source
-                  src={`data:${file.type};base64,${file.data}`}
-                  type={file.type}
-                />
-              </audio>
-            )}
-          </div>
-        )}
+        <PostMedia file={file} />
 
         <div className="post-divider" />
 

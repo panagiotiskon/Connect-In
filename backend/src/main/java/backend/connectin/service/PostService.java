@@ -8,8 +8,12 @@ import backend.connectin.domain.repository.FileRepository;
 import backend.connectin.domain.repository.PostRepository;
 import backend.connectin.domain.repository.PostViewRepository;
 import backend.connectin.domain.repository.ReactionRepository;
+import backend.connectin.util.FeedAssembler;
+import backend.connectin.web.dto.FeedPageDTO;
+import backend.connectin.web.dto.FileMetaDTO;
 import backend.connectin.web.mappers.PostMapper;
 import backend.connectin.web.requests.PostRequest;
+import backend.connectin.web.resources.PostResourceDetailed;
 import jakarta.transaction.Transactional;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -19,9 +23,14 @@ import org.springframework.web.server.ResponseStatusException;
 import java.io.IOException;
 import java.time.Instant;
 import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 public class PostService {
+
+    private static final int DEFAULT_PAGE_SIZE = 20;
+    private static final int MAX_PAGE_SIZE = 100;
 
     private final PostRepository postRepository;
     private final FileService fileService;
@@ -31,12 +40,14 @@ public class PostService {
     private final ReactionRepository reactionRepository;
     private final FileRepository fileRepository;
     private final PostViewRepository postViewRepository;
+    private final FeedAssembler feedAssembler;
 
     public PostService(PostRepository postRepository, FileService fileService,
                        PostMapper postMapper, UserService userService,
                        ConnectionService connectionService, ReactionRepository reactionRepository,
                        FileRepository fileRepository,
-                       PostViewRepository postViewRepository) {
+                       PostViewRepository postViewRepository,
+                       FeedAssembler feedAssembler) {
 
         this.postRepository = postRepository;
         this.fileService = fileService;
@@ -46,6 +57,7 @@ public class PostService {
         this.reactionRepository = reactionRepository;
         this.postViewRepository = postViewRepository;
         this.fileRepository = fileRepository;
+        this.feedAssembler = feedAssembler;
     }
 
 
@@ -87,6 +99,65 @@ public class PostService {
         Set<Post> userPostsSet = postRepository.findAllByUserIdInWithComments(connectionIds);
         userPostsSet.addAll(postsFromReactions);
         return new ArrayList<>(userPostsSet);
+    }
+
+    public FeedPageDTO fetchFeedPage(Long userId, int page, Integer sizeParam) {
+        int size = clampSize(sizeParam);
+        int safePage = Math.max(page, 0);
+        long offset = (long) safePage * size;
+
+        Set<Long> connectionIds = new HashSet<>(connectionService.getConnectedUserIds(userId));
+        Set<Long> authorIds = new HashSet<>(connectionIds);
+        authorIds.add(userId);
+
+        long total;
+        List<Long> pageIds;
+        if (connectionIds.isEmpty()) {
+            total = postRepository.countFeedPostsAuthors(authorIds);
+            pageIds = total == 0 || offset >= total
+                    ? List.of()
+                    : postRepository.findFeedIdsAuthorsPaged(authorIds, size, offset);
+        } else {
+            total = postRepository.countFeedPosts(authorIds, connectionIds);
+            pageIds = total == 0 || offset >= total
+                    ? List.of()
+                    : postRepository.findFeedIdsPaged(authorIds, connectionIds, size, offset);
+        }
+
+        if (pageIds.isEmpty()) {
+            return new FeedPageDTO(List.of(), safePage, size, total);
+        }
+
+        List<Post> fetched = postRepository.findPostsByIdInWithComments(pageIds);
+        Map<Long, Post> byId = fetched.stream()
+                .collect(Collectors.toMap(Post::getId, Function.identity(), (a, b) -> a));
+        List<Post> orderedPosts = pageIds.stream()
+                .map(byId::get)
+                .filter(Objects::nonNull)
+                .toList();
+
+        Map<Long, Long> reactionCounts = reactionRepository.countReactionsByPostIds(pageIds).stream()
+                .collect(Collectors.toMap(
+                        row -> ((Number) row[0]).longValue(),
+                        row -> ((Number) row[1]).longValue()));
+
+        List<String> fileIds = orderedPosts.stream()
+                .map(Post::getFileId)
+                .filter(Objects::nonNull)
+                .distinct()
+                .toList();
+        Map<String, FileMetaDTO> filesByFileId = fileIds.isEmpty()
+                ? Map.of()
+                : fileRepository.findMetaByIds(fileIds).stream()
+                        .collect(Collectors.toMap(FileMetaDTO::getId, Function.identity()));
+
+        List<PostResourceDetailed> items = feedAssembler.assemble(orderedPosts, reactionCounts, filesByFileId);
+        return new FeedPageDTO(items, safePage, size, total);
+    }
+
+    private int clampSize(Integer size) {
+        if (size == null || size <= 0) return DEFAULT_PAGE_SIZE;
+        return Math.min(size, MAX_PAGE_SIZE);
     }
 
     public List<Post> fetchAll() {

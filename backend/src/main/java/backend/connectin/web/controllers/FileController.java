@@ -3,13 +3,19 @@ package backend.connectin.web.controllers;
 import backend.connectin.domain.FileDB;
 import backend.connectin.service.FileService;
 import backend.connectin.web.resources.FileResource;
+import org.springframework.http.CacheControl;
+import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.InvalidMediaTypeException;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.util.*;
 
 @RestController
@@ -86,6 +92,31 @@ public class FileController {
                     .body(fileDB.getData());
         } catch (NoSuchElementException e) {
             return ResponseEntity.status(HttpStatus.EXPECTATION_FAILED).body(e.getMessage());
+        }
+    }
+
+    @GetMapping("/files/view/{id}")
+    public ResponseEntity<byte[]> viewFile(@PathVariable String id) {
+        try {
+            FileDB fileDB = fileService.getFile(id);
+            MediaType contentType = MediaType.APPLICATION_OCTET_STREAM;
+            if (fileDB.getType() != null) {
+                try {
+                    contentType = MediaType.parseMediaType(fileDB.getType());
+                } catch (InvalidMediaTypeException ignored) {
+                    // fall back to octet-stream for malformed stored types
+                }
+            }
+            ContentDisposition disposition = ContentDisposition.inline()
+                    .filename(fileDB.getName() != null ? fileDB.getName() : id, StandardCharsets.UTF_8)
+                    .build();
+            return ResponseEntity.ok()
+                    .contentType(contentType)
+                    .header(HttpHeaders.CONTENT_DISPOSITION, disposition.toString())
+                    .cacheControl(CacheControl.maxAge(Duration.ofDays(7)).cachePrivate())
+                    .body(fileDB.getData());
+        } catch (NoSuchElementException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
     }
 

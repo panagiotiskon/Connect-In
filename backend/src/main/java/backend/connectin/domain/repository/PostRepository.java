@@ -48,4 +48,49 @@ public interface PostRepository extends JpaRepository<Post, Long> {
             """)
     List<Post> findPostsByIdInWithComments(@Param("postIds") List<Long> postIds);
 
+    @Query(value = """
+            SELECT p.id FROM posts p
+            WHERE p.user_id IN :authorIds
+            ORDER BY p.created_date DESC, p.id DESC
+            LIMIT :limit OFFSET :offset
+            """, nativeQuery = true)
+    List<Long> findFeedIdsAuthorsPaged(@Param("authorIds") Collection<Long> authorIds,
+                                       @Param("limit") int limit,
+                                       @Param("offset") long offset);
+
+    @Query(value = "SELECT COUNT(*) FROM posts p WHERE p.user_id IN :authorIds",
+            nativeQuery = true)
+    long countFeedPostsAuthors(@Param("authorIds") Collection<Long> authorIds);
+
+    @Query(value = """
+            SELECT id FROM (
+                SELECT p.id AS id, p.created_date AS created_date
+                  FROM posts p
+                  WHERE p.user_id IN :authorIds
+                UNION
+                SELECT p.id AS id, p.created_date AS created_date
+                  FROM posts p
+                  INNER JOIN reactions r ON r.post_id = p.id
+                  WHERE r.user_id IN :reactorIds
+            ) feed
+            ORDER BY feed.created_date DESC, feed.id DESC
+            LIMIT :limit OFFSET :offset
+            """, nativeQuery = true)
+    List<Long> findFeedIdsPaged(@Param("authorIds") Collection<Long> authorIds,
+                                @Param("reactorIds") Collection<Long> reactorIds,
+                                @Param("limit") int limit,
+                                @Param("offset") long offset);
+
+    @Query(value = """
+            SELECT COUNT(*) FROM (
+                SELECT p.id FROM posts p WHERE p.user_id IN :authorIds
+                UNION
+                SELECT p.id FROM posts p
+                  INNER JOIN reactions r ON r.post_id = p.id
+                  WHERE r.user_id IN :reactorIds
+            ) feed
+            """, nativeQuery = true)
+    long countFeedPosts(@Param("authorIds") Collection<Long> authorIds,
+                        @Param("reactorIds") Collection<Long> reactorIds);
+
 }

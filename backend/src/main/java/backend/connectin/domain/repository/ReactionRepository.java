@@ -34,4 +34,12 @@ public interface ReactionRepository extends JpaRepository<Reaction, Long> {
             WHERE r.user_id = :userId
             """, nativeQuery = true)
     List<Long> findPostIdsByUserId(@Param("userId") Long userId);
+
+    @Query(value = """
+            SELECT r.post_id, COUNT(*)
+            FROM reactions r
+            WHERE r.post_id IN :postIds
+            GROUP BY r.post_id
+            """, nativeQuery = true)
+    List<Object[]> countReactionsByPostIds(@Param("postIds") List<Long> postIds);
 }
