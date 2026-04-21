@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { MDBCard, MDBCardBody, MDBBtn, MDBIcon } from 'mdb-react-ui-kit';
-import OptimizedImage from '../common/OptimizedImage';
+import AuthenticatedImage from '../common/AuthenticatedImage';
 import ConfirmActionModal from '../common/ConfirmActionModal';
 import PostMedia from './PostMedia';
 import './PostCard.scss';
@@ -45,10 +45,11 @@ const PostCard = ({
       <MDBCardBody className="post-card-body">
         {/* Header: avatar + name + timestamp + delete */}
         <div className="post-header">
-          <OptimizedImage
+          <AuthenticatedImage
             src={posterImage}
             className="post-header-avatar"
             alt="Poster Avatar"
+            fallbackSrc="/593.jpg"
           />
           <div className="post-header-info">
             <span className="post-author">{posterName}</span>
@@ -113,10 +114,11 @@ const PostCard = ({
                 comment;
               return (
                 <div key={commentId} className="comment-item">
-                  <OptimizedImage
+                  <AuthenticatedImage
                     src={profileImage || '/593.jpg'}
                     className="comment-item-avatar"
                     alt="Commenter Avatar"
+                    fallbackSrc="/593.jpg"
                   />
                   <div className="comment-bubble">
                     <span className="comment-bubble-author">{username}</span>

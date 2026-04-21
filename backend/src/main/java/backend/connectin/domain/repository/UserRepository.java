@@ -1,11 +1,13 @@
 package backend.connectin.domain.repository;
 
 import backend.connectin.domain.User;
+import backend.connectin.web.dto.FeedAuthorDTO;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -19,6 +21,13 @@ public interface UserRepository extends JpaRepository<User, Long> {
     List<User> findUsersExcludingRole(@Param("roleName") String roleName);
 
     Optional<User> findUserByEmail(String email);
+
+    @Query("""
+            SELECT new backend.connectin.web.dto.FeedAuthorDTO(u.id, u.firstName, u.lastName)
+            FROM User u
+            WHERE u.id IN :ids
+            """)
+    List<FeedAuthorDTO> findFeedAuthorsByIds(@Param("ids") Collection<Long> ids);
 
     // Two LEFT JOINs + COALESCE detect a connection even when only one
     // direction is present in the table (defensive against partial/legacy rows).

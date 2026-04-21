@@ -8,12 +8,20 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
 @Repository
 public interface FileRepository extends JpaRepository<FileDB, String> {
     List<FileDB> findByUserEmail(String userEmail);
+
+    @Query("""
+            SELECT f.userId, f.id
+            FROM FileDB f
+            WHERE f.userId IN :userIds AND f.isProfilePicture = TRUE
+            """)
+    List<Object[]> findProfilePictureFileIdsByUserIds(@Param("userIds") Collection<Long> userIds);
 
     @Modifying
     @Query("DELETE FROM FileDB f WHERE f.userId = :userEmail")

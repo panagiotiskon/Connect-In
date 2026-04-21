@@ -1,5 +1,7 @@
 package backend.connectin.web.resources;
 
+import backend.connectin.web.dto.FeedAuthorDTO;
+
 import java.time.Instant;
 
 public class CommentResource {
@@ -9,6 +11,7 @@ public class CommentResource {
     private Instant createdAt;
     private Long userId;
     private String username;
+    private FeedAuthorDTO author;
 
     public Long getCommentId() {
         return commentId;
@@ -48,5 +51,13 @@ public class CommentResource {
 
     public void setUsername(String username) {
         this.username = username;
+    }
+
+    public FeedAuthorDTO getAuthor() {
+        return author;
+    }
+
+    public void setAuthor(FeedAuthorDTO author) {
+        this.author = author;
     }
 }

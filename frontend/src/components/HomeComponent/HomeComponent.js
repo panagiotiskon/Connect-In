@@ -8,8 +8,6 @@ import PostCard from './PostCard';
 import SkeletonCard from '../common/SkeletonCard';
 import { useAuth } from '../../context/AuthContext';
 import PostService from '../../api/PostApi';
-import FileService from '../../api/UserFilesApi';
-import PersonalInfoService from '../../api/UserPersonalInformationAPI';
 import NotificationAPI from '../../api/NotificationAPI';
 import useProfileImage from '../../hooks/useProfileImage';
 import './HomeComponent.scss';
@@ -44,34 +42,25 @@ const HomeComponent = () => {
         : response?.items || response?.data || [];
 
       const postsById = {};
+      const postsWithUserPhotos = fetchedPosts.map((post) => {
+        const author = post.author;
+        const commentsWithPhotos = (post.comments || []).map((comment) => ({
+          ...comment,
+          profileImage: comment.author?.profilePictureUrl || null,
+        }));
 
-      const postsWithUserPhotos = await Promise.all(
-        fetchedPosts.map(async (post) => {
-          const poster = await PersonalInfoService.getUser(post.userId);
-          const commentsWithPhotos = await Promise.all(
-            post.comments.map(async (comment) => {
-              const userImage = await FileService.getUserImages(comment.userId);
-              const userProfileImage =
-                userImage.length > 0
-                  ? `data:${userImage[0].type};base64,${userImage[0].data}`
-                  : null;
-              return { ...comment, profileImage: userProfileImage };
-            })
-          );
+        const processedPost = {
+          ...post,
+          posterName: author
+            ? `${author.firstName} ${author.lastName}`
+            : '',
+          posterImage: author?.profilePictureUrl || '/593.jpg',
+          comments: commentsWithPhotos,
+        };
 
-          const processedPost = {
-            ...post,
-            posterName: poster.firstName + ' ' + poster.lastName,
-            posterImage: poster?.profilePictureData
-              ? `data:image/jpeg;base64,${poster.profilePictureData}`
-              : '/593.jpg',
-            comments: commentsWithPhotos,
-          };
-
-          postsById[post.id] = processedPost;
-          return processedPost;
-        })
-      );
+        postsById[post.id] = processedPost;
+        return processedPost;
+      });
 
       setPosts(postsWithUserPhotos);
       setPostsMap(postsById);

@@ -3,6 +3,7 @@ package backend.connectin.service;
 import backend.connectin.domain.*;
 import backend.connectin.domain.repository.*;
 import backend.connectin.recommendation.algorithm.MatrixFactorization;
+import backend.connectin.util.FeedAssembler;
 import backend.connectin.web.dto.JobPostDTO;
 import backend.connectin.web.mappers.PostMapper;
 import backend.connectin.web.resources.PostResourceDetailed;
@@ -26,8 +27,9 @@ public class RecommendationService {
     private final PostRecommendationRepository postRecommendationRepository;
     private final PostMapper postMapper;
     private final PostViewRepository postViewRepository;
+    private final FeedAssembler feedAssembler;
 
-    public RecommendationService(JobPostRepository jobPostRepository, UserService userService, JobViewRepository jobViewRepository, PersonalInfoRepository personalInfoRepository, JobRecommendationRepository jobRecommendationRepository, JobApplicationRepository jobApplicationRepository, PostService postService, ConnectionService connectionService, ReactionRepository reactionRepository, PostRepository postRepository, PostRecommendationRepository postRecommendationRepository, PostMapper postMapper, PostViewRepository postViewRepository) {
+    public RecommendationService(JobPostRepository jobPostRepository, UserService userService, JobViewRepository jobViewRepository, PersonalInfoRepository personalInfoRepository, JobRecommendationRepository jobRecommendationRepository, JobApplicationRepository jobApplicationRepository, PostService postService, ConnectionService connectionService, ReactionRepository reactionRepository, PostRepository postRepository, PostRecommendationRepository postRecommendationRepository, PostMapper postMapper, PostViewRepository postViewRepository, FeedAssembler feedAssembler) {
         this.jobPostRepository = jobPostRepository;
         this.userService = userService;
         this.jobViewRepository = jobViewRepository;
@@ -41,6 +43,7 @@ public class RecommendationService {
         this.postRecommendationRepository = postRecommendationRepository;
         this.postMapper = postMapper;
         this.postViewRepository = postViewRepository;
+        this.feedAssembler = feedAssembler;
     }
 
     public List<JobPostDTO> findRecommendedJobsForUser(long userId) {
@@ -101,8 +104,7 @@ public class RecommendationService {
                         .indexOf(post.getId())))
                 .toList();
 
-        return orderedPosts.stream()
-                .map(postMapper::mapToPostResourceDetailed).toList();
+        return feedAssembler.assemble(orderedPosts);
     }
 
     public void recommendJobs() {

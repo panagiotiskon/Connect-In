@@ -1,5 +1,6 @@
 package backend.connectin.web.resources;
 
+import backend.connectin.web.dto.FeedAuthorDTO;
 import backend.connectin.web.dto.FileMetaDTO;
 
 import java.time.Instant;
@@ -14,6 +15,7 @@ public class PostResourceDetailed {
     private FileMetaDTO file;
     private List<CommentResource> comments;
     private Long ReactionCount;
+    private FeedAuthorDTO author;
 
     public Long getId() {
         return id;
@@ -69,5 +71,13 @@ public class PostResourceDetailed {
 
     public void setReactionCount(Long reactionCount) {
         ReactionCount = reactionCount;
+    }
+
+    public FeedAuthorDTO getAuthor() {
+        return author;
+    }
+
+    public void setAuthor(FeedAuthorDTO author) {
+        this.author = author;
     }
 }
