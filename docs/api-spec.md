@@ -57,10 +57,12 @@ Sessions are stateless; the JWT is extracted from an HTTP-only cookie by `JWTAut
 
 | Method | Path | Request | Response |
 | --- | --- | --- | --- |
-| `GET`    | `/auth/{userId}/feed` | — | `List<PostResourceDetailed>` (sorted by `createdAt` desc) |
+| `GET`    | `/auth/{userId}/feed` | query `page?` (default 0), `size?` | `FeedPageDTO` — `{items: PostResourceDetailed[], page, size, total, hasMore}` |
 | `GET`    | `/auth/{userId}/posts` | — | `List<PostResourceDetailed>` |
 | `POST`   | `/auth/{userId}/create-post` | `multipart/form-data`: `content`, `file?` | `String` "Post Created" |
 | `DELETE` | `/auth/{userId}/{postId}` | — | `String` "Post Deleted" |
+
+> `PostResourceDetailed` now embeds `author: FeedAuthorDTO` (id, firstName, lastName, profilePictureUrl) and `file: FileMetaDTO` (id, type, name, url) instead of a raw file payload. Comments inside the feed also carry an `author` field. Image/file bytes are fetched lazily via the new inline URL (see §4).
 
 ### Comments
 
@@ -87,7 +89,7 @@ Sessions are stateless; the JWT is extracted from an HTTP-only cookie by `JWTAut
 | `GET`    | `/auth/connections/{userId}` | — | `List<ConnectedUserDTO>` |
 | `GET`    | `/auth/connections/pending/{userId}` | — | `List<ConnectedUserDTO>` |
 | `POST`   | `/auth/connections/{userId}` | query `connectionUserId` | `List<Connection>` (201) |
-| `GET`    | `/auth/connections/registered-users` | query `search?`, `userId` | `List<RegisteredUserDTO>` |
+| `GET`    | `/auth/connections/registered-users` | query `search?`, `userId`, `page?` (default 0), `size?` (default 20) | `UserSearchPageDTO` — `{content: RegisteredUserDTO[], page, size, hasMore}` |
 | `DELETE` | `/auth/connections/{userId}` | query `connectionUserId` | `String` "Successfully deleted" |
 
 ---
@@ -99,7 +101,8 @@ Sessions are stateless; the JWT is extracted from an HTTP-only cookie by `JWTAut
 | `POST`   | `/auth/pre-upload` | `multipart`: `file` | `Map<String,String>` with `tempId`, `fileName` (held in in-memory `tempStorage`) |
 | `POST`   | `/auth/upload` | `multipart`: `file`, `isProfilePicture` (String), `userId` | `String` status message |
 | `GET`    | `/auth/files` | — | `List<FileResource>` (name, uri, type, size) |
-| `GET`    | `/auth/files/{id}` | — | `byte[]` (attachment) |
+| `GET`    | `/auth/files/{id}` | — | `byte[]` (attachment download) |
+| `GET`    | `/auth/files/view/{id}` | — | `byte[]` inline with correct `Content-Type` and `Cache-Control: private, max-age=7d`. This is the URL embedded in feed `FileMetaDTO.url` / `FeedAuthorDTO.profilePictureUrl`. |
 | `GET`    | `/auth/files/user/{userId}/images` | — | `List<Map<String,String>>` — `{type, data (Base64)}` |
 | `DELETE` | `/auth/files/{id}` | — | `String` status |
 
@@ -173,6 +176,6 @@ Sessions are stateless; the JWT is extracted from an HTTP-only cookie by `JWTAut
 
 **Request objects** (`web/requests/`): `UserLoginRequest`, `UserRegisterRequest`, `UserChangePasswordRequest`, `UserChangeEmailRequest`, `PostRequest`, `CommentRequest`, `NotificationRequest`.
 
-**DTOs** (`web/dto/`): `UserDTO`, `UserDetailDTO`, `RegisteredUserDTO`, `ConnectedUserDTO`, `EducationDTO`, `ExperienceDTO`, `SkillDTO`, `JobPostDTO`, `JobApplicationDTO`, `MessageDTO`, `ConversationDTO`.
+**DTOs** (`web/dto/`): `UserDTO`, `UserDetailDTO`, `RegisteredUserDTO`, `ConnectedUserDTO`, `EducationDTO`, `ExperienceDTO`, `SkillDTO`, `JobPostDTO`, `JobApplicationDTO`, `MessageDTO`, `ConversationDTO`, `FeedPageDTO`, `FeedAuthorDTO`, `FileMetaDTO`, `UserSearchPageDTO`.
 
 **HATEOAS resources** (`web/resources/`): `AuthResource`, `PostResource`, `PostResourceDetailed`, `CommentResource`, `ReactionResource`, `ConnectionResource`, `FileResource`, `NotificationResource`.

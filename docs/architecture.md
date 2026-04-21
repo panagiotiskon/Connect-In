@@ -20,6 +20,8 @@ Connect-In is a professional social networking platform designed to facilitate u
 - **Layered Design:** Follows a Controller -> Service -> Repository pattern.
 - **Security:** `JWTAuthenticationFilter` intercepts requests to validate the cookie-based token. Business logic endpoints are scoped under `/auth/**` and administrative ones under `/admin/**`.
 - **HATEOAS:** Uses `Resource` wrappers and mappers to provide discoverable API links, reducing frontend URL coupling.
+- **Feed assembly:** `FeedAssembler` (in `util/`) batch-loads authors, reaction counts, and file metadata for a page of posts in a few queries (avoiding per-post N+1s). File bytes are never embedded in feed payloads — `FileUrlBuilder` emits lazy URLs pointing to `/auth/files/view/{id}`, which the frontend fetches on demand and caches.
+- **Pagination:** Feed (`GET /auth/{userId}/feed`) and user search (`GET /auth/connections/registered-users`) are server-paginated (`page`/`size` params) and return envelope DTOs (`FeedPageDTO`, `UserSearchPageDTO`) carrying `hasMore` for infinite-scroll clients.
 
 ## 4. Key Subsystems
 
@@ -44,8 +46,8 @@ Connect-In is a professional social networking platform designed to facilitate u
 - **Career:** `JobPost`, `JobApplication`, `JobView`.
 
 ## 6. Architectural Constraints & Risks
-- **Scalability:** - N+1 query patterns exist in feed and job listing services.
+- **Scalability:** - N+1 patterns in the feed were mitigated by `FeedAssembler` (batched author/file/reaction fetches); job listing paths still have hotspots.
     - Matrix Factorization is performed in-memory, limiting the system to a few thousand concurrent users/items.
-- **Persistence:** Storing binary files in MySQL increases DB size and impacts backup/restore performance.
+- **Persistence:** Storing binary files in MySQL increases DB size and impacts backup/restore performance. Feed responses no longer inline Base64 blobs — images are served with HTTP cache headers via `/auth/files/view/{id}`, shrinking payloads substantially.
 - **User Experience:** Forced logouts occur every hour due to the lack of a JWT refresh token mechanism.
 - **Performance:** Complex filtering and sorting are often handled in Java collections rather than optimized SQL queries.
