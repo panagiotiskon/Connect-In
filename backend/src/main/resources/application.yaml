@@ -11,7 +11,7 @@ spring:
   datasource:
     url: jdbc:mysql://${MYSQLHOST:localhost}:${MYSQLPORT:3306}/${MYSQLDATABASE:connectIn}?createDatabaseIfNotExist=true
     username: ${MYSQLUSER:root}
-    password: ***REMOVED***
+    password: ${MYSQLPASSWORD:password}
     driver-class-name: com.mysql.cj.jdbc.Driver
 
   flyway:
