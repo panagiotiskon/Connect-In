@@ -16,9 +16,10 @@ const createPost = async (userId, content, photo) => {
   if (photo) {
     formData.append("file", photo);
   }
-  return api.post(`${BASE}/${userId}/create-post`, formData, {
+  const response = await api.post(`${BASE}/${userId}/create-post`, formData, {
     headers: { "Content-Type": "multipart/form-data" },
   });
+  return response.data;
 };
 
 const getUserPosts = async (userId) => {

@@ -5,12 +5,13 @@ import jakarta.persistence.*;
 import java.time.Instant;
 
 @Entity
-@Table(name = "job_view")
+@Table(name = "job_view", uniqueConstraints = @UniqueConstraint(name = "uq_job_view_user_job", columnNames = {"user_id", "job_id"}))
 public class JobView {
     private long id;
     private long userId;
     private long jobId;
     private Instant viewedAt;
+    private int viewCount;
 
     @Id
     @Column(name = "id")
@@ -48,6 +49,15 @@ public class JobView {
 
     public void setViewedAt(Instant viewedAt) {
         this.viewedAt = viewedAt;
+    }
+
+    @Column(name = "view_count", nullable = false)
+    public int getViewCount() {
+        return viewCount;
+    }
+
+    public void setViewCount(int viewCount) {
+        this.viewCount = viewCount;
     }
 
 }

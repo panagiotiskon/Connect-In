@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { MDBContainer, MDBRow, MDBCol } from 'mdb-react-ui-kit';
 import NavbarComponent from '../common/NavBar';
 import ProfileCard from '../common/ProfileCard';
@@ -10,147 +10,94 @@ import { useAuth } from '../../context/AuthContext';
 import PostService from '../../api/PostApi';
 import NotificationAPI from '../../api/NotificationAPI';
 import useProfileImage from '../../hooks/useProfileImage';
+import useFeed from '../../hooks/useFeed';
+import useUserInteractions from '../../hooks/useUserInteractions';
+import usePostViewObserver from '../../hooks/usePostViewObserver';
+import useEventCallback from '../../hooks/useEventCallback';
 import './HomeComponent.scss';
 
 const HomeComponent = () => {
   const { user: currentUser } = useAuth();
-  const { profileImage } = useProfileImage(currentUser?.id);
+  const userId = currentUser?.id;
+  const { profileImage } = useProfileImage(userId);
+  const [sortingMethod, setSortingMethod] = useState('date');
+
+  const {
+    posts,
+    postsMap,
+    loading: loadingPosts,
+    updatePost,
+    removePost,
+    prependPost,
+    restorePostAt,
+  } = useFeed(userId, sortingMethod);
+
+  const {
+    reactedPostIds,
+    setReactedPostIds,
+    userComments,
+    setUserComments,
+  } = useUserInteractions(userId);
+
+  usePostViewObserver(posts, userId);
+
   const [postContent, setPostContent] = useState('');
   const [uploadedFile, setUploadedFile] = useState(null);
-  const [posts, setPosts] = useState([]);
   const [commentInputs, setCommentInputs] = useState({});
-  const [postsMap, setPostsMap] = useState({});
-  const [reactedPostIds, setReactedPostIds] = useState([]);
-  const [userComments, setUserComments] = useState({});
-  const [sortingMethod, setSortingMethod] = useState('date');
   const [commentErrors, setCommentErrors] = useState({});
   const [postError, setPostError] = useState(null);
-  const [loadingPosts, setLoadingPosts] = useState(false);
-  const observerRef = useRef(null);
+  const [submittingPost, setSubmittingPost] = useState(false);
 
-  const fetchPosts = useCallback(async () => {
-    if (!currentUser) return;
-    setLoadingPosts(true);
-    try {
-      const response =
-        sortingMethod === 'date'
-          ? await PostService.getFeed(currentUser.id)
-          : await PostService.getRecommendedPosts(currentUser.id);
+  const reactedPostIdsSet = useMemo(
+    () => new Set(reactedPostIds),
+    [reactedPostIds]
+  );
 
-      const fetchedPosts = Array.isArray(response)
-        ? response
-        : response?.items || response?.data || [];
+  const handlePostContentChange = useCallback((val) => {
+    setPostContent(val);
+    if (val.trim()) setPostError(null);
+  }, []);
 
-      const postsById = {};
-      const postsWithUserPhotos = fetchedPosts.map((post) => {
-        const author = post.author;
-        const commentsWithPhotos = (post.comments || []).map((comment) => ({
-          ...comment,
-          profileImage: comment.author?.profilePictureUrl || null,
-        }));
+  const handleUploadedFileChange = useCallback((val) => {
+    setUploadedFile(val);
+    if (val) setPostError(null);
+  }, []);
 
-        const processedPost = {
-          ...post,
-          posterName: author
-            ? `${author.firstName} ${author.lastName}`
-            : '',
-          posterImage: author?.profilePictureUrl || '/593.jpg',
-          comments: commentsWithPhotos,
-        };
-
-        postsById[post.id] = processedPost;
-        return processedPost;
-      });
-
-      setPosts(postsWithUserPhotos);
-      setPostsMap(postsById);
-    } catch (error) {
-      console.error('Error fetching posts:', error);
-      setPosts([]);
-    } finally {
-      setLoadingPosts(false);
-    }
-  }, [currentUser, sortingMethod]);
-
-  useEffect(() => {
-    if (posts.length === 0) return;
-
-    observerRef.current = new IntersectionObserver(
-      async (entries) => {
-        for (const entry of entries) {
-          if (entry.isIntersecting) {
-            const postId = entry.target.getAttribute('data-post-id');
-            if (postId) {
-              try {
-                await PostService.viewPosts(currentUser.id, postId);
-              } catch (error) {
-                console.error('Error viewing post:', error);
-              }
-            }
-          }
-        }
-      },
-      { root: null, rootMargin: '0px', threshold: 0.5 }
-    );
-
-    document.querySelectorAll('[data-post-id]').forEach((el) => {
-      observerRef.current.observe(el);
-    });
-
-    return () => observerRef.current?.disconnect();
-  }, [currentUser, posts]);
-
-  useEffect(() => {
-    if (currentUser) fetchPosts();
-  }, [currentUser, sortingMethod, fetchPosts]);
-
-  useEffect(() => {
-    if (!currentUser?.id) return;
-    let cancelled = false;
-    (async () => {
-      const [reactions, comments] = await Promise.all([
-        PostService.getUserReactions(currentUser.id),
-        PostService.getUserComments(currentUser.id),
-      ]);
-      if (cancelled) return;
-      setReactedPostIds(reactions?.data || []);
-      setUserComments(comments?.data || {});
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [currentUser]);
-
-  const handlePostSubmit = async () => {
+  const handlePostSubmit = useEventCallback(async () => {
+    if (submittingPost) return;
     if (!postContent.trim() && !uploadedFile) {
       setPostError('Post content or media is required.');
       return;
     }
     setPostError(null);
+    setSubmittingPost(true);
     try {
-      await PostService.createPost(
-        currentUser.id,
+      const createdPost = await PostService.createPost(
+        userId,
         postContent,
         uploadedFile?.file
       );
+      prependPost(createdPost);
       setPostContent('');
       setUploadedFile(null);
-      fetchPosts();
     } catch (error) {
       console.error('Error submitting post:', error);
+      setPostError('Failed to create post.');
+    } finally {
+      setSubmittingPost(false);
     }
-  };
+  });
 
-  const handleCommentInputChange = (postId, value) => {
+  const handleCommentInputChange = useCallback((postId, value) => {
     setCommentInputs((prev) => ({ ...prev, [postId]: value }));
     if (value.trim()) {
       setCommentErrors((prev) => ({ ...prev, [postId]: null }));
     }
-  };
+  }, []);
 
-  const handleCommentSubmit = async (postId) => {
-    const comment = commentInputs[postId];
-    if (!comment?.trim()) {
+  const handleCommentSubmit = useEventCallback(async (postId) => {
+    const content = commentInputs[postId];
+    if (!content?.trim()) {
       setCommentErrors((prev) => ({
         ...prev,
         [postId]: 'Comment cannot be empty.',
@@ -158,83 +105,152 @@ const HomeComponent = () => {
       return;
     }
     setCommentErrors((prev) => ({ ...prev, [postId]: null }));
+
+    const post = postsMap[postId];
+    if (!post) return;
+
+    const tempId = `temp-${Date.now()}`;
+    const optimisticComment = {
+      commentId: tempId,
+      content,
+      createdAt: new Date().toISOString(),
+      username: `${currentUser.firstName} ${currentUser.lastName}`,
+      profileImage,
+    };
+
+    setCommentInputs((prev) => ({ ...prev, [postId]: '' }));
+    updatePost(postId, (p) => ({
+      ...p,
+      comments: [...(p.comments || []), optimisticComment],
+    }));
+    setUserComments((prev) => ({
+      ...prev,
+      [postId]: [...(prev[postId] || []), tempId],
+    }));
+
     try {
-      const post = postsMap[postId];
-      if (!post) {
-        console.error('Post not found for the given postId:', postId);
-        return;
-      }
-      const commentId = await PostService.createComment(
-        currentUser.id,
-        postId,
-        comment
-      );
-      setCommentInputs((prev) => ({ ...prev, [postId]: '' }));
+      const response = await PostService.createComment(userId, postId, content);
+      const realId = response.data;
+
+      updatePost(postId, (p) => ({
+        ...p,
+        comments: (p.comments || []).map((c) =>
+          c.commentId === tempId ? { ...c, commentId: realId } : c
+        ),
+      }));
       setUserComments((prev) => ({
         ...prev,
-        [postId]: [...(prev[postId] || []), commentId.data],
+        [postId]: (prev[postId] || []).map((id) =>
+          id === tempId ? realId : id
+        ),
       }));
-      fetchPosts();
-      if (post.userId !== currentUser.id) {
-        await NotificationAPI.createNotification(
+
+      if (post.userId !== userId) {
+        NotificationAPI.createNotification(
           post.userId,
           'COMMENT',
-          currentUser.id,
-          commentId.data
-        );
+          userId,
+          realId
+        ).catch(console.error);
       }
     } catch (error) {
       console.error('Error submitting comment:', error);
-      alert('Failed to submit comment.');
+      updatePost(postId, (p) => ({
+        ...p,
+        comments: (p.comments || []).filter((c) => c.commentId !== tempId),
+      }));
+      setUserComments((prev) => ({
+        ...prev,
+        [postId]: (prev[postId] || []).filter((id) => id !== tempId),
+      }));
+      setCommentInputs((prev) => ({ ...prev, [postId]: content }));
+      setCommentErrors((prev) => ({
+        ...prev,
+        [postId]: 'Failed to submit comment.',
+      }));
     }
-  };
+  });
 
-  const handleDeletePost = async (postId) => {
+  const handleDeletePost = useEventCallback(async (postId) => {
+    const removedIndex = posts.findIndex((p) => p.id === postId);
+    const removedPost = posts[removedIndex];
+    if (!removedPost) return;
+
+    removePost(postId);
     try {
-      await PostService.deletePost(currentUser.id, postId);
-      fetchPosts();
+      await PostService.deletePost(userId, postId);
     } catch (error) {
       console.error('Error deleting post:', error);
-      alert('Failed to delete post.');
+      restorePostAt(removedIndex, removedPost);
     }
-  };
+  });
 
-  const handleReactionToggle = async (postId) => {
+  const handleReactionToggle = useEventCallback(async (postId) => {
+    const hasReacted = reactedPostIds.includes(postId);
+    const post = postsMap[postId];
+
+    setReactedPostIds((prev) =>
+      hasReacted ? prev.filter((id) => id !== postId) : [...prev, postId]
+    );
+
     try {
-      const hasReacted = reactedPostIds.includes(postId);
-      const post = postsMap[postId];
       if (hasReacted) {
-        await PostService.deleteReaction(currentUser.id, postId);
-        setReactedPostIds((prev) => prev.filter((id) => id !== postId));
-        await NotificationAPI.deleteNotificationByObjectId(postId);
+        await PostService.deleteReaction(userId, postId);
+        NotificationAPI.deleteNotificationByObjectId(postId).catch(
+          console.error
+        );
       } else {
-        await PostService.createReaction(currentUser.id, postId);
-        setReactedPostIds((prev) => [...prev, postId]);
-        if (post.userId !== currentUser.id) {
-          await NotificationAPI.createNotification(
+        await PostService.createReaction(userId, postId);
+        if (post && post.userId !== userId) {
+          NotificationAPI.createNotification(
             post.userId,
             'REACTION',
-            currentUser.id,
+            userId,
             postId
-          );
+          ).catch(console.error);
         }
       }
-      fetchPosts();
     } catch (error) {
       console.error('Error handling reaction:', error);
+      setReactedPostIds((prev) =>
+        hasReacted ? [...prev, postId] : prev.filter((id) => id !== postId)
+      );
     }
-  };
+  });
 
-  const handleDeleteComment = async (postId, commentId) => {
+  const handleDeleteComment = useEventCallback(async (postId, commentId) => {
+    const post = postsMap[postId];
+    const removedComment = post?.comments?.find(
+      (c) => c.commentId === commentId
+    );
+    if (!removedComment) return;
+
+    updatePost(postId, (p) => ({
+      ...p,
+      comments: (p.comments || []).filter((c) => c.commentId !== commentId),
+    }));
+    setUserComments((prev) => ({
+      ...prev,
+      [postId]: (prev[postId] || []).filter((id) => id !== commentId),
+    }));
+
     try {
-      await PostService.deleteComment(currentUser.id, postId, commentId);
-      await NotificationAPI.deleteNotificationByObjectId(commentId);
-      await fetchPosts();
+      await PostService.deleteComment(userId, postId, commentId);
+      NotificationAPI.deleteNotificationByObjectId(commentId).catch(
+        console.error
+      );
     } catch (error) {
       console.error('Error deleting comment:', error);
-      alert('Failed to delete comment.');
+      updatePost(postId, (p) => ({
+        ...p,
+        comments: [...(p.comments || []), removedComment],
+      }));
+      setUserComments((prev) => ({
+        ...prev,
+        [postId]: [...(prev[postId] || []), commentId],
+      }));
     }
-  };
+  });
 
   return (
     <>
@@ -255,17 +271,12 @@ const HomeComponent = () => {
             <CreatePostCard
               profileImage={profileImage}
               postContent={postContent}
-              setPostContent={(val) => {
-                setPostContent(val);
-                if (val.trim()) setPostError(null);
-              }}
+              setPostContent={handlePostContentChange}
               uploadedFile={uploadedFile}
-              setUploadedFile={(val) => {
-                setUploadedFile(val);
-                if (val) setPostError(null);
-              }}
+              setUploadedFile={handleUploadedFileChange}
               postError={postError}
               onSubmit={handlePostSubmit}
+              submitting={submittingPost}
             />
             <SortingCard
               sortingMethod={sortingMethod}
@@ -279,10 +290,10 @@ const HomeComponent = () => {
                   key={post.id}
                   post={post}
                   currentUser={currentUser}
-                  hasReacted={reactedPostIds.includes(post.id)}
+                  hasReacted={reactedPostIdsSet.has(post.id)}
                   commentInput={commentInputs[post.id]}
                   commentError={commentErrors[post.id]}
-                  userComments={userComments}
+                  userCommentIds={userComments[post.id]}
                   onReactionToggle={handleReactionToggle}
                   onCommentInputChange={handleCommentInputChange}
                   onCommentSubmit={handleCommentSubmit}

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { memo, useState } from 'react';
 import { MDBCard, MDBCardBody, MDBBtn, MDBIcon } from 'mdb-react-ui-kit';
 import AuthenticatedImage from '../common/AuthenticatedImage';
 import ConfirmActionModal from '../common/ConfirmActionModal';
@@ -11,7 +11,7 @@ const PostCard = ({
   hasReacted = false,
   commentInput = '',
   commentError = null,
-  userComments = {},
+  userCommentIds,
   onReactionToggle = () => {},
   onCommentInputChange = () => {},
   onCommentSubmit = () => {},
@@ -127,7 +127,7 @@ const PostCard = ({
                       <span className="comment-time">
                         {createdAt && new Date(createdAt).toLocaleString()}
                       </span>
-                      {userComments[id]?.includes(commentId) && (
+                      {userCommentIds?.includes(commentId) && (
                         <button
                           className="delete-comment-btn"
                           onClick={() => onDeleteComment(id, commentId)}
@@ -149,4 +149,4 @@ const PostCard = ({
   );
 };
 
-export default PostCard;
+export default memo(PostCard);

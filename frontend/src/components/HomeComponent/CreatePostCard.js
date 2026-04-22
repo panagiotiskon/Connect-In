@@ -11,6 +11,7 @@ const CreatePostCard = ({
   setUploadedFile,
   onSubmit,
   postError,
+  submitting = false,
 }) => {
   const fileInputRef = useRef(null);
 
@@ -101,8 +102,12 @@ const CreatePostCard = ({
             <span>Audio</span>
           </button>
 
-          <MDBBtn className="create-post-submit" onClick={onSubmit}>
-            Post
+          <MDBBtn
+            className="create-post-submit"
+            onClick={onSubmit}
+            disabled={submitting}
+          >
+            {submitting ? 'Posting…' : 'Post'}
           </MDBBtn>
         </div>
 

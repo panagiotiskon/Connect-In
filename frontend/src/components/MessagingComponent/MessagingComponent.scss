@@ -1,0 +1,443 @@
+/* ──────────────────────────────────────────────────────────────
+   Messaging – mobile-first layout
+   Mobile : list OR thread fills the viewport (app-style)
+   ≥768px : two-column split view (list + thread)
+   ────────────────────────────────────────────────────────────── */
+
+/* ── Viewport shell: locks navbar + page to exactly one viewport ── */
+.messaging-shell {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+}
+
+@supports (height: 100dvh) {
+  .messaging-shell {
+    height: 100dvh;
+  }
+}
+
+.messaging-page {
+  background-color: #f3f2ef;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* ── Layout shell ── */
+.messaging-layout {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: #fff;
+  overflow: hidden;
+}
+
+/* ───────────────── List pane ───────────────── */
+.messaging-list-pane {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  background: #fff;
+}
+
+.messaging-list-pane--hidden-mobile {
+  display: none;
+}
+
+.messaging-list-pane__header {
+  flex: 0 0 auto;
+  padding: 0.875rem;
+  border-bottom: 1px solid #f0f0f0;
+  background: #fff;
+}
+
+.messaging-list-pane__list {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.messaging-list-pane__empty {
+  padding: 1.5rem 1rem;
+  color: #6b7280;
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+/* ── Conversation row ── */
+.conversation-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid #f3f4f6;
+  background: transparent;
+  cursor: pointer;
+  outline: none;
+  transition: background-color 0.15s ease;
+  -webkit-tap-highlight-color: transparent;
+
+  &:hover,
+  &:focus-visible {
+    background-color: #f6f8fa;
+  }
+
+  &:focus-visible {
+    box-shadow: inset 3px 0 0 #1a8a9a;
+  }
+}
+
+.conversation-item--active {
+  background-color: #eef2f7;
+
+  &:hover,
+  &:focus-visible {
+    background-color: #e6ecf3;
+  }
+}
+
+.conversation-item__avatar {
+  width: 60px;
+  height: 60px;
+  flex: 0 0 60px;
+  border-radius: 50%;
+}
+
+.conversation-item__body {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.conversation-item__name {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #111827;
+  line-height: 1.3;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.conversation-item__badge {
+  flex: 0 0 auto;
+  background-color: #dc3545;
+  color: #fff;
+  font-size: 0.72rem;
+  font-weight: 700;
+  line-height: 1;
+  padding: 0.3rem 0.55rem;
+  border-radius: 999px;
+  min-width: 1.5rem;
+  text-align: center;
+}
+
+/* ───────────────── Thread pane ───────────────── */
+.messaging-thread-pane {
+  display: none;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  background: #fff;
+}
+
+.messaging-thread-pane--active {
+  display: flex;
+}
+
+/* ── Chat header ── */
+.chat-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.625rem 0.875rem;
+  border-bottom: 1px solid #e5e7eb;
+  background: #fff;
+  flex: 0 0 auto;
+}
+
+.chat-header__back {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: #374151;
+  font-size: 1rem;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+  -webkit-tap-highlight-color: transparent;
+  flex: 0 0 auto;
+
+  &:hover,
+  &:focus-visible {
+    background-color: #f3f4f6;
+    outline: none;
+  }
+}
+
+.chat-header__avatar {
+  width: 40px;
+  height: 40px;
+  flex: 0 0 40px;
+  border-radius: 50%;
+}
+
+.chat-header__name {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #111827;
+  line-height: 1.3;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+
+/* ── Message list ── */
+.message-thread {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 1rem 0.75rem;
+  background: #f8f9fb;
+}
+
+/* ── Bubble ── */
+.message-bubble {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 0.5rem;
+  max-width: 100%;
+}
+
+.message-bubble--self {
+  justify-content: flex-end;
+}
+
+.message-bubble__avatar {
+  width: 45px;
+  height: 45px;
+  flex: 0 0 45px;
+  border-radius: 50%;
+}
+
+.message-bubble__content {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  max-width: 78%;
+  min-width: 0;
+}
+
+.message-bubble--self .message-bubble__content {
+  align-items: flex-end;
+}
+
+.message-bubble__text {
+  background-color: #f1f3f5;
+  color: #111827;
+  border-radius: 14px;
+  padding: 0.5rem 0.75rem;
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.4;
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+  word-break: break-word;
+  max-width: 100%;
+}
+
+.message-bubble--self .message-bubble__text {
+  background-color: #d1e7dd;
+  color: #0f5132;
+}
+
+.message-bubble__time {
+  margin-top: 0.2rem;
+  font-size: 0.7rem;
+  color: #9ca3af;
+  line-height: 1;
+}
+
+/* ── Input footer ── */
+.message-input {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.625rem 0.75rem;
+  border-top: 1px solid #e5e7eb;
+  background: #fff;
+  flex: 0 0 auto;
+  position: sticky;
+  bottom: 0;
+  z-index: 2;
+  padding-bottom: calc(0.625rem + env(safe-area-inset-bottom, 0));
+}
+
+.message-input__avatar {
+  width: 50px;
+  height: 50px;
+  flex: 0 0 50px;
+  border-radius: 50%;
+}
+
+.message-input__field {
+  flex: 1 1 auto;
+  min-width: 0;
+  border: 1px solid #e5e7eb;
+  border-radius: 999px;
+  padding: 0.625rem 1rem;
+  font-size: 0.95rem;
+  color: #111827;
+  background: #f9fafb;
+  outline: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  transition: border-color 0.15s ease, background-color 0.15s ease,
+    box-shadow 0.15s ease;
+
+  &::placeholder {
+    color: #9ca3af;
+  }
+
+  &:focus {
+    border-color: #1a8a9a;
+    background: #fff;
+    box-shadow: 0 0 0 3px rgba(26, 138, 154, 0.12);
+  }
+}
+
+.message-input__send {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: none;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #1a8a9a 0%, #35677e 50%, #5b4fcf 100%);
+  background-size: 200% 200%;
+  background-position: left center;
+  color: #fff;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: background-position 0.4s ease, box-shadow 0.2s ease,
+    transform 0.15s ease;
+  -webkit-tap-highlight-color: transparent;
+
+  &:hover:not(:disabled),
+  &:focus-visible:not(:disabled) {
+    background-position: right center;
+    box-shadow: 0 4px 14px rgba(26, 138, 154, 0.28);
+    outline: none;
+  }
+
+  &:active:not(:disabled) {
+    transform: translateY(1px);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+/* ── Empty state (desktop fallback) ── */
+.messaging-empty {
+  flex: 1 1 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  text-align: center;
+  color: #6b7280;
+}
+
+.messaging-empty p {
+  margin: 0;
+  font-size: 1rem;
+}
+
+/* ────────── Tablet & desktop: side-by-side ────────── */
+@media (min-width: 768px) {
+  .messaging-page {
+    padding: 1.5rem;
+    /* still fills the shell's remaining space; padding shrinks the card inset */
+  }
+
+  .messaging-layout {
+    flex-direction: row;
+    max-width: 1200px;
+    margin: 0 auto;
+    height: 100%;
+    max-height: calc(100vh - 140px);
+    border-radius: 16px;
+    border: 1px solid #e5e7eb;
+    box-shadow: 0 4px 24px rgba(53, 103, 126, 0.08),
+      0 1px 4px rgba(0, 0, 0, 0.04);
+  }
+
+  /* Both panes always visible on desktop, regardless of mobile modifiers */
+  .messaging-list-pane,
+  .messaging-list-pane--hidden-mobile {
+    display: flex;
+    flex: 0 0 340px;
+    max-width: 340px;
+    border-right: 1px solid #e5e7eb;
+  }
+
+  .messaging-thread-pane,
+  .messaging-thread-pane--active {
+    display: flex;
+    flex: 1 1 auto;
+  }
+
+  .chat-header__back {
+    display: none;
+  }
+
+  /* Desktop doesn't need sticky — fixed-height split view already pins the input */
+  .message-input {
+    position: static;
+    padding-bottom: 0.625rem;
+  }
+}
+
+@supports (height: 100dvh) {
+  @media (min-width: 768px) {
+    .messaging-layout {
+      max-height: calc(100dvh - 140px);
+    }
+  }
+}
+
+/* ────────── Larger screens: wider list column ────────── */
+@media (min-width: 1200px) {
+  .messaging-list-pane,
+  .messaging-list-pane--hidden-mobile {
+    flex: 0 0 380px;
+    max-width: 380px;
+  }
+}

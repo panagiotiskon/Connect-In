@@ -11,6 +11,7 @@ import backend.connectin.domain.repository.UserRepository;
 import backend.connectin.web.dto.JobApplicationDTO;
 import backend.connectin.web.dto.JobPostDTO;
 import backend.connectin.web.mappers.JobMapper;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -123,21 +124,28 @@ public class JobService {
         }
     }
 
-    public JobView addViewToAJob(long userId,long jobPostId){
+    public JobView addViewToAJob(long userId, long jobPostId) {
         userService.findUserOrThrow(userId);
-        Optional<JobPost> jobPost = jobPostRepository.findById(jobPostId);
-        if(jobPost.isEmpty()){
-            throw new RuntimeException("Job post not found");
+        JobPost jobPost = jobPostRepository.findById(jobPostId)
+                .orElseThrow(() -> new RuntimeException("Job post not found"));
+
+        Instant now = Instant.now();
+
+        if (jobViewRepository.incrementViewCount(userId, jobPostId, now) > 0) {
+            return jobViewRepository.findJobViewByUserIdAndJobId(userId, jobPostId).orElseThrow();
         }
-        if(jobViewRepository.findJobViewByUserIdAndJobId(userId,jobPostId).isPresent()){
-            return null;
-        };
-        JobView jobView = new JobView();
-        jobView.setUserId(userId);
-        jobView.setJobId(jobPost.get().getId());
-        jobView.setViewedAt(Instant.now());
-        jobViewRepository.save(jobView);
-        return jobView;
+
+        try {
+            JobView jobView = new JobView();
+            jobView.setUserId(userId);
+            jobView.setJobId(jobPost.getId());
+            jobView.setViewedAt(now);
+            jobView.setViewCount(1);
+            return jobViewRepository.save(jobView);
+        } catch (DataIntegrityViolationException raced) {
+            jobViewRepository.incrementViewCount(userId, jobPostId, now);
+            return jobViewRepository.findJobViewByUserIdAndJobId(userId, jobPostId).orElseThrow();
+        }
     }
 
     private List<JobPostDTO> getJobPostDTOS(long userId, List<JobPost> jobPosts) {

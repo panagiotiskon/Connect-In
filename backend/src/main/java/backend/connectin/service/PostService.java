@@ -67,7 +67,7 @@ public class PostService {
 
 
     @Transactional
-    public void createPost(Long userId, PostRequest postRequest) {
+    public PostResourceDetailed createPost(Long userId, PostRequest postRequest) {
         try {
             Post post;
             if (postRequest.getFile() != null) {
@@ -77,8 +77,11 @@ public class PostService {
             } else {
                 post = postMapper.mapToPost(postRequest, userId);
             }
-            if (post != null)
-                postRepository.save(post);
+            if (post == null) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid post");
+            }
+            Post saved = postRepository.save(post);
+            return feedAssembler.assemble(List.of(saved)).get(0);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

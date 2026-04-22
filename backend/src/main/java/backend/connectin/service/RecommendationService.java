@@ -245,8 +245,8 @@ public class RecommendationService {
     }
 
     private int calculateViewedJobBonus(JobPost currentJob, List<JobView> jobViews) {
-        int bonusScore = 0;
-        int jobsViewed=0;
+        double weightedBonus = 0.0;
+        double totalWeight = 0.0;
         for (JobView jobView : jobViews) {
             Optional<JobPost> viewedJobOpt = jobPostRepository.findById(jobView.getJobId()); //we need to know what jobs the user has seen and find their titles
             if (viewedJobOpt.isPresent()) {                                                  //check current job relevance depending on the jobs that the user has seen
@@ -254,16 +254,15 @@ public class RecommendationService {
                 int maxLength = Math.max(viewedJob.getJobTitle().length(), currentJob.getJobTitle().length()); //normalize again
                 int titleDistance = calculateLevenshteinDistance(viewedJob.getJobTitle().toLowerCase(), currentJob.getJobTitle().toLowerCase());
                 int viewBonus = maxLength-titleDistance;
-                bonusScore += viewBonus;
-                jobsViewed++;
+                double weight = 1.0 + Math.log1p(Math.max(0, jobView.getViewCount() - 1)); // dampened weighting: 1 view → 1.0, 5 views → ~2.6, 50 views → ~4.9
+                weightedBonus += viewBonus * weight;
+                totalWeight += weight;
             }
         }
-        if(jobsViewed>0) {
-            return bonusScore / jobsViewed;
+        if (totalWeight > 0) {
+            return (int) (weightedBonus / totalWeight);
         }
-        else{
-            return 0;
-        }
+        return 0;
     }
 
     private int calculateLevenshteinDistance(String word1, String word2) {

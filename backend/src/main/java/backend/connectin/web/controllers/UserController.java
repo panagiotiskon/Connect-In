@@ -166,16 +166,16 @@ public class UserController {
     // --------POSTS-----------
 
     @PostMapping("/{userId}/create-post")
-    public ResponseEntity<String> createPost(@PathVariable long userId,
-                                             @RequestParam("content") String content,
-                                             @RequestParam(value = "file", required = false) MultipartFile file) {
+    public ResponseEntity<PostResourceDetailed> createPost(@PathVariable long userId,
+                                                           @RequestParam("content") String content,
+                                                           @RequestParam(value = "file", required = false) MultipartFile file) {
         PostRequest postRequest;
         if (file != null)
             postRequest = new PostRequest(content, file);
         else
             postRequest = new PostRequest(content);
-        postService.createPost(userId, postRequest);
-        return ResponseEntity.ok("Post Created");
+        PostResourceDetailed created = postService.createPost(userId, postRequest);
+        return ResponseEntity.ok(created);
     }
 
 

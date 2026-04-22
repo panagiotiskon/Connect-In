@@ -1,361 +1,112 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import NavbarComponent from '../common/NavBar';
-import OptimizedImage from '../common/OptimizedImage';
-import MessagingAPI from '../../api/MessagingAPI';
+import SearchInput from '../common/SearchInput';
+import ConversationListItem from './ConversationListItem';
+import ChatHeader from './ChatHeader';
+import MessageThread from './MessageThread';
+import MessageInput from './MessageInput';
+import useConversations from '../../hooks/useConversations';
+import useChatThread from '../../hooks/useChatThread';
 import { useAuth } from '../../context/AuthContext';
-import useProfileImage from '../../hooks/useProfileImage';
-import {
-  MDBContainer,
-  MDBRow,
-  MDBCol,
-  MDBCard,
-  MDBCardBody,
-  MDBTypography,
-  MDBIcon,
-  MDBInputGroup,
-} from 'mdb-react-ui-kit';
+import { filterUsersByName } from '../../utils/messagingUtils';
+import './MessagingComponent.scss';
 
-const base64ToDataURL = (base64String, picType) =>
-  `data:${picType};base64,${base64String}`;
-
-export default function ChatComponent() {
-  const [conversations, setConversations] = useState([]);
-  const [filteredConversations, setFilteredConversations] = useState([]);
+const MessagingComponent = () => {
   const { user: currentUser } = useAuth();
-  const [conversationMessages, setConversationMessages] = useState([]);
-  const [messageInput, setMessageInput] = useState('');
-  const [selectedUser, setSelectedUser] = useState(null);
-  const { profileImage } = useProfileImage(currentUser?.id);
+  const userId = currentUser?.id;
+
+  const conversations = useConversations(userId);
   const [searchTerm, setSearchTerm] = useState('');
-  const messageContainerRef = useRef(null);
+  const [selectedUser, setSelectedUser] = useState(null);
 
-  useEffect(() => {
-    const fetchConversations = async () => {
-      if (!currentUser) return;
+  const { messages, sendMessage } = useChatThread(
+    userId,
+    selectedUser?.userId
+  );
 
-      try {
-        const data = await MessagingAPI.getConversations(currentUser.id);
-        setConversations(data);
-        setFilteredConversations(data);
-      } catch (error) {
-        console.error('Error fetching conversations:', error);
-      }
-    };
+  const filteredConversations = useMemo(
+    () => filterUsersByName(conversations, searchTerm),
+    [conversations, searchTerm]
+  );
 
-    fetchConversations();
-  }, [currentUser]);
-
-  useEffect(() => {
-    if (selectedUser && currentUser) {
-      const fetchMessages = async () => {
-        try {
-          const messages = await MessagingAPI.getConversation(
-            currentUser.id,
-            selectedUser.userId
-          );
-          setConversationMessages(messages);
-        } catch (error) {
-          console.error('Error fetching conversation messages:', error);
-        }
-      };
-
-      const intervalId = setInterval(fetchMessages, 3000);
-
-      return () => clearInterval(intervalId);
-    }
-  }, [selectedUser, currentUser]);
-
-
-  const sendMessage = async () => {
-    if (messageInput.trim() !== '' && currentUser && selectedUser) {
-      try {
-        await MessagingAPI.sendMessage(
-          currentUser.id,
-          selectedUser.userId,
-          messageInput
-        );
-
-        setMessageInput('');
-        const updatedMessages = await MessagingAPI.getConversation(
-          currentUser.id,
-          selectedUser.userId
-        );
-        setConversationMessages(updatedMessages);
-      } catch (error) {
-        console.error('Error sending message:', error);
-      }
-    }
-  };
-
-  const handleUserClick = async (user) => {
+  const handleSelectUser = useCallback((user) => {
     setSelectedUser(user);
-    if (currentUser) {
-      try {
-        const messages = await MessagingAPI.getConversation(
-          currentUser.id,
-          user.userId
-        );
-        setConversationMessages(messages);
-      } catch (error) {
-        console.error('Error fetching conversation messages:', error);
-        setConversationMessages([]);
-      }
-    }
-  };
+  }, []);
 
-  useEffect(() => {
-    const filterConversations = () => {
-      const lowercasedSearchTerm = searchTerm.toLowerCase();
-      const filtered = conversations.filter((user) => {
-        const [firstNameSearch, lastNameSearch] =
-          lowercasedSearchTerm.split(' ');
-        if (lastNameSearch) {
-          return (
-            user.firstName.toLowerCase().startsWith(firstNameSearch) &&
-            user.lastName.toLowerCase().startsWith(lastNameSearch)
-          );
-        }
-        return (
-          user.firstName.toLowerCase().startsWith(lowercasedSearchTerm) ||
-          user.lastName.toLowerCase().startsWith(lowercasedSearchTerm)
-        );
-      });
-      setFilteredConversations(filtered);
-    };
+  const handleBack = useCallback(() => {
+    setSelectedUser(null);
+  }, []);
 
-    filterConversations();
-  }, [searchTerm, conversations]);
+  const threadActive = !!selectedUser;
 
-  useEffect(() => {
-    if (messageContainerRef.current) {
-      messageContainerRef.current.scrollTop =
-        messageContainerRef.current.scrollHeight;
-    }
-  }, [conversationMessages]);
+  const listPaneClassName = threadActive
+    ? 'messaging-list-pane messaging-list-pane--hidden-mobile'
+    : 'messaging-list-pane';
+
+  const threadPaneClassName = threadActive
+    ? 'messaging-thread-pane messaging-thread-pane--active'
+    : 'messaging-thread-pane';
 
   return (
-    <div>
+    <div className="messaging-shell">
       <NavbarComponent />
-      <MDBContainer fluid className="py-5">
-        <MDBRow style={{ margin: '2%', marginTop: '1%' }}>
-          <MDBCol md="12">
-            <MDBCard
-              id="chat3"
-              style={{ borderRadius: '20px', height: '550px' }}
-            >
-              <MDBCardBody>
-                <MDBRow>
-                  <MDBCol
-                    md="6"
-                    lg="5"
-                    xl="4"
-                    className="mb-4 mb-md-0"
-                    style={{
-                      border: '1px solid #ccc',
-                      borderRadius: '6px',
-                    }}
-                  >
-                    <div className="p-3">
-                      <MDBInputGroup className="rounded mb-3">
-                        <input
-                          className="form-control rounded"
-                          placeholder="Search"
-                          type="search"
-                          value={searchTerm}
-                          onChange={(e) => setSearchTerm(e.target.value)}
-                        />
-                        <span
-                          className="input-group-text border-0"
-                          id="search-addon"
-                        >
-                          <MDBIcon fas icon="search" />
-                        </span>
-                      </MDBInputGroup>
+      <main className="messaging-page">
+        <div className="messaging-layout">
+          <aside className={listPaneClassName} aria-label="Conversations">
+            <div className="messaging-list-pane__header">
+              <SearchInput
+                value={searchTerm}
+                onChange={setSearchTerm}
+                placeholder="Search conversations"
+              />
+            </div>
 
-                      <div
-                        style={{
-                          position: 'relative',
-                          height: '400px',
-                          overflowY: 'auto',
-                        }}
-                      >
-                        <MDBTypography listUnStyled className="mb-0">
-                          {filteredConversations.map((user) => (
-                            <li
-                              className="p-2 border-bottom"
-                              key={user.userId}
-                              onClick={() => handleUserClick(user)}
-                            >
-                              <a
-                                href="#!"
-                                className="d-flex justify-content-between"
-                              >
-                                <div className="d-flex flex-row">
-                                  <div>
-                                    <OptimizedImage
-                                      src={base64ToDataURL(
-                                        user.profilePic,
-                                        user.picType
-                                      )}
-                                      alt="avatar"
-                                      className="d-flex align-self-center me-3"
-                                      style={{ width: 60, height: 60 }}
-                                    />
-                                  </div>
-                                  <div className="pt-1">
-                                    <p className="fw-bold mb-0">
-                                      {user.firstName} {user.lastName}
-                                    </p>
-                                  </div>
-                                </div>
-                                <div className="pt-1 text-end">
-                                  {user.unreadCount > 0 && (
-                                    <span className="badge bg-danger rounded-pill float-end">
-                                      {user.unreadCount}
-                                    </span>
-                                  )}
-                                </div>
-                              </a>
-                            </li>
-                          ))}
-                        </MDBTypography>
-                      </div>
-                    </div>
-                  </MDBCol>
-                  <MDBCol md="6" lg="7" xl="8">
-                    {selectedUser ? (
-                      <div>
-                        <div
-                          ref={messageContainerRef}
-                          style={{
-                            position: 'relative',
-                            height: '400px',
-                            overflowY: 'auto',
-                          }}
-                          className="pt-3 pe-3"
-                        >
-                          {conversationMessages.map((message, index) => {
-                            if (
-                              !message ||
-                              !message.message ||
-                              !message.profilePicture ||
-                              !message.picType
-                            ) {
-                              return null;
-                            }
+            {filteredConversations.length > 0 ? (
+              <ul className="messaging-list-pane__list">
+                {filteredConversations.map((user) => (
+                  <ConversationListItem
+                    key={user.userId}
+                    user={user}
+                    isActive={selectedUser?.userId === user.userId}
+                    onSelect={handleSelectUser}
+                  />
+                ))}
+              </ul>
+            ) : (
+              <p className="messaging-list-pane__empty">
+                {searchTerm
+                  ? 'No conversations match your search.'
+                  : 'No conversations yet.'}
+              </p>
+            )}
+          </aside>
 
-                            const isCurrentUser =
-                              message.senderId === currentUser.id;
-
-                            return (
-                              <div
-                                key={index}
-                                className={`d-flex flex-row ${
-                                  isCurrentUser
-                                    ? 'justify-content-end'
-                                    : 'justify-content-start'
-                                } mb-2`}
-                                style={{ alignItems: 'flex-start' }}
-                              >
-                                {!isCurrentUser && (
-                                  <OptimizedImage
-                                    src={base64ToDataURL(
-                                      message.profilePicture,
-                                      message.picType
-                                    )}
-                                    alt="avatar"
-                                    style={{
-                                      width: '45px',
-                                      height: '45px',
-                                      marginRight: '10px',
-                                    }}
-                                  />
-                                )}
-                                <div
-                                  style={{
-                                    maxWidth: '70%',
-                                    wordWrap: 'break-word',
-                                    whiteSpace: 'pre-wrap',
-                                    display: 'flex',
-                                    flexDirection: 'column',
-                                    alignItems: isCurrentUser
-                                      ? 'flex-end'
-                                      : 'flex-start',
-                                  }}
-                                >
-                                  <p
-                                    className={`small p-2 mb-1 rounded-3`}
-                                    style={{
-                                      backgroundColor: isCurrentUser
-                                        ? '#d1e7dd'
-                                        : '#f5f6f7',
-                                      textAlign: isCurrentUser
-                                        ? 'left'
-                                        : 'right',
-                                      margin: 0,
-                                    }}
-                                  >
-                                    {message.message}
-                                  </p>
-                                  <p
-                                    className="small text-muted"
-                                    style={{
-                                      margin: 0,
-                                      alignSelf: isCurrentUser
-                                        ? 'flex-end'
-                                        : 'flex-start',
-                                    }}
-                                  >
-                                    {new Date(
-                                      message.sentAt
-                                    ).toLocaleTimeString()}
-                                  </p>
-                                </div>
-                              </div>
-                            );
-                          })}
-                        </div>
-                        <div className="text-muted d-flex justify-content-start align-items-center pe-2 pt-4 mx-6">
-                          <OptimizedImage
-                            src={profileImage}
-                            alt="avatar 3"
-                            style={{
-                              width: '50px',
-                              height: '50px',
-                              padding: '5px',
-                              marginTop: '-15px',
-                            }}
-                          />
-                          <input
-                            type="text"
-                            className="form-control form-control-lg"
-                            id="exampleFormControlInput2"
-                            placeholder="Type message"
-                            value={messageInput}
-                            onChange={(e) => setMessageInput(e.target.value)}
-                          />
-                          <a
-                            className="ms-1 text-muted"
-                            href="#!"
-                            onClick={sendMessage}
-                            style={{ marginTop: '-15px' }}
-                          >
-                            <MDBIcon fas icon="paper-plane" />
-                          </a>
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="text-center text-muted">
-                        <p>Select a user to start chatting</p>
-                      </div>
-                    )}
-                  </MDBCol>
-                </MDBRow>
-              </MDBCardBody>
-            </MDBCard>
-          </MDBCol>
-        </MDBRow>
-      </MDBContainer>
+          <section
+            className={threadPaneClassName}
+            aria-label="Conversation thread"
+          >
+            {selectedUser ? (
+              <>
+                <ChatHeader user={selectedUser} onBack={handleBack} />
+                <MessageThread
+                  messages={messages}
+                  currentUserId={userId}
+                />
+                <MessageInput
+                  currentUserId={userId}
+                  onSend={sendMessage}
+                />
+              </>
+            ) : (
+              <div className="messaging-empty">
+                <p>Select a conversation to start chatting</p>
+              </div>
+            )}
+          </section>
+        </div>
+      </main>
     </div>
   );
-}
+};
+
+export default MessagingComponent;
