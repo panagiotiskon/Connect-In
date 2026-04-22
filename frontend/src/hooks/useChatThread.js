@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import MessagingAPI from '../api/MessagingAPI';
 import useEventCallback from './useEventCallback';
 
@@ -6,6 +6,8 @@ const POLL_INTERVAL_MS = 3000;
 
 const useChatThread = (currentUserId, peerUserId) => {
   const [messages, setMessages] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const isInitialFetch = useRef(false);
 
   const fetchMessages = useEventCallback(async () => {
     if (!currentUserId || !peerUserId) return;
@@ -17,12 +19,19 @@ const useChatThread = (currentUserId, peerUserId) => {
       setMessages(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error('Error fetching conversation messages:', error);
+    } finally {
+      if (isInitialFetch.current) {
+        setIsLoading(false);
+        isInitialFetch.current = false;
+      }
     }
   });
 
   useEffect(() => {
     setMessages([]);
     if (!currentUserId || !peerUserId) return undefined;
+    setIsLoading(true);
+    isInitialFetch.current = true;
     fetchMessages();
     const id = setInterval(fetchMessages, POLL_INTERVAL_MS);
     return () => clearInterval(id);
@@ -39,7 +48,7 @@ const useChatThread = (currentUserId, peerUserId) => {
     }
   });
 
-  return { messages, sendMessage };
+  return { messages, sendMessage, isLoading };
 };
 
 export default useChatThread;

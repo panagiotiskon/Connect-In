@@ -1,4 +1,6 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useLocation } from 'react-router-dom';
+import { MDBSpinner } from 'mdb-react-ui-kit';
 import NavbarComponent from '../common/NavBar';
 import SearchInput from '../common/SearchInput';
 import ConversationListItem from './ConversationListItem';
@@ -14,12 +16,23 @@ import './MessagingComponent.scss';
 const MessagingComponent = () => {
   const { user: currentUser } = useAuth();
   const userId = currentUser?.id;
+  const { state } = useLocation();
 
-  const conversations = useConversations(userId);
+  const { conversations, isLoading: isLoadingConversations } = useConversations(userId);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedUser, setSelectedUser] = useState(null);
+  const didAutoSelect = useRef(false);
 
-  const { messages, sendMessage } = useChatThread(
+  useEffect(() => {
+    if (didAutoSelect.current || !state?.openUserId || conversations.length === 0) return;
+    const target = conversations.find((c) => c.userId === state.openUserId);
+    if (target) {
+      setSelectedUser(target);
+      didAutoSelect.current = true;
+    }
+  }, [state?.openUserId, conversations]);
+
+  const { messages, sendMessage, isLoading } = useChatThread(
     userId,
     selectedUser?.userId
   );
@@ -61,7 +74,11 @@ const MessagingComponent = () => {
               />
             </div>
 
-            {filteredConversations.length > 0 ? (
+            {isLoadingConversations ? (
+              <div className="messaging-list-pane__loader">
+                <MDBSpinner color="info" />
+              </div>
+            ) : filteredConversations.length > 0 ? (
               <ul className="messaging-list-pane__list">
                 {filteredConversations.map((user) => (
                   <ConversationListItem
@@ -91,6 +108,7 @@ const MessagingComponent = () => {
                 <MessageThread
                   messages={messages}
                   currentUserId={userId}
+                  isLoading={isLoading}
                 />
                 <MessageInput
                   currentUserId={userId}

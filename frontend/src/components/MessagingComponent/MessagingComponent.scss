@@ -64,6 +64,12 @@
   padding: 0;
 }
 
+.messaging-list-pane__loader {
+  display: flex;
+  justify-content: center;
+  padding: 2rem 1rem;
+}
+
 .messaging-list-pane__empty {
   padding: 1.5rem 1rem;
   color: #6b7280;
@@ -217,6 +223,14 @@
   gap: 0.5rem;
   padding: 1rem 0.75rem;
   background: #f8f9fb;
+}
+
+/* ── Thread loader ── */
+.message-thread__loader {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1 1 auto;
 }
 
 /* ── Bubble ── */

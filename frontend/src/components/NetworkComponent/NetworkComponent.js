@@ -3,6 +3,7 @@ import { MDBContainer } from 'mdb-react-ui-kit';
 import NavbarComponent from '../common/NavBar';
 import ConnectedUsersCardComponent from './ConnectedUsersCardComponent';
 import RegisteredUsersCardComponent from './RegisteredUsersCardComponent';
+import { MDBSpinner } from 'mdb-react-ui-kit';
 import ConnectionAPI from '../../api/ConnectionAPI';
 import NotificationAPI from '../../api/NotificationAPI';
 import { useAuth } from '../../context/AuthContext';
@@ -98,7 +99,7 @@ const NetworkComponent = () => {
 
       try {
         await MessagingAPI.createConversation(currentUserId, connectedUserId);
-        navigate(`/messaging`);
+        navigate('/messaging', { state: { openUserId: connectedUserId } });
       } catch (error) {
         console.error(
           'Error creating conversation or navigating to messaging page:',
@@ -201,7 +202,7 @@ const NetworkComponent = () => {
         <div className="card-container-network">
           {isLoading ? (
             <div className="loading-container">
-              <div>Loading users...</div>
+              <MDBSpinner color="info" />
             </div>
           ) : displayedUsers.length > 0 ? (
             displayedUsers.map((user) => {

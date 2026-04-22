@@ -1,8 +1,9 @@
 import { useEffect, useRef } from 'react';
+import { MDBSpinner } from 'mdb-react-ui-kit';
 import MessageBubble from './MessageBubble';
 import { isRenderableMessage } from '../../utils/messagingUtils';
 
-const MessageThread = ({ messages, currentUserId }) => {
+const MessageThread = ({ messages, currentUserId, isLoading }) => {
   const scrollRef = useRef(null);
 
   useEffect(() => {
@@ -12,13 +13,19 @@ const MessageThread = ({ messages, currentUserId }) => {
 
   return (
     <div ref={scrollRef} className="message-thread">
-      {messages.filter(isRenderableMessage).map((message, index) => (
-        <MessageBubble
-          key={message.id ?? `${message.sentAt}-${index}`}
-          message={message}
-          isSelf={message.senderId === currentUserId}
-        />
-      ))}
+      {isLoading ? (
+        <div className="message-thread__loader">
+          <MDBSpinner color="info" />
+        </div>
+      ) : (
+        messages.filter(isRenderableMessage).map((message, index) => (
+          <MessageBubble
+            key={message.id ?? `${message.sentAt}-${index}`}
+            message={message}
+            isSelf={message.senderId === currentUserId}
+          />
+        ))
+      )}
     </div>
   );
 };

@@ -39,10 +39,9 @@
 
 .loading-container {
   grid-column: 1 / -1;
-  text-align: center;
+  display: flex;
+  justify-content: center;
   padding: 3rem 1rem;
-  color: #666;
-  font-size: 1rem;
 }
 
 .load-more-section {
