@@ -12,7 +12,7 @@ const AddEditModal = ({
   handleSave,
 }) => {
   return (
-    <Modal show={showModal} onHide={handleModalClose}>
+    <Modal show={showModal} onHide={handleModalClose} centered>
       <Modal.Header closeButton>
         <Modal.Title>{selectedCard}</Modal.Title>
       </Modal.Header>

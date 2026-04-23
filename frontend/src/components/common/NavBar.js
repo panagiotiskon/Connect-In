@@ -50,14 +50,7 @@ const NavbarComponent = () => {
             className="navbar-logo"
             onClick={() => navigate('/home')}
           />
-          <MDBNavbarToggler
-            aria-expanded={openNavSecond}
-            aria-label="Toggle navigation"
-            onClick={() => setOpenNavSecond(!openNavSecond)}
-          >
-            <MDBIcon fas icon="bars" style={{ color: '#333' }} />
-          </MDBNavbarToggler>
-          <div className={`nav-menu${openNavSecond ? ' nav-menu--open' : ''}`}>
+          {openNavSecond ? (
             <button
               className="mobile-close-btn"
               onClick={() => setOpenNavSecond(false)}
@@ -65,6 +58,16 @@ const NavbarComponent = () => {
             >
               <MDBIcon fas icon="times" />
             </button>
+          ) : (
+            <MDBNavbarToggler
+              aria-expanded={openNavSecond}
+              aria-label="Toggle navigation"
+              onClick={() => setOpenNavSecond(true)}
+            >
+              <MDBIcon fas icon="bars" style={{ color: '#333' }} />
+            </MDBNavbarToggler>
+          )}
+          <div className={`nav-menu${openNavSecond ? ' nav-menu--open' : ''}`}>
             <MDBNavbarNav className="navbar-nav">
               {navItems.map((item) => {
                 const active = isActivePage(item.path);

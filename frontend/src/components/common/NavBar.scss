@@ -2,7 +2,7 @@
 .navbar {
   position: sticky !important;
   top: 0;
-  z-index: 100;
+  z-index: 1100;
 }
 
 /* ── Desktop layout ── */
@@ -32,6 +32,10 @@
 
 @media (min-width: 993px) {
   .navbar-toggler {
+    display: none !important;
+  }
+
+  .mobile-close-btn {
     display: none !important;
   }
 }
@@ -65,7 +69,14 @@
 }
 
 .mobile-close-btn {
-  display: none;
+  background: none;
+  border: none;
+  padding: 6px 10px;
+  font-size: 1.25rem;
+  color: #333;
+  cursor: pointer;
+  line-height: 1;
+  z-index: 1101;
 }
 
 /* ── Notification count badge on bell icon ── */
@@ -97,7 +108,7 @@
     flex-direction: column;
     align-items: flex-start;
     justify-content: flex-start;
-    padding-top: 64px;
+    padding-top: 82px;
     opacity: 0;
     visibility: hidden;
     transition:
@@ -111,16 +122,7 @@
   }
 
   .mobile-close-btn {
-    display: block;
-    position: absolute;
-    top: 18px;
-    right: 20px;
-    background: none;
-    border: none;
-    font-size: 1.5rem;
-    color: #333;
-    cursor: pointer;
-    line-height: 1;
+    display: flex;
   }
 
   .navbar-nav {
