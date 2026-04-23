@@ -18,7 +18,7 @@ const PostCard = ({
   onDeletePost = () => {},
   onDeleteComment = () => {},
 }) => {
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [pendingAction, setPendingAction] = useState(null);
 
   const {
     id,
@@ -30,16 +30,46 @@ const PostCard = ({
     file,
     comments,
   } = post;
+  const DELETE_POST = 'delete-post';
+  const DELETE_COMMENT = 'delete-comment';
+
+  const CONFIRM_COPY = {
+    [DELETE_POST]: {
+      title: 'Delete Post',
+      message:
+        'Are you sure you want to delete this post? This action cannot be undone.',
+    },
+    [DELETE_COMMENT]: {
+      title: 'Delete Comment',
+      message:
+        'Are you sure you want to delete this comment? This action cannot be undone.',
+    },
+  };
+  const requestDeletePost = () => setPendingAction({ type: DELETE_POST });
+  const requestDeleteComment = (commentId) =>
+    setPendingAction({ type: DELETE_COMMENT, commentId });
+  const cancelPendingAction = () => setPendingAction(null);
+
+  const confirmPendingAction = () => {
+    if (pendingAction?.type === DELETE_POST) {
+      onDeletePost(id);
+    } else if (pendingAction?.type === DELETE_COMMENT) {
+      onDeleteComment(id, pendingAction.commentId);
+    }
+    setPendingAction(null);
+  };
+
+  const confirmDialog = pendingAction ? CONFIRM_COPY[pendingAction.type] : null;
 
   return (
     <>
     <ConfirmActionModal
-      isOpen={showDeleteModal}
-      title="Delete Post"
-      message="Are you sure you want to delete this post? This action cannot be undone."
+      isOpen={!!confirmDialog}
+      title={confirmDialog?.title}
+      message={confirmDialog?.message}
       confirmText="Delete"
-      onConfirm={() => { setShowDeleteModal(false); onDeletePost(id); }}
-      onCancel={() => setShowDeleteModal(false)}
+      onConfirm={confirmPendingAction}
+      onCancel={cancelPendingAction}
     />
     <MDBCard data-post-id={id} className="post-card shadow-0">
       <MDBCardBody className="post-card-body">
@@ -60,7 +90,7 @@ const PostCard = ({
           {currentUser?.id === userId && (
             <button
               className="post-delete-btn"
-              onClick={() => setShowDeleteModal(true)}
+              onClick={requestDeletePost}
               aria-label="Delete post"
             >
               <MDBIcon fas icon="times" />
@@ -130,7 +160,7 @@ const PostCard = ({
                       {userCommentIds?.includes(commentId) && (
                         <button
                           className="delete-comment-btn"
-                          onClick={() => onDeleteComment(id, commentId)}
+                          onClick={() => requestDeleteComment(commentId)}
                           aria-label="Delete comment"
                         >
                           &#10005;
