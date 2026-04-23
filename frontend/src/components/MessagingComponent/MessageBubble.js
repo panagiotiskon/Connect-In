@@ -14,6 +14,7 @@ const MessageBubble = ({ message, isSelf }) => {
           src={base64ToDataURL(message.profilePicture, message.picType)}
           alt=""
           className="message-bubble__avatar"
+          fallbackSrc="/593.jpg"
         />
       )}
       <div className="message-bubble__content">

@@ -26,4 +26,4 @@ export const formatMessageTime = (iso) => {
 };
 
 export const isRenderableMessage = (message) =>
-  !!(message && message.message && message.profilePicture && message.picType);
+  !!(message && message.message);

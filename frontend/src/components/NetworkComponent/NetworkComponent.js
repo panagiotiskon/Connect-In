@@ -192,7 +192,7 @@ const NetworkComponent = () => {
             <SearchInput
               value={searchTerm}
               onChange={handleSearchChange}
-              placeholder="Search users by name, job title, or company..."
+              placeholder="Search users by name"
               isLoading={isSearchActive && isLoading}
             />
           </div>
