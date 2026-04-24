@@ -30,7 +30,7 @@ const AddEditModal = ({
                   updateFormField('universityName', e.target.value)
                 }
                 placeholder="Enter university name"
-                isInvalid={!formData.universityName && !!errorMessage}
+                isInvalid={!formData.universityName && errorMessage}
               />
             </Form.Group>
             <Form.Group controlId="formFieldOfStudy" className="mt-3">
@@ -42,7 +42,7 @@ const AddEditModal = ({
                   updateFormField('fieldOfStudy', e.target.value)
                 }
                 placeholder="Enter field of study"
-                isInvalid={!formData.fieldOfStudy && !!errorMessage}
+                isInvalid={!formData.fieldOfStudy && errorMessage}
               />
             </Form.Group>
             <Form.Group controlId="formStartDate" className="mt-3">
@@ -51,7 +51,7 @@ const AddEditModal = ({
                 type="date"
                 value={formData.startDate}
                 onChange={(e) => updateFormField('startDate', e.target.value)}
-                isInvalid={!formData.startDate && !!errorMessage}
+                isInvalid={!formData.startDate && errorMessage}
               />
             </Form.Group>
             <Form.Group controlId="formEndDate" className="mt-3">
@@ -80,7 +80,7 @@ const AddEditModal = ({
                 value={formData.jobTitle}
                 onChange={(e) => updateFormField('jobTitle', e.target.value)}
                 placeholder="Enter job title"
-                isInvalid={!formData.jobTitle && !!errorMessage}
+                isInvalid={!formData.jobTitle && errorMessage}
               />
             </Form.Group>
             <Form.Group controlId="formCompanyName" className="mt-3">
@@ -90,7 +90,7 @@ const AddEditModal = ({
                 value={formData.companyName}
                 onChange={(e) => updateFormField('companyName', e.target.value)}
                 placeholder="Enter company name"
-                isInvalid={!formData.companyName && !!errorMessage}
+                isInvalid={!formData.companyName && errorMessage}
               />
             </Form.Group>
             <Form.Group controlId="formStartDate" className="mt-3">
@@ -99,7 +99,7 @@ const AddEditModal = ({
                 type="date"
                 value={formData.startDate}
                 onChange={(e) => updateFormField('startDate', e.target.value)}
-                isInvalid={!formData.startDate && !!errorMessage}
+                isInvalid={!formData.startDate && errorMessage}
               />
             </Form.Group>
             <Form.Group controlId="formEndDate" className="mt-3">
@@ -128,7 +128,7 @@ const AddEditModal = ({
                 value={formData.skillTitle}
                 onChange={(e) => updateFormField('skillTitle', e.target.value)}
                 placeholder="Enter skill title"
-                isInvalid={!formData.skillTitle && !!errorMessage}
+                isInvalid={!formData.skillTitle && errorMessage}
               />
             </Form.Group>
             <Form.Group controlId="formSkillDescription" className="mt-3">
@@ -140,7 +140,7 @@ const AddEditModal = ({
                   updateFormField('skillDescription', e.target.value)
                 }
                 placeholder="Enter skill description"
-                isInvalid={!formData.skillDescription && !!errorMessage}
+                isInvalid={!formData.skillDescription && errorMessage}
               />
             </Form.Group>
             <Form.Group controlId="formIsPublic" className="mt-3">
@@ -160,7 +160,7 @@ const AddEditModal = ({
               value={modalContent}
               onChange={(e) => setModalContent(e.target.value)}
               placeholder="Enter details"
-              isInvalid={!modalContent && !!errorMessage}
+              isInvalid={!modalContent && errorMessage}
             />
           </Form.Group>
         )}

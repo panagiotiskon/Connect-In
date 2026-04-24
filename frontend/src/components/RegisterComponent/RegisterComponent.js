@@ -49,14 +49,12 @@ const RegisterComponent = () => {
     } catch (error) {
       let resMessage;
 
-      if (error.response && error.response.status === 401) {
+      if (error.response?.status === 401) {
         resMessage =
           'A user with this email already exists, try logging instead.';
       } else {
         resMessage =
-          (error.response &&
-            error.response.data &&
-            error.response.data.message) ||
+          error.response?.data?.message ||
           error.message ||
           error.toString();
       }

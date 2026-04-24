@@ -124,7 +124,7 @@ const PostCard = ({
             type="text"
             className={`comment-input${commentError ? ' comment-input--error' : ''}`}
             placeholder="Add a comment..."
-            value={commentInput || ''}
+            value={commentInput}
             onChange={(e) => onCommentInputChange(id, e.target.value)}
           />
           <MDBBtn

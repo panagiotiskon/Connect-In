@@ -37,13 +37,11 @@ const LoginComponent = () => {
       setLoading(false);
       let resMessage = '';
 
-      if (error.response && error.response.status === 401) {
+      if (error.response?.status === 401) {
         resMessage = 'Invalid email or password. Please try again.';
       } else {
         resMessage =
-          (error.response &&
-            error.response.data &&
-            error.response.data.message) ||
+          error.response?.data?.message ||
           error.message ||
           error.toString();
       }

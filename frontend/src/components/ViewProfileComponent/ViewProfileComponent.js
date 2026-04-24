@@ -40,31 +40,21 @@ const ViewProfileComponent = () => {
           ]);
 
         const formattedEducationData = educationData
-          .filter((edu) => isAdmin || edu.isPublic)
-          .map((edu) => ({
-            universityName: edu.universityName,
-            fieldOfStudy: edu.fieldOfStudy,
-            startDate: edu.startDate,
-            endDate: edu.endDate,
-            isPublic: edu.isPublic,
+          .filter(({ isPublic }) => isAdmin || isPublic)
+          .map(({ universityName, fieldOfStudy, startDate, endDate, isPublic }) => ({
+            universityName, fieldOfStudy, startDate, endDate, isPublic,
           }));
 
         const formattedExperienceData = workExperienceData
-          .filter((exp) => isAdmin || exp.isPublic)
-          .map((exp) => ({
-            jobTitle: exp.jobTitle,
-            companyName: exp.companyName,
-            startDate: exp.startDate,
-            endDate: exp.endDate,
-            isPublic: exp.isPublic,
+          .filter(({ isPublic }) => isAdmin || isPublic)
+          .map(({ jobTitle, companyName, startDate, endDate, isPublic }) => ({
+            jobTitle, companyName, startDate, endDate, isPublic,
           }));
 
         const formattedSkillData = skillData
-          .filter((skill) => isAdmin || skill.isPublic)
-          .map((skill) => ({
-            skillTitle: skill.skillTitle,
-            skillDescription: skill.skillDescription,
-            isPublic: skill.isPublic,
+          .filter(({ isPublic }) => isAdmin || isPublic)
+          .map(({ skillTitle, skillDescription, isPublic }) => ({
+            skillTitle, skillDescription, isPublic,
           }));
 
         setCardsContent({
@@ -106,30 +96,30 @@ const ViewProfileComponent = () => {
                       No work experience added yet.
                     </p>
                   ) : (
-                    cardsContent['Work Experience'].map((exp) => (
+                    cardsContent['Work Experience'].map(({ jobTitle, companyName, startDate, endDate, isPublic }) => (
                       <div
                         className="profile-entry"
-                        key={exp?.jobTitle + exp?.startDate}
+                        key={jobTitle + startDate}
                       >
                         <div className="profile-entry-content">
                           <div className="profile-entry-title">
-                            {exp?.jobTitle}
+                            {jobTitle}
                           </div>
                           <div className="profile-entry-subtitle">
-                            {exp?.companyName}
+                            {companyName}
                           </div>
                           <div className="profile-entry-meta">
-                            {exp?.startDate}
-                            {exp?.endDate ? ` – ${exp.endDate}` : ' – Present'}
+                            {startDate}
+                            {endDate ? ` – ${endDate}` : ' – Present'}
                           </div>
                           <span
                             className={
-                              exp?.isPublic
+                              isPublic
                                 ? 'profile-entry-visibility'
                                 : 'profile-entry-visibility--private'
                             }
                           >
-                            {exp?.isPublic ? 'Public' : 'Private'}
+                            {isPublic ? 'Public' : 'Private'}
                           </span>
                         </div>
                       </div>
@@ -149,30 +139,30 @@ const ViewProfileComponent = () => {
                       No education added yet.
                     </p>
                   ) : (
-                    cardsContent.Education.map((edu) => (
+                    cardsContent.Education.map(({ universityName, fieldOfStudy, startDate, endDate, isPublic }) => (
                       <div
                         className="profile-entry"
-                        key={edu?.universityName + edu?.startDate}
+                        key={universityName + startDate}
                       >
                         <div className="profile-entry-content">
                           <div className="profile-entry-title">
-                            {edu?.universityName}
+                            {universityName}
                           </div>
                           <div className="profile-entry-subtitle">
-                            {edu?.fieldOfStudy}
+                            {fieldOfStudy}
                           </div>
                           <div className="profile-entry-meta">
-                            {edu?.startDate}
-                            {edu?.endDate ? ` – ${edu.endDate}` : ' – Present'}
+                            {startDate}
+                            {endDate ? ` – ${endDate}` : ' – Present'}
                           </div>
                           <span
                             className={
-                              edu?.isPublic
+                              isPublic
                                 ? 'profile-entry-visibility'
                                 : 'profile-entry-visibility--private'
                             }
                           >
-                            {edu?.isPublic ? 'Public' : 'Private'}
+                            {isPublic ? 'Public' : 'Private'}
                           </span>
                         </div>
                       </div>
@@ -190,23 +180,23 @@ const ViewProfileComponent = () => {
                   {cardsContent.Skills.length === 0 ? (
                     <p className="profile-empty-state">No skills added yet.</p>
                   ) : (
-                    cardsContent.Skills.map((skill) => (
-                      <div className="profile-entry" key={skill?.skillTitle}>
+                    cardsContent.Skills.map(({ skillTitle, skillDescription, isPublic }) => (
+                      <div className="profile-entry" key={skillTitle}>
                         <div className="profile-entry-content">
                           <div className="profile-entry-title">
-                            {skill?.skillTitle}
+                            {skillTitle}
                           </div>
                           <div className="profile-entry-subtitle">
-                            {skill?.skillDescription}
+                            {skillDescription}
                           </div>
                           <span
                             className={
-                              skill?.isPublic
+                              isPublic
                                 ? 'profile-entry-visibility'
                                 : 'profile-entry-visibility--private'
                             }
                           >
-                            {skill?.isPublic ? 'Public' : 'Private'}
+                            {isPublic ? 'Public' : 'Private'}
                           </span>
                         </div>
                       </div>

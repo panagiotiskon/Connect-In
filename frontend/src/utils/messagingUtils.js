@@ -25,5 +25,4 @@ export const formatMessageTime = (iso) => {
   return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 };
 
-export const isRenderableMessage = (message) =>
-  !!(message && message.message);
+export const isRenderableMessage = (message) => !!message?.message;

@@ -52,30 +52,17 @@ const ProfileComponent = () => {
 
       setCardsContent({
         Education:
-          educationData?.map((edu) => ({
-            educationId: edu?.educationId,
-            universityName: edu?.universityName,
-            fieldOfStudy: edu?.fieldOfStudy,
-            startDate: edu?.startDate,
-            endDate: edu?.endDate,
-            isPublic: edu?.isPublic,
-          })) || [],
+          educationData?.map(({ educationId, universityName, fieldOfStudy, startDate, endDate, isPublic }) => ({
+            educationId, universityName, fieldOfStudy, startDate, endDate, isPublic,
+          })) ?? [],
         'Work Experience':
-          workExperienceData?.map((exp) => ({
-            experienceId: exp?.experienceId,
-            jobTitle: exp?.jobTitle,
-            companyName: exp?.companyName,
-            startDate: exp?.startDate,
-            endDate: exp?.endDate,
-            isPublic: exp?.isPublic,
-          })) || [],
+          workExperienceData?.map(({ experienceId, jobTitle, companyName, startDate, endDate, isPublic }) => ({
+            experienceId, jobTitle, companyName, startDate, endDate, isPublic,
+          })) ?? [],
         Skills:
-          skillData?.map((skill) => ({
-            skillId: skill?.skillId,
-            skillTitle: skill?.skillTitle,
-            skillDescription: skill?.skillDescription,
-            isPublic: skill?.isPublic,
-          })) || [],
+          skillData?.map(({ skillId, skillTitle, skillDescription, isPublic }) => ({
+            skillId, skillTitle, skillDescription, isPublic,
+          })) ?? [],
       });
     } catch (error) {
       console.error('Error fetching profile data', error);
@@ -126,14 +113,9 @@ const ProfileComponent = () => {
           setCardsContent((prev) => ({
             ...prev,
             Education:
-              updated?.map((edu) => ({
-                educationId: edu?.educationId,
-                universityName: edu?.universityName,
-                fieldOfStudy: edu?.fieldOfStudy,
-                startDate: edu?.startDate,
-                endDate: edu?.endDate,
-                isPublic: edu?.isPublic,
-              })) || [],
+              updated?.map(({ educationId, universityName, fieldOfStudy, startDate, endDate, isPublic }) => ({
+                educationId, universityName, fieldOfStudy, startDate, endDate, isPublic,
+              })) ?? [],
           }));
           setToastMessage('Successfully added Education!');
           setShowToast(true);
@@ -164,14 +146,9 @@ const ProfileComponent = () => {
           setCardsContent((prev) => ({
             ...prev,
             'Work Experience':
-              updated?.map((exp) => ({
-                experienceId: exp?.experienceId,
-                jobTitle: exp?.jobTitle,
-                companyName: exp?.companyName,
-                startDate: exp?.startDate,
-                endDate: exp?.endDate,
-                isPublic: exp?.isPublic,
-              })) || [],
+              updated?.map(({ experienceId, jobTitle, companyName, startDate, endDate, isPublic }) => ({
+                experienceId, jobTitle, companyName, startDate, endDate, isPublic,
+              })) ?? [],
           }));
           setToastMessage('Successfully added Work Experience!');
           setShowToast(true);
@@ -199,12 +176,9 @@ const ProfileComponent = () => {
           setCardsContent((prev) => ({
             ...prev,
             Skills:
-              updated?.map((skill) => ({
-                skillId: skill?.skillId,
-                skillTitle: skill?.skillTitle,
-                skillDescription: skill?.skillDescription,
-                isPublic: skill?.isPublic,
-              })) || [],
+              updated?.map(({ skillId, skillTitle, skillDescription, isPublic }) => ({
+                skillId, skillTitle, skillDescription, isPublic,
+              })) ?? [],
           }));
           setToastMessage('Successfully added Skill!');
           setShowToast(true);
