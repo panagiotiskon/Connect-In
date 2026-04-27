@@ -1,4 +1,5 @@
 import { MDBIcon } from 'mdb-react-ui-kit';
+import Spinner from './Spinner';
 import './SearchInput.scss';
 
 const SearchInput = ({
@@ -20,7 +21,7 @@ const SearchInput = ({
         value={value}
         onChange={(e) => onChange(e.target.value)}
       />
-      {isLoading && <span className="search-input__spinner" />}
+      {isLoading && <Spinner className="search-input__spinner" />}
     </div>
   );
 };

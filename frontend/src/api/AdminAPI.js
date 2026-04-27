@@ -2,9 +2,10 @@ import api from "./axiosInstance";
 
 const BASE = "/admin";
 
-const getUsers = async () => {
+const getUsers = async ({ search = "", page = 0, size = 20 } = {}) => {
   try {
     const response = await api.get(`${BASE}/users`, {
+      params: { search, page, size },
       headers: { "Content-Type": "application/json" },
     });
     return response.data;

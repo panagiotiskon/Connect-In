@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { MDBSpinner } from 'mdb-react-ui-kit';
+import Spinner from '../common/Spinner';
 import MessageBubble from './MessageBubble';
 import { isRenderableMessage } from '../../utils/messagingUtils';
 
@@ -15,7 +15,7 @@ const MessageThread = ({ messages, currentUserId, isLoading }) => {
     <div ref={scrollRef} className="message-thread">
       {isLoading ? (
         <div className="message-thread__loader">
-          <MDBSpinner color="info" />
+          <Spinner />
         </div>
       ) : (
         messages.filter(isRenderableMessage).map((message, index) => (

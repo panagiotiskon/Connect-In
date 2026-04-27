@@ -10,30 +10,42 @@ body {
 
 // ── Logo ──
 .connectInLogo {
-  width: 200px;
+  width: 160px;
   max-width: 100%;
   height: auto;
   display: block;
   margin: 0 auto 20px auto;
+
+  @media (min-width: 576px) {
+    width: 200px;
+  }
 }
 
 // ── Card container ──
 .form-container {
   background-color: #fff;
-  padding: 40px;
+  padding: 28px 22px;
   border-radius: 10px;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
   width: 100%;
   max-width: 400px;
+
+  @media (min-width: 576px) {
+    padding: 40px;
+  }
 }
 
 // ── Heading inside the card ──
 .form-subheading {
   color: #35677e;
-  font-size: 25px;
+  font-size: 20px;
   font-weight: 550;
   text-align: center;
   margin-bottom: 20px;
+
+  @media (min-width: 576px) {
+    font-size: 25px;
+  }
 }
 
 // ── Input group (scoped to avoid colliding with other Bootstrap controls) ──
@@ -118,7 +130,8 @@ body {
   color: #35677e;
   text-decoration: none;
   font-size: 15px;
-  margin-top: 15px;
+  margin-left: 4px;
+  font-weight: 600;
 
   &:hover {
     text-decoration: underline;
@@ -129,7 +142,7 @@ body {
   text-align: center;
   font-size: 15px;
   color: #666;
-  margin-top: 30px;
+  margin-top: 20px;
 }
 
 // ── Page footer ──
@@ -151,4 +164,14 @@ body {
 .footer-text {
   margin-top: 5px;
   margin-bottom: 5px;
+
+  a {
+    color: #fff;
+    transition: color 0.2s ease, opacity 0.2s ease;
+
+    &:hover {
+      color: #a8d8ea;
+      opacity: 0.9;
+    }
+  }
 }

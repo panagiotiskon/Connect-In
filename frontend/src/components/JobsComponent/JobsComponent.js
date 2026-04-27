@@ -1,32 +1,25 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { MDBContainer, MDBRow, MDBCol, MDBIcon } from 'mdb-react-ui-kit';
-import { Modal, Form, Alert } from 'react-bootstrap';
 import NavbarComponent from '../common/NavBar';
 import ProfileCard from '../common/ProfileCard';
 import SortingCard from '../common/SortingCard';
-import ConfirmActionModal from '../common/ConfirmActionModal';
+import DeleteJobModal from './DeleteJobModal';
+import CreateJobModal from './CreateJobModal';
 import SkeletonCard from '../common/SkeletonCard';
+import Spinner from '../common/Spinner';
 import { useAuth } from '../../context/AuthContext';
 import JobAPI from '../../api/JobAPI';
 import { useNavigate } from 'react-router-dom';
 import './JobsComponent.scss';
 
 const JobsComponent = () => {
-  const [jobTitle, setJobTitle] = useState('');
-  const [companyName, setCompanyName] = useState('');
-  const [jobDescription, setJobDescription] = useState('');
   const [jobs, setJobs] = useState([]);
   const [applications, setApplications] = useState({});
-  const [errors, setErrors] = useState({
-    title: '',
-    company: '',
-    description: '',
-  });
-  const [createError, setCreateError] = useState('');
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [openApplicantsId, setOpenApplicantsId] = useState(null);
   const [pendingDeleteId, setPendingDeleteId] = useState(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [applyingJobId, setApplyingJobId] = useState(null);
   const [loadingJobs, setLoadingJobs] = useState(false);
   const { user: currentUser } = useAuth();
   const [sortingMethod, setSortingMethod] = useState('date');
@@ -102,64 +95,14 @@ const JobsComponent = () => {
     fetchJobs();
   }, [fetchJobsByDate, fetchApplications]);
 
-  const validateForm = () => {
-    let valid = true;
-    const newErrors = { title: '', company: '', description: '' };
-    if (!jobTitle.trim()) {
-      newErrors.title = 'Job title is required';
-      valid = false;
-    }
-    if (!companyName.trim()) {
-      newErrors.company = 'Company name is required';
-      valid = false;
-    }
-    if (!jobDescription.trim()) {
-      newErrors.description = 'Job description is required';
-      valid = false;
-    }
-    setErrors(newErrors);
-    return valid;
-  };
-
-  const handleOpenCreateModal = () => {
-    setJobTitle('');
-    setCompanyName('');
-    setJobDescription('');
-    setErrors({ title: '', company: '', description: '' });
-    setCreateError('');
-    setShowCreateModal(true);
-  };
-
-  const handleCloseCreateModal = () => {
-    setShowCreateModal(false);
-    setCreateError('');
-  };
-
-  const handleCreateJob = async () => {
-    if (!validateForm()) return;
-    if (currentUser) {
-      try {
-        await JobAPI.createJobPost(
-          currentUser.id,
-          jobTitle,
-          companyName,
-          jobDescription
-        );
-        setJobTitle('');
-        setCompanyName('');
-        setJobDescription('');
-        setErrors({ title: '', company: '', description: '' });
-        setShowCreateModal(false);
-        fetchJobsByDate();
-      } catch (error) {
-        console.error('Error creating job:', error);
-        setCreateError('Failed to create job. Please try again.');
-      }
-    }
+  const handleCreateJob = async (title, company, description) => {
+    await JobAPI.createJobPost(currentUser.id, title, company, description);
+    fetchJobsByDate();
   };
 
   const handleApply = async (jobId) => {
     if (currentUser) {
+      setApplyingJobId(jobId);
       try {
         await JobAPI.applyToJob(currentUser.id, jobId);
         setJobs((prevJobs) =>
@@ -169,6 +112,8 @@ const JobsComponent = () => {
         );
       } catch (error) {
         console.error('Error applying to job:', error);
+      } finally {
+        setApplyingJobId(null);
       }
     }
   };
@@ -258,7 +203,7 @@ const JobsComponent = () => {
                 <h2 className="jobs-section-title">Your Jobs</h2>
                 <button
                   className="jobs-action-btn"
-                  onClick={handleOpenCreateModal}
+                  onClick={() => setShowCreateModal(true)}
                 >
                   + Create Job
                 </button>
@@ -404,8 +349,16 @@ const JobsComponent = () => {
                             <button
                               className="jobs-action-btn"
                               onClick={() => handleApply(job.id)}
+                              disabled={applyingJobId === job.id}
                             >
-                              Apply
+                              {applyingJobId === job.id ? (
+                                <>
+                                  <Spinner />
+                                  Applying…
+                                </>
+                              ) : (
+                                'Apply'
+                              )}
                             </button>
                           )
                         )}
@@ -419,77 +372,18 @@ const JobsComponent = () => {
         </MDBRow>
       </MDBContainer>
 
-      {/* Delete Confirm Modal */}
-      <ConfirmActionModal
+      <DeleteJobModal
         isOpen={pendingDeleteId !== null}
-        title="Delete Job"
-        message="Are you sure you want to delete this job posting? This action cannot be undone."
-        confirmText="Delete"
+        isLoading={isDeleting}
         onConfirm={handleConfirmDelete}
         onCancel={() => setPendingDeleteId(null)}
-        isLoading={isDeleting}
       />
 
-      {/* Create Job Modal */}
-      <Modal show={showCreateModal} onHide={handleCloseCreateModal}>
-        <Modal.Header closeButton>
-          <Modal.Title>Create Job</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          {createError && <Alert variant="danger">{createError}</Alert>}
-          <Form.Group controlId="formJobTitle">
-            <Form.Label>Job Title</Form.Label>
-            <Form.Control
-              type="text"
-              value={jobTitle}
-              onChange={(e) => setJobTitle(e.target.value)}
-              placeholder="Enter job title"
-              isInvalid={!!errors.title}
-            />
-            <Form.Control.Feedback type="invalid">
-              {errors.title}
-            </Form.Control.Feedback>
-          </Form.Group>
-          <Form.Group controlId="formCompanyName" className="mt-3">
-            <Form.Label>Company Name</Form.Label>
-            <Form.Control
-              type="text"
-              value={companyName}
-              onChange={(e) => setCompanyName(e.target.value)}
-              placeholder="Enter company name"
-              isInvalid={!!errors.company}
-            />
-            <Form.Control.Feedback type="invalid">
-              {errors.company}
-            </Form.Control.Feedback>
-          </Form.Group>
-          <Form.Group controlId="formJobDescription" className="mt-3">
-            <Form.Label>Job Description</Form.Label>
-            <Form.Control
-              as="textarea"
-              rows={4}
-              value={jobDescription}
-              onChange={(e) => setJobDescription(e.target.value)}
-              placeholder="Enter job description"
-              isInvalid={!!errors.description}
-            />
-            <Form.Control.Feedback type="invalid">
-              {errors.description}
-            </Form.Control.Feedback>
-          </Form.Group>
-        </Modal.Body>
-        <Modal.Footer>
-          <button
-            className="jobs-modal-btn-cancel"
-            onClick={handleCloseCreateModal}
-          >
-            Cancel
-          </button>
-          <button className="jobs-modal-btn-save" onClick={handleCreateJob}>
-            Create
-          </button>
-        </Modal.Footer>
-      </Modal>
+      <CreateJobModal
+        isOpen={showCreateModal}
+        onClose={() => setShowCreateModal(false)}
+        onSubmit={handleCreateJob}
+      />
     </div>
   );
 };

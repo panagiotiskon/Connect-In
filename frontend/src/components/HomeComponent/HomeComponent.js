@@ -1,5 +1,7 @@
 import { useCallback, useMemo, useState } from 'react';
-import { MDBContainer, MDBRow, MDBCol } from 'mdb-react-ui-kit';
+import { MDBContainer, MDBRow, MDBCol, MDBIcon } from 'mdb-react-ui-kit';
+import { Toast } from 'react-bootstrap';
+import Spinner from '../common/Spinner';
 import NavbarComponent from '../common/NavBar';
 import ProfileCard from '../common/ProfileCard';
 import CreatePostCard from './CreatePostCard';
@@ -26,6 +28,10 @@ const HomeComponent = () => {
     posts,
     postsMap,
     loading: loadingPosts,
+    loadingMore,
+    hasMore,
+    feedVersion,
+    loadMore,
     updatePost,
     removePost,
     prependPost,
@@ -47,6 +53,7 @@ const HomeComponent = () => {
   const [commentErrors, setCommentErrors] = useState({});
   const [postError, setPostError] = useState(null);
   const [submittingPost, setSubmittingPost] = useState(false);
+  const [toast, setToast] = useState(null);
 
   const reactedPostIdsSet = useMemo(
     () => new Set(reactedPostIds),
@@ -114,6 +121,7 @@ const HomeComponent = () => {
       commentId: tempId,
       content,
       createdAt: new Date().toISOString(),
+      userId,
       username: `${currentUser.firstName} ${currentUser.lastName}`,
       profileImage,
     };
@@ -175,13 +183,23 @@ const HomeComponent = () => {
     const removedIndex = posts.findIndex((p) => p.id === postId);
     const removedPost = posts[removedIndex];
     if (!removedPost) return;
+    const versionAtDelete = feedVersion;
 
     removePost(postId);
     try {
       await PostService.deletePost(userId, postId);
     } catch (error) {
       console.error('Error deleting post:', error);
-      restorePostAt(removedIndex, removedPost);
+      const status = error?.response?.status;
+      if (status === 404) return;
+      if (versionAtDelete === feedVersion) {
+        restorePostAt(removedIndex, removedPost);
+      }
+      const message =
+        status === 403
+          ? "You can't delete this post."
+          : 'Failed to delete post. Please try again.';
+      setToast({ message });
     }
   });
 
@@ -302,11 +320,40 @@ const HomeComponent = () => {
                 />
               ))
             ) : (
-              <p>No posts available.</p>
+              <div className="empty-feed">
+                <div className="empty-feed-icon">
+                  <MDBIcon fas icon="newspaper" />
+                </div>
+                <h5 className="empty-feed-title">Your feed is empty</h5>
+                <p className="empty-feed-subtitle">
+                  Connect with people and start sharing to see posts here.
+                </p>
+              </div>
+            )}
+            {hasMore && (
+              <div className="feed-load-more">
+                <button
+                  className="feed-load-more__btn"
+                  onClick={loadMore}
+                  disabled={loadingMore}
+                >
+                  {loadingMore && <Spinner className="feed-load-more__spinner" />}
+                  {loadingMore ? 'Loading…' : 'Load more'}
+                </button>
+              </div>
             )}
           </MDBCol>
         </MDBRow>
       </MDBContainer>
+      <Toast
+        onClose={() => setToast(null)}
+        show={!!toast}
+        delay={4000}
+        autohide
+        className="home-toast home-toast--error"
+      >
+        <Toast.Body>{toast?.message}</Toast.Body>
+      </Toast>
     </>
   );
 };

@@ -2,7 +2,7 @@ import api from "./axiosInstance";
 
 const BASE = "/auth";
 
-const getFeed = async (userId, { page = 0, size = 20 } = {}) => {
+const getFeed = async (userId, { page = 0, size = 10 } = {}) => {
   const response = await api.get(`${BASE}/${userId}/feed`, {
     headers: { "Content-Type": "application/json" },
     params: { page, size },

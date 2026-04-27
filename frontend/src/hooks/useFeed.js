@@ -1,86 +1,121 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import PostService from '../api/PostApi';
 import { processPost } from '../utils/postUtils';
 
-const fetchFeed = async (userId, sortingMethod) => {
-  const response =
-    sortingMethod === 'date'
-      ? await PostService.getFeed(userId)
-      : await PostService.getRecommendedPosts(userId);
+const PAGE_SIZE = 10;
 
-  return Array.isArray(response)
+const loadFeedPage = async (userId, sortingMethod, page) => {
+  if (sortingMethod === 'date') {
+    const response = await PostService.getFeed(userId, { page, size: PAGE_SIZE });
+    return { items: response.items || [], hasMore: !!response.hasMore };
+  }
+  const response = await PostService.getRecommendedPosts(userId);
+  const items = Array.isArray(response)
     ? response
     : response?.items || response?.data || [];
+  return { items, hasMore: false };
 };
 
 const useFeed = (userId, sortingMethod) => {
   const [posts, setPosts] = useState([]);
-  const [postsMap, setPostsMap] = useState({});
   const [loading, setLoading] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [page, setPage] = useState(0);
+  const [hasMore, setHasMore] = useState(false);
+  const [feedVersion, setFeedVersion] = useState(0);
+  const requestIdRef = useRef(0);
+
+  const postsMap = useMemo(
+    () => Object.fromEntries(posts.map((p) => [p.id, p])),
+    [posts]
+  );
 
   useEffect(() => {
     if (!userId) return undefined;
-    let cancelled = false;
+    const requestId = ++requestIdRef.current;
     setLoading(true);
-    fetchFeed(userId, sortingMethod)
-      .then((fetched) => {
-        if (cancelled) return;
-        const processed = fetched.map(processPost);
-        setPosts(processed);
-        setPostsMap(Object.fromEntries(processed.map((p) => [p.id, p])));
-      })
-      .catch((error) => {
-        if (cancelled) return;
-        console.error('Error fetching posts:', error);
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
+    setPosts([]);
+    setPage(0);
+    setHasMore(false);
+    setFeedVersion((v) => v + 1);
+
+    (async () => {
+      try {
+        const { items, hasMore: more } = await loadFeedPage(userId, sortingMethod, 0);
+        if (requestIdRef.current !== requestId) return;
+        setPosts(items.map(processPost));
+        setHasMore(more);
+      } catch (error) {
+        if (requestIdRef.current === requestId) {
+          console.error('Error fetching posts:', error);
+        }
+      } finally {
+        if (requestIdRef.current === requestId) setLoading(false);
+      }
+    })();
+
     return () => {
-      cancelled = true;
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+      requestIdRef.current++;
     };
   }, [userId, sortingMethod]);
+
+  const loadMore = useCallback(async () => {
+    if (!userId || loadingMore || !hasMore) return;
+    const requestId = requestIdRef.current;
+    setLoadingMore(true);
+    const nextPage = page + 1;
+    try {
+      const { items, hasMore: more } = await loadFeedPage(userId, sortingMethod, nextPage);
+      if (requestIdRef.current !== requestId) return;
+      const processed = items.map(processPost);
+      setPosts((prev) => {
+        const seen = new Set(prev.map((p) => p.id));
+        return [...prev, ...processed.filter((p) => !seen.has(p.id))];
+      });
+      setPage(nextPage);
+      setHasMore(more);
+    } catch (error) {
+      if (requestIdRef.current === requestId) {
+        console.error('Error loading more posts:', error);
+      }
+    } finally {
+      if (requestIdRef.current === requestId) setLoadingMore(false);
+    }
+  }, [userId, sortingMethod, loadingMore, hasMore, page]);
 
   const updatePost = useCallback((postId, updater) => {
     setPosts((prev) =>
       prev.map((post) => (post.id === postId ? updater(post) : post))
     );
-    setPostsMap((prev) => {
-      const existing = prev[postId];
-      if (!existing) return prev;
-      return { ...prev, [postId]: updater(existing) };
-    });
   }, []);
 
   const removePost = useCallback((postId) => {
     setPosts((prev) => prev.filter((post) => post.id !== postId));
-    setPostsMap((prev) => {
-      if (!(postId in prev)) return prev;
-      const next = { ...prev };
-      delete next[postId];
-      return next;
-    });
   }, []);
 
   const prependPost = useCallback((rawPost) => {
-    const processed = processPost(rawPost);
-    setPosts((prev) => [processed, ...prev]);
-    setPostsMap((prev) => ({ ...prev, [processed.id]: processed }));
+    setPosts((prev) => [processPost(rawPost), ...prev]);
   }, []);
 
   const restorePostAt = useCallback((index, post) => {
     setPosts((prev) => {
+      if (prev.some((p) => p.id === post.id)) return prev;
+      const safeIndex = Math.max(0, Math.min(index, prev.length));
       const next = [...prev];
-      next.splice(index, 0, post);
+      next.splice(safeIndex, 0, post);
       return next;
     });
-    setPostsMap((prev) => ({ ...prev, [post.id]: post }));
   }, []);
 
   return {
     posts,
     postsMap,
     loading,
+    loadingMore,
+    hasMore,
+    feedVersion,
+    loadMore,
     updatePost,
     removePost,
     prependPost,

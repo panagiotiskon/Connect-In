@@ -42,14 +42,7 @@ const NavBarAdminComponent = () => {
             onClick={() => navigate('/admin')}
             style={{ cursor: 'pointer' }}
           />
-          <MDBNavbarToggler
-            aria-expanded={openNavSecond}
-            aria-label="Toggle navigation"
-            onClick={() => setOpenNavSecond(!openNavSecond)}
-          >
-            <MDBIcon fas icon="bars" style={{ color: '#333' }} />
-          </MDBNavbarToggler>
-          <div className={`nav-menu${openNavSecond ? ' nav-menu--open' : ''}`}>
+          {openNavSecond ? (
             <button
               className="mobile-close-btn"
               onClick={() => setOpenNavSecond(false)}
@@ -57,6 +50,16 @@ const NavBarAdminComponent = () => {
             >
               <MDBIcon fas icon="times" />
             </button>
+          ) : (
+            <MDBNavbarToggler
+              aria-expanded={openNavSecond}
+              aria-label="Toggle navigation"
+              onClick={() => setOpenNavSecond(true)}
+            >
+              <MDBIcon fas icon="bars" style={{ color: '#333' }} />
+            </MDBNavbarToggler>
+          )}
+          <div className={`nav-menu${openNavSecond ? ' nav-menu--open' : ''}`}>
             <MDBNavbarNav className="navbar-nav">
               {isProfilePage && (
                 <MDBNavbarItem className="d-flex flex-column align-items-center navbar-nav-item">

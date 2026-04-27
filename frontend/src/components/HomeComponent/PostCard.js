@@ -1,4 +1,5 @@
 import { memo, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { MDBCard, MDBCardBody, MDBBtn, MDBIcon } from 'mdb-react-ui-kit';
 import AuthenticatedImage from '../common/AuthenticatedImage';
 import ConfirmActionModal from '../common/ConfirmActionModal';
@@ -82,7 +83,9 @@ const PostCard = ({
             fallbackSrc="/593.jpg"
           />
           <div className="post-header-info">
-            <span className="post-author">{posterName}</span>
+            <Link to={`/profile/${userId}`} className="post-author">
+              {posterName}
+            </Link>
             <span className="post-timestamp">
               {createdAt && new Date(createdAt).toLocaleString()}
             </span>
@@ -140,8 +143,16 @@ const PostCard = ({
         {comments?.length > 0 && (
           <div className="comments-list">
             {comments.map((comment) => {
-              const { commentId, username, profileImage, content, createdAt } =
-                comment;
+              const {
+                commentId,
+                userId: commenterId,
+                username,
+                profileImage,
+                content,
+                createdAt,
+              } = comment;
+              const isAuthor =
+                commenterId != null && userId != null && commenterId === userId;
               return (
                 <div key={commentId} className="comment-item">
                   <AuthenticatedImage
@@ -151,7 +162,17 @@ const PostCard = ({
                     fallbackSrc="/593.jpg"
                   />
                   <div className="comment-bubble">
-                    <span className="comment-bubble-author">{username}</span>
+                    <div className="comment-bubble-header">
+                      <Link
+                        to={`/profile/${commenterId}`}
+                        className="comment-bubble-author"
+                      >
+                        {username}
+                      </Link>
+                      {isAuthor && (
+                        <span className="comment-author-tag">Author</span>
+                      )}
+                    </div>
                     <p className="comment-bubble-text">{content}</p>
                     <div className="comment-meta">
                       <span className="comment-time">

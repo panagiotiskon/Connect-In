@@ -3,7 +3,6 @@ package backend.connectin.service;
 import backend.connectin.domain.FileDB;
 import backend.connectin.domain.Post;
 import backend.connectin.domain.PostView;
-import backend.connectin.domain.User;
 import backend.connectin.domain.repository.FileRepository;
 import backend.connectin.domain.repository.PostRepository;
 import backend.connectin.domain.repository.PostViewRepository;
@@ -172,8 +171,11 @@ public class PostService {
     }
 
     public void deletePost(Long userId, Long postId) {
-        User user = userService.findUserOrThrow(userId);
+        userService.findUserOrThrow(userId);
         Post post = findPostOrThrow(postId);
+        if (!Objects.equals(post.getUserId(), userId)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You can only delete your own posts");
+        }
         if (post.getFileId() != null) {
             fileRepository.deleteById(post.getFileId());
         }

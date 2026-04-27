@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation } from 'react-router-dom';
-import { MDBSpinner } from 'mdb-react-ui-kit';
 import NavbarComponent from '../common/NavBar';
+import Spinner from '../common/Spinner';
 import SearchInput from '../common/SearchInput';
 import ConversationListItem from './ConversationListItem';
 import ChatHeader from './ChatHeader';
@@ -76,7 +76,7 @@ const MessagingComponent = () => {
 
             {isLoadingConversations ? (
               <div className="messaging-list-pane__loader">
-                <MDBSpinner color="info" />
+                <Spinner />
               </div>
             ) : filteredConversations.length > 0 ? (
               <ul className="messaging-list-pane__list">

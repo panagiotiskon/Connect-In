@@ -41,18 +41,7 @@
 }
 
 .search-input__spinner {
-  width: 16px;
-  height: 16px;
-  border: 2px solid #e5e7eb;
-  border-top-color: #1a8a9a;
-  border-radius: 50%;
-  animation: search-spin 0.7s linear infinite;
-  flex-shrink: 0;
+  font-size: 16px;
+  color: #1a8a9a;
   margin-right: 14px;
-}
-
-@keyframes search-spin {
-  to {
-    transform: rotate(360deg);
-  }
 }

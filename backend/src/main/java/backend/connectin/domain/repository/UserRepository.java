@@ -20,6 +20,30 @@ public interface UserRepository extends JpaRepository<User, Long> {
     @Query("SELECT u FROM User u WHERE NOT EXISTS (SELECT r FROM u.roles r WHERE r.name = :roleName)")
     List<User> findUsersExcludingRole(@Param("roleName") String roleName);
 
+    @Query(value = """
+            SELECT u.* FROM users u
+            WHERE NOT EXISTS (
+                SELECT 1 FROM user_roles ur
+                JOIN roles r ON ur.role_id = r.id
+                WHERE ur.user_id = u.id AND r.name = :roleName
+            )
+              AND (
+                  :search = ''
+                  OR LOWER(u.first_name) LIKE LOWER(CONCAT('%', :search, '%'))
+                  OR LOWER(u.last_name) LIKE LOWER(CONCAT('%', :search, '%'))
+                  OR LOWER(u.email) LIKE LOWER(CONCAT('%', :search, '%'))
+                  OR CONCAT(LOWER(u.first_name), ' ', LOWER(u.last_name)) LIKE LOWER(CONCAT('%', :search, '%'))
+              )
+            ORDER BY u.first_name ASC, u.id ASC
+            LIMIT :limit OFFSET :offset
+            """, nativeQuery = true)
+    List<User> searchUsersExcludingRole(
+            @Param("roleName") String roleName,
+            @Param("search") String search,
+            @Param("limit") int limit,
+            @Param("offset") int offset
+    );
+
     Optional<User> findUserByEmail(String email);
 
     @Query("""

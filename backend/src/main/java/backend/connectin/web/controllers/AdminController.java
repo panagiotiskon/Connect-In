@@ -1,7 +1,7 @@
 package backend.connectin.web.controllers;
 
 import backend.connectin.service.UserService;
-import backend.connectin.web.dto.UserDTO;
+import backend.connectin.web.dto.AdminUserPageDTO;
 import backend.connectin.web.dto.UserDetailDTO;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -29,8 +29,12 @@ public class AdminController {
     @GetMapping("/users")
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
-    public List<UserDTO> getUsers() {
-        return userService.fetchAllDTOs();
+    public AdminUserPageDTO getUsers(
+            @RequestParam(required = false, defaultValue = "") String search,
+            @RequestParam(required = false, defaultValue = "0") int page,
+            @RequestParam(required = false, defaultValue = "20") int size
+    ) {
+        return userService.searchAdminUsers(search, page, size);
     }
     @GetMapping("/users/details")
     @ResponseStatus(HttpStatus.OK)

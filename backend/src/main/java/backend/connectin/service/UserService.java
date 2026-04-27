@@ -128,6 +128,38 @@ public class UserService {
                 .toList();
     }
 
+    private static final int ADMIN_USERS_DEFAULT_PAGE_SIZE = 20;
+    private static final int ADMIN_USERS_MAX_PAGE_SIZE = 100;
+
+    public AdminUserPageDTO searchAdminUsers(String search, int page, int size) {
+        int safePage = Math.max(page, 0);
+        int safeSize = size <= 0 ? ADMIN_USERS_DEFAULT_PAGE_SIZE : Math.min(size, ADMIN_USERS_MAX_PAGE_SIZE);
+        String term = search == null ? "" : search.trim();
+
+        // Fetch one extra to determine hasMore without a separate count query.
+        int fetchLimit = safeSize + 1;
+        int offset = safePage * safeSize;
+        List<User> users = userRepository.searchUsersExcludingRole("ROLE_ADMIN", term, fetchLimit, offset);
+        if (users.isEmpty()) {
+            return new AdminUserPageDTO(List.of(), safePage, safeSize, false);
+        }
+
+        boolean hasMore = users.size() > safeSize;
+        if (hasMore) {
+            users = users.subList(0, safeSize);
+        }
+
+        List<Long> userIds = users.stream().map(User::getId).toList();
+        Map<Long, byte[]> pictureMap = fileRepository.findProfilePicturesByUserIds(userIds)
+                .stream()
+                .collect(Collectors.toMap(FileDB::getUserId, FileDB::getData));
+
+        List<UserDTO> content = users.stream()
+                .map(u -> userMapper.mapToUserDTO(u, pictureMap.get(u.getId())))
+                .toList();
+        return new AdminUserPageDTO(content, safePage, safeSize, hasMore);
+    }
+
 
     public Optional<User> findUserByEmail(String email) {
         return userRepository.findUserByEmail(email);

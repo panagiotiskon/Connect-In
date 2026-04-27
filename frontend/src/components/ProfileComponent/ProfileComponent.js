@@ -264,7 +264,11 @@ const ProfileComponent = () => {
 
       <ConfirmActionModal
         isOpen={pendingDelete !== null}
-        title={`Delete ${pendingDelete?.category?.slice(0, -1) ?? ''}`}
+        title={`Delete ${
+          pendingDelete?.category === 'Skills'
+            ? 'Skill'
+            : pendingDelete?.category ?? ''
+        }`}
         message="Are you sure you want to delete this entry? This action cannot be undone."
         confirmText="Delete"
         onConfirm={handleConfirmDelete}

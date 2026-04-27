@@ -1,4 +1,5 @@
 import { MDBModal } from 'mdb-react-ui-kit';
+import Spinner from './Spinner';
 import './ConfirmActionModal.scss';
 
 const ConfirmActionModal = ({
@@ -45,7 +46,7 @@ const ConfirmActionModal = ({
             >
               {isLoading ? (
                 <>
-                  <span className="confirm-modal__spinner" aria-hidden="true" />
+                  <Spinner />
                   <span>Loading…</span>
                 </>
               ) : (

@@ -1,5 +1,6 @@
 import { MDBIcon } from 'mdb-react-ui-kit';
 import OptimizedImage from '../common/OptimizedImage';
+import Spinner from '../common/Spinner';
 import './NetworkUserCards.scss';
 
 const RegisteredUsersCardComponent = ({ user, onConnect, onShowProfile, isConnecting = false }) => {
@@ -42,7 +43,7 @@ const RegisteredUsersCardComponent = ({ user, onConnect, onShowProfile, isConnec
           >
             {isConnecting ? (
               <>
-                <MDBIcon fas icon="spinner" spin />
+                <Spinner />
                 <span>Connecting…</span>
               </>
             ) : (

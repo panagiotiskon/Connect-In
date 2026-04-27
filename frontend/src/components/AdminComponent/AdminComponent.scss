@@ -9,9 +9,53 @@ html, body {
     grid-template-columns: repeat(4, 1fr);
     grid-gap: 1rem;
     justify-items: center;
-    max-height: 100px;
     width: 100%;
     height: auto;
+}
+
+.admin-search-bar {
+    max-width: 520px;
+    margin: 1.5rem auto;
+}
+
+.admin-empty {
+    color: #6b7280;
+    font-size: 1rem;
+    margin: 2rem auto;
+}
+
+.admin-pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    margin-top: 2rem;
+
+    &__btn {
+        border: none;
+        background: none;
+        color: #1a8a9a;
+        font-size: 1.1rem;
+        cursor: pointer;
+        padding: 0.5rem;
+
+        &:disabled {
+            color: #cbd5e1;
+            cursor: not-allowed;
+        }
+    }
+
+    &__info {
+        font-weight: 500;
+        color: #374151;
+    }
+}
+
+.admin-loader {
+  font-size: 2rem;
+  color: #1a8a9a;
+  margin: 3rem auto;
+  display: block;
 }
 
 .center-content {
@@ -55,11 +99,6 @@ html, body {
     &:hover {
         background-position: right center !important;
     }
-}
-
-.btn-custom2 {
-    background-color: #b1d4e0 !important;
-    color: #0c2d48 !important;
 }
 
 .select-btn {

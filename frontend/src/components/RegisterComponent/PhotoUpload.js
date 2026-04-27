@@ -67,7 +67,7 @@ const PhotoUpload = ({ onFileUpload }) => {
           />
           <label
             htmlFor="fileInput"
-            className="btn btn-primary w-70 d-flex align-items-center justify-content-center mb-0"
+            className="photo-btn photo-btn-add"
           >
             <MDBIcon
               fas
@@ -80,7 +80,7 @@ const PhotoUpload = ({ onFileUpload }) => {
         <div className="col-5 flex-grow-1 align-items-center justify-content-center">
           <button
             type="button"
-            className="btn btn-secondary w-100 d-flex align-items-center justify-content-center"
+            className="photo-btn photo-btn-remove"
             onClick={handleRemovePhoto}
             disabled={!previewUrl}
           >

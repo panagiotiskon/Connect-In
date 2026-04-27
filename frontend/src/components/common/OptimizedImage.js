@@ -48,27 +48,32 @@ const shallowEqualStyle = (a, b) => {
 };
 
 const OptimizedImage = ({ src, alt = '', className, style, fallbackSrc }) => {
-  const [status, setStatus] = useState('loading');
+  const [hadError, setHadError] = useState(false);
+  const [isLoaded, setIsLoaded] = useState(false);
   const [trackedSrc, setTrackedSrc] = useState(src);
 
   if (src !== trackedSrc) {
     setTrackedSrc(src);
-    setStatus('loading');
+    setHadError(false);
+    setIsLoaded(false);
   }
 
-  const handleLoad = useCallback(() => setStatus('loaded'), []);
-  const handleError = useCallback(() => setStatus('error'), []);
+  const handleLoad = useCallback(() => setIsLoaded(true), []);
+  const handleError = useCallback(() => setHadError(true), []);
 
-  if (status === 'error' && !fallbackSrc) {
+  const useFallback = !src || hadError;
+
+  if (useFallback && !fallbackSrc) {
     return null;
   }
 
-  const currentSrc = status === 'error' ? fallbackSrc : src;
-  const imgVisibility = status === 'loading' ? IMG_HIDDEN : IMG_VISIBLE;
+  const currentSrc = useFallback ? fallbackSrc : src;
+  const showPlaceholder = !useFallback && !isLoaded;
+  const imgVisibility = showPlaceholder ? IMG_HIDDEN : IMG_VISIBLE;
 
   return (
     <span className={className} style={mergeStyles(WRAPPER_BASE_STYLE, style)}>
-      {status === 'loading' && (
+      {showPlaceholder && (
         <span style={PLACEHOLDER_STYLE} aria-hidden="true" />
       )}
       <img
