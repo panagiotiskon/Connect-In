@@ -4,6 +4,7 @@ import backend.connectin.domain.*;
 import backend.connectin.domain.repository.*;
 import backend.connectin.recommendation.algorithm.MatrixFactorization;
 import backend.connectin.util.FeedAssembler;
+import backend.connectin.web.dto.FeedPageDTO;
 import backend.connectin.web.dto.JobPostDTO;
 import backend.connectin.web.mappers.PostMapper;
 import backend.connectin.web.resources.PostResourceDetailed;
@@ -53,9 +54,13 @@ public class RecommendationService {
                 .map(JobRecommendation::getJobId)
                 .toList();
 
+        if (jobIds.isEmpty()) {
+            return List.of();
+        }
+
         // fetch all job posts in one query, then restore the sorted order via map lookup
         Map<Long, JobPost> jobPostMap = jobPostRepository.findAllById(jobIds).stream()
-                .collect(Collectors.toMap(jp -> jp.getId(), jp -> jp));
+                .collect(Collectors.toMap(JobPost::getId, jp -> jp));
         List<JobPost> recommendedJobs = jobIds.stream()
                 .map(jobPostMap::get)
                 .filter(Objects::nonNull)
@@ -66,9 +71,20 @@ public class RecommendationService {
                 .map(JobApplication::getJobPostId)
                 .collect(Collectors.toSet());
 
+        // batch-fetch all distinct authors once instead of one findById per job (N+1 fix)
+        List<Long> authorIds = recommendedJobs.stream()
+                .map(JobPost::getUserId)
+                .distinct()
+                .toList();
+        Map<Long, User> usersById = userService.findUsersByIds(authorIds).stream()
+                .collect(Collectors.toMap(User::getId, java.util.function.Function.identity()));
+
         List<JobPostDTO> jobPostDTOS = new ArrayList<>();
         for (var jobPost : recommendedJobs) {
-            User user = userService.findUserOrThrow(jobPost.getUserId());
+            User user = usersById.get(jobPost.getUserId());
+            if (user == null) {
+                continue;
+            }
             String fullName = user.getFirstName() + " " + user.getLastName();
             boolean hasApplied = appliedJobIds.contains(jobPost.getId());
             jobPostDTOS.add(new JobPostDTO(jobPost.getId(), user.getId(), jobPost.getJobTitle(),
@@ -78,33 +94,42 @@ public class RecommendationService {
         return jobPostDTOS;
     }
 
-    public List<PostResourceDetailed> findRecommendedPostsForUser(long userId) {
-        List<PostRecommendation> postRecommendations = postRecommendationRepository.findByUserId(userId);
-        List<PostRecommendation> sortedRecommendations = postRecommendations.stream()
-                .sorted(Comparator.comparing(PostRecommendation::getPostScore).reversed())
-                .toList();
+    public FeedPageDTO findRecommendedPostsForUser(long userId, int page, Integer sizeParam) {
+        int size = postService.clampSize(sizeParam);
+        int safePage = Math.max(page, 0);
 
-        //store by descending order
         List<Post> postsThatMustBeFetched = postService.fetchFeed(userId);
+        if (postsThatMustBeFetched.isEmpty()) {
+            return new FeedPageDTO(List.of(), safePage, size, 0L);
+        }
 
         Set<Long> fetchedPostIds = postsThatMustBeFetched.stream()
                 .map(Post::getId)
                 .collect(Collectors.toSet());
 
-        List<PostRecommendation> filteredRecommendations = sortedRecommendations.stream()
+        // O(n) rank index keyed by postId — replaces the previous O(n²) sort that
+        // re-streamed and rebuilt a List on every comparator invocation.
+        List<PostRecommendation> sortedRecommendations = postRecommendationRepository.findByUserId(userId).stream()
                 .filter(rec -> fetchedPostIds.contains(rec.getPostId()))
+                .sorted(Comparator.comparing(PostRecommendation::getPostScore).reversed())
                 .toList();
+
+        Map<Long, Integer> rankByPostId = new HashMap<>();
+        for (int i = 0; i < sortedRecommendations.size(); i++) {
+            rankByPostId.put(sortedRecommendations.get(i).getPostId(), i);
+        }
 
         List<Post> orderedPosts = postsThatMustBeFetched.stream()
-                .filter(post -> filteredRecommendations.stream()
-                        .anyMatch(rec -> rec.getPostId() == post.getId()))
-                .sorted(Comparator.comparing(post -> filteredRecommendations.stream()
-                        .map(PostRecommendation::getPostId)
-                        .toList()
-                        .indexOf(post.getId())))
+                .filter(post -> rankByPostId.containsKey(post.getId()))
+                .sorted(Comparator.comparingInt(post -> rankByPostId.get(post.getId())))
                 .toList();
 
-        return feedAssembler.assemble(orderedPosts);
+        long total = orderedPosts.size();
+        int from = (int) Math.min((long) safePage * size, total);
+        int to = (int) Math.min((long) from + size, total);
+        List<Post> pageSlice = orderedPosts.subList(from, to);
+
+        return new FeedPageDTO(feedAssembler.assemble(pageSlice), safePage, size, total);
     }
 
     public void recommendJobs() {

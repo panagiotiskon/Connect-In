@@ -5,15 +5,10 @@ import { processPost } from '../utils/postUtils';
 const PAGE_SIZE = 10;
 
 const loadFeedPage = async (userId, sortingMethod, page) => {
-  if (sortingMethod === 'date') {
-    const response = await PostService.getFeed(userId, { page, size: PAGE_SIZE });
-    return { items: response.items || [], hasMore: !!response.hasMore };
-  }
-  const response = await PostService.getRecommendedPosts(userId);
-  const items = Array.isArray(response)
-    ? response
-    : response?.items || response?.data || [];
-  return { items, hasMore: false };
+  const fetcher =
+    sortingMethod === 'date' ? PostService.getFeed : PostService.getRecommendedPosts;
+  const response = await fetcher(userId, { page, size: PAGE_SIZE });
+  return { items: response.items || [], hasMore: !!response.hasMore };
 };
 
 const useFeed = (userId, sortingMethod) => {

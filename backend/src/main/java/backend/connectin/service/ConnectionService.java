@@ -1,11 +1,12 @@
 package backend.connectin.service;
 
 import backend.connectin.domain.Connection;
-import backend.connectin.domain.Experience;
 import backend.connectin.domain.FileDB;
 import backend.connectin.domain.User;
 import backend.connectin.domain.enums.ConnectionStatus;
 import backend.connectin.domain.repository.ConnectionRepository;
+import backend.connectin.domain.repository.FileRepository;
+import backend.connectin.domain.repository.PersonalInfoRepository;
 import backend.connectin.domain.repository.UserRepository;
 import backend.connectin.web.dto.ConnectedUserDTO;
 import backend.connectin.web.dto.RegisteredUserDTO;
@@ -18,7 +19,12 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.util.ArrayList;
 import java.util.Base64;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 public class ConnectionService {
@@ -27,95 +33,95 @@ public class ConnectionService {
     private final ConnectionRepository connectionRepository;
     private final FileService fileService;
     private final ConnectionMapper connectionMapper;
+    private final PersonalInfoRepository personalInfoRepository;
+    private final FileRepository fileRepository;
 
-    public ConnectionService(UserRepository userRepository, UserService userService, ConnectionRepository connectionRepository, FileService fileService, ConnectionMapper connectionMapper) {
+    public ConnectionService(UserRepository userRepository, UserService userService, ConnectionRepository connectionRepository, FileService fileService, ConnectionMapper connectionMapper, PersonalInfoRepository personalInfoRepository, FileRepository fileRepository) {
         this.userRepository = userRepository;
         this.userService = userService;
         this.connectionRepository = connectionRepository;
         this.fileService = fileService;
         this.connectionMapper = connectionMapper;
+        this.personalInfoRepository = personalInfoRepository;
+        this.fileRepository = fileRepository;
+    }
+
+    private record ExperienceSnippet(String jobTitle, String companyName) {}
+
+    private Map<Long, ExperienceSnippet> loadLatestExperienceMap(List<Long> userIds) {
+        if (userIds.isEmpty()) return Map.of();
+        return personalInfoRepository.findLatestExperienceByUserIds(userIds).stream()
+                .collect(Collectors.toMap(
+                        row -> ((Number) row[0]).longValue(),
+                        row -> new ExperienceSnippet((String) row[1], (String) row[2]),
+                        (a, b) -> a));
+    }
+
+    private Map<Long, FileDB> loadProfilePictureMap(List<Long> userIds) {
+        if (userIds.isEmpty()) return Map.of();
+        return fileRepository.findProfilePicturesByUserIds(userIds).stream()
+                .collect(Collectors.toMap(FileDB::getUserId, Function.identity(), (a, b) -> a));
+    }
+
+    private static String[] encodePicture(FileDB pic) {
+        if (pic == null || pic.getType() == null || !pic.getType().startsWith("image/")) {
+            return new String[]{null, null};
+        }
+        return new String[]{Base64.getEncoder().encodeToString(pic.getData()), pic.getType()};
     }
 
     public List<ConnectedUserDTO> getUserConnections(long userId) {
-        List<ConnectedUserDTO> connectedUserDTOS = new ArrayList<>();
         if (userRepository.findById(userId).isEmpty()) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found");
         }
         List<Connection> connectionList = connectionRepository.findUserConnections(userId);
-
-        List<User> connectedUsers = connectionList.stream()
-                .map(connection -> userService.findUserOrThrow(connection.getUserId2()))
-                .toList();
-
-        for (User user : connectedUsers) {
-            List<Experience> experiences = userService.getExperience(user.getId()); // get latest experience
-            String jobTitle;
-            String companyName;
-            if (experiences.isEmpty()) {
-                jobTitle = null;
-                companyName = null;
-            } else {
-                jobTitle = experiences.getFirst().getJobTitle();
-                companyName = experiences.getFirst().getCompanyName();
-            }
-            FileDB profilePicture = fileService.getProfilePicture(user.getId()).orElse(null);
-            String profilePic;
-            String profilePicType;
-            if (profilePicture != null && profilePicture.getType().startsWith("image/")) {
-                profilePic = Base64.getEncoder().encodeToString(profilePicture.getData());
-                profilePicType = profilePicture.getType();
-            } else {
-                profilePic = null;
-                profilePicType = null;
-            }
-            ConnectedUserDTO connectedUserDTO = new ConnectedUserDTO(user.getId(), user.getFirstName(), user.getLastName(), jobTitle, companyName, profilePic, profilePicType,false);
-            connectedUserDTOS.add(connectedUserDTO);
-        }
         if (connectionList.isEmpty()) {
             return List.of();
         }
-        return connectedUserDTOS;
+        return assembleConnectedUserDTOs(connectionList, false);
     }
 
     public List<ConnectedUserDTO> getPendingUserConnections(long userId) {
-        List<ConnectedUserDTO> connectedUserDTOS = new ArrayList<>();
         if (userRepository.findById(userId).isEmpty()) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found");
         }
         List<Connection> connectionList = connectionRepository.findPendingUserConnections(userId);
-
-        List<User> pendingConnectedUsers = connectionList.stream()
-                .map(connection -> userService.findUserOrThrow(connection.getUserId2()))
-                .toList();
-
-        for (User user : pendingConnectedUsers) {
-            List<Experience> experiences = userService.getExperience(user.getId()); // get latest experience
-            String jobTitle;
-            String companyName;
-            if (experiences.isEmpty()) {
-                jobTitle = null;
-                companyName = null;
-            } else {
-                jobTitle = experiences.getFirst().getJobTitle();
-                companyName = experiences.getFirst().getCompanyName();
-            }
-            FileDB profilePicture = fileService.getProfilePicture(user.getId()).orElse(null);
-            String profilePic;
-            String profilePicType;
-            if (profilePicture != null && profilePicture.getType().startsWith("image/")) {
-                profilePic = Base64.getEncoder().encodeToString(profilePicture.getData());
-                profilePicType = profilePicture.getType();
-            } else {
-                profilePic = null;
-                profilePicType = null;
-            }
-            ConnectedUserDTO connectedUserDTO = new ConnectedUserDTO(user.getId(), user.getFirstName(), user.getLastName(), jobTitle, companyName, profilePic, profilePicType,true);
-            connectedUserDTOS.add(connectedUserDTO);
-        }
         if (connectionList.isEmpty()) {
             return List.of();
         }
-        return connectedUserDTOS;
+        return assembleConnectedUserDTOs(connectionList, true);
+    }
+
+    private List<ConnectedUserDTO> assembleConnectedUserDTOs(List<Connection> connections, boolean isPending) {
+        List<Long> peerIds = connections.stream()
+                .map(Connection::getUserId2)
+                .distinct()
+                .toList();
+
+        Map<Long, User> usersById = userRepository.findAllById(peerIds).stream()
+                .collect(Collectors.toMap(User::getId, Function.identity()));
+        Map<Long, ExperienceSnippet> experienceMap = loadLatestExperienceMap(peerIds);
+        Map<Long, FileDB> pictureMap = loadProfilePictureMap(peerIds);
+
+        List<ConnectedUserDTO> dtos = new ArrayList<>(peerIds.size());
+        for (Long peerId : peerIds) {
+            User user = usersById.get(peerId);
+            if (user == null) {
+                continue;
+            }
+            ExperienceSnippet exp = experienceMap.get(peerId);
+            String[] pic = encodePicture(pictureMap.get(peerId));
+            dtos.add(new ConnectedUserDTO(
+                    user.getId(),
+                    user.getFirstName(),
+                    user.getLastName(),
+                    exp != null ? exp.jobTitle() : null,
+                    exp != null ? exp.companyName() : null,
+                    pic[0],
+                    pic[1],
+                    isPending));
+        }
+        return dtos;
     }
 
 
@@ -173,37 +179,40 @@ public class ConnectionService {
         if(users.isEmpty()){
             return List.of();
         }
-        List<RegisteredUserDTO> registeredUserDTOS = new ArrayList<>();
-        List<Long> pendingUserConnections = connectionRepository.findPendingUserConnections(userId).stream().map(Connection::getUserId2).toList();
-        List<Long> acceptedUserConnections = connectionRepository.findUserConnections(userId).stream().map(Connection::getUserId2).toList();
-        List<Long> finalRegisteredUsers = users.stream().filter(user -> !pendingUserConnections.contains(user) && !acceptedUserConnections.contains(user)).toList();
+        Set<Long> excluded = new HashSet<>();
+        connectionRepository.findPendingUserConnections(userId).forEach(c -> excluded.add(c.getUserId2()));
+        connectionRepository.findUserConnections(userId).forEach(c -> excluded.add(c.getUserId2()));
+
+        List<Long> finalRegisteredUsers = users.stream()
+                .filter(u -> !excluded.contains(u))
+                .distinct()
+                .toList();
         if(finalRegisteredUsers.isEmpty()){
             return List.of();
         }
-        for (long finalRegisteredUserId : finalRegisteredUsers) {
-            User user = userService.findUserOrThrow(finalRegisteredUserId);
-            List<Experience> experiences = userService.getExperience(user.getId()); // get latest experience
-            String jobTitle;
-            String companyName;
-            if (experiences.isEmpty()) {
-                jobTitle = null;
-                companyName = null;
-            } else {
-                jobTitle = experiences.getFirst().getJobTitle();
-                companyName = experiences.getFirst().getCompanyName();
+
+        Map<Long, User> usersById = userRepository.findAllById(finalRegisteredUsers).stream()
+                .collect(Collectors.toMap(User::getId, Function.identity()));
+        Map<Long, ExperienceSnippet> experienceMap = loadLatestExperienceMap(finalRegisteredUsers);
+        Map<Long, FileDB> pictureMap = loadProfilePictureMap(finalRegisteredUsers);
+
+        List<RegisteredUserDTO> registeredUserDTOS = new ArrayList<>(finalRegisteredUsers.size());
+        for (Long id : finalRegisteredUsers) {
+            User user = usersById.get(id);
+            if (user == null) {
+                continue;
             }
-            FileDB profilePicture = fileService.getProfilePicture(user.getId()).orElse(null);
-            String profilePic;
-            String profilePicType;
-            if (profilePicture != null && profilePicture.getType().startsWith("image/")) {
-                profilePic = Base64.getEncoder().encodeToString(profilePicture.getData());
-                profilePicType = profilePicture.getType();
-            } else {
-                profilePic = null;
-                profilePicType = null;
-            }
-            RegisteredUserDTO registeredUserDTO = new RegisteredUserDTO(user.getId(), user.getFirstName(), user.getLastName(), jobTitle, companyName, profilePic, profilePicType, null);
-            registeredUserDTOS.add(registeredUserDTO);
+            ExperienceSnippet exp = experienceMap.get(id);
+            String[] pic = encodePicture(pictureMap.get(id));
+            registeredUserDTOS.add(new RegisteredUserDTO(
+                    user.getId(),
+                    user.getFirstName(),
+                    user.getLastName(),
+                    exp != null ? exp.jobTitle() : null,
+                    exp != null ? exp.companyName() : null,
+                    pic[0],
+                    pic[1],
+                    null));
         }
         return registeredUserDTOS;
 

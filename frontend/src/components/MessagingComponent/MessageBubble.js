@@ -1,6 +1,6 @@
 import { memo } from 'react';
 import OptimizedImage from '../common/OptimizedImage';
-import { base64ToDataURL, formatMessageTime } from '../../utils/messagingUtils';
+import { formatMessageTime } from '../../utils/messagingUtils';
 
 const MessageBubble = ({ message, isSelf }) => {
   const className = isSelf
@@ -11,7 +11,7 @@ const MessageBubble = ({ message, isSelf }) => {
     <div className={className}>
       {!isSelf && (
         <OptimizedImage
-          src={base64ToDataURL(message.profilePicture, message.picType)}
+          src={message.profilePictureUrl || ''}
           alt=""
           className="message-bubble__avatar"
           fallbackSrc="/593.jpg"

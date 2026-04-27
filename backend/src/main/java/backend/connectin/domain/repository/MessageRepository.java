@@ -1,7 +1,6 @@
 package backend.connectin.domain.repository;
 
 import backend.connectin.domain.Message;
-import backend.connectin.domain.Notification;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -21,4 +20,17 @@ public interface MessageRepository extends JpaRepository<Message, Long> {
                 "(m.senderId = :userId OR m.receiverId = :userId) " +
                 "ORDER BY m.sentAt DESC")
         List<Message> findUserConversations(@Param("userId") Long userId);
+
+        @Query(value = """
+                SELECT partner_id
+                FROM (
+                    SELECT CASE WHEN m.sender_id = :userId THEN m.receiver_id ELSE m.sender_id END AS partner_id,
+                           MAX(m.sent_at) AS last_at
+                    FROM messages m
+                    WHERE m.sender_id = :userId OR m.receiver_id = :userId
+                    GROUP BY partner_id
+                ) AS t
+                ORDER BY t.last_at DESC
+                """, nativeQuery = true)
+        List<Long> findConversationPartnerIds(@Param("userId") Long userId);
 }

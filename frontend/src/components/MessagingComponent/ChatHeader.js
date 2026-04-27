@@ -1,6 +1,5 @@
 import { MDBIcon } from 'mdb-react-ui-kit';
 import OptimizedImage from '../common/OptimizedImage';
-import { base64ToDataURL } from '../../utils/messagingUtils';
 
 const ChatHeader = ({ user, onBack }) => {
   const fullName = `${user.firstName} ${user.lastName}`;
@@ -16,7 +15,7 @@ const ChatHeader = ({ user, onBack }) => {
         <MDBIcon fas icon="arrow-left" />
       </button>
       <OptimizedImage
-        src={base64ToDataURL(user.profilePic, user.picType)}
+        src={user.profilePictureUrl || ''}
         alt={fullName}
         className="chat-header__avatar"
       />

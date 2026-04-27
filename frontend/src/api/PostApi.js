@@ -55,8 +55,11 @@ const deleteReaction = async (userId, postId) => {
   return api.delete(`${BASE}/${userId}/${postId}/reaction`);
 };
 
-const getRecommendedPosts = async (userId) => {
-  const response = await api.get(`${BASE}/${userId}/recommended-posts`);
+const getRecommendedPosts = async (userId, { page = 0, size = 10 } = {}) => {
+  const response = await api.get(`${BASE}/${userId}/recommended-posts`, {
+    headers: { "Content-Type": "application/json" },
+    params: { page, size },
+  });
   return response.data;
 };
 

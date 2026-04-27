@@ -1,6 +1,5 @@
 import { memo, useCallback } from 'react';
 import OptimizedImage from '../common/OptimizedImage';
-import { base64ToDataURL } from '../../utils/messagingUtils';
 
 const ConversationListItem = ({ user, isActive, onSelect }) => {
   const handleClick = useCallback(() => onSelect(user), [onSelect, user]);
@@ -31,7 +30,7 @@ const ConversationListItem = ({ user, isActive, onSelect }) => {
       aria-label={`Open conversation with ${fullName}`}
     >
       <OptimizedImage
-        src={base64ToDataURL(user.profilePic, user.picType)}
+        src={user.profilePictureUrl || ''}
         alt={fullName}
         className="conversation-item__avatar"
       />

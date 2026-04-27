@@ -157,7 +157,7 @@ public class PostService {
         return new FeedPageDTO(items, safePage, size, total);
     }
 
-    private int clampSize(Integer size) {
+    public int clampSize(Integer size) {
         if (size == null || size <= 0) return DEFAULT_PAGE_SIZE;
         return Math.min(size, MAX_PAGE_SIZE);
     }
