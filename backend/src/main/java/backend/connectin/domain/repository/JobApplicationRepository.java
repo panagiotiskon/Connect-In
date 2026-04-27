@@ -10,4 +10,5 @@ import java.util.List;
 public interface JobApplicationRepository extends JpaRepository<JobApplication, Long> {
     List<JobApplication> findJobApplicationByUserId(long userId);
     List<JobApplication> findJobApplicationByJobPostId(long jobPostId);
+    void deleteByUserIdAndJobPostId(long userId, long jobPostId);
 }

@@ -55,6 +55,19 @@ const JobAPI = {
     }
   },
 
+  unapplyFromJob: async (userId, jobPostId) => {
+    try {
+      const response = await api.delete(`${BASE}/unapply`, {
+        params: { userId, jobPostId },
+        headers: { "Content-Type": "application/json" },
+      });
+      return response.data;
+    } catch (error) {
+      console.error("Error unapplying from job:", error);
+      throw error;
+    }
+  },
+
   deleteJob: async (userId, jobPostId) => {
     try {
       const response = await api.delete(`${BASE}/delete`, {

@@ -13,6 +13,7 @@ import java.util.Optional;
 public interface ReactionRepository extends JpaRepository<Reaction, Long> {
 
     List<Reaction> findAllByUserId(Long userId);
+    List<Reaction> findAllByUserIdIn(List<Long> userIds);
 
     @Query(value = """
             SELECT r.*

@@ -1,24 +1,63 @@
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { memo, useState, useRef, useEffect, useCallback } from 'react';
 import { MDBContainer, MDBRow, MDBCol, MDBIcon } from 'mdb-react-ui-kit';
 import NavbarComponent from '../common/NavBar';
 import ProfileCard from '../common/ProfileCard';
 import SortingCard from '../common/SortingCard';
-import DeleteJobModal from './DeleteJobModal';
 import CreateJobModal from './CreateJobModal';
 import SkeletonCard from '../common/SkeletonCard';
 import Spinner from '../common/Spinner';
+import ConfirmActionModal from '../common/ConfirmActionModal';
+import OptimizedImage from '../common/OptimizedImage';
 import { useAuth } from '../../context/AuthContext';
 import JobAPI from '../../api/JobAPI';
 import { useNavigate } from 'react-router-dom';
+import useProfileImage from '../../hooks/useProfileImage';
 import './JobsComponent.scss';
+
+const DELETE_JOB = 'delete-job';
+const WITHDRAW_APPLICATION = 'withdraw-application';
+
+const CONFIRM_COPY = {
+  [DELETE_JOB]: {
+    title: 'Delete Job',
+    message: 'Are you sure you want to delete this job posting?',
+    confirmText: 'Delete',
+  },
+  [WITHDRAW_APPLICATION]: {
+    title: 'Withdraw Application',
+    message: 'Are you sure you want to withdraw your application?',
+    confirmText: 'Withdraw',
+  },
+};
+
+const ApplicantRow = memo(({ applicant, onClick }) => {
+  const { profileImage } = useProfileImage(applicant.userId);
+  return (
+    <div
+      className={`jobs-applicant-row${!applicant.userId ? ' jobs-applicant-row--disabled' : ''}`}
+      onClick={onClick}
+    >
+      <OptimizedImage
+        src={profileImage}
+        alt={applicant.fullName}
+        className="jobs-applicant-avatar"
+        fallbackSrc="/593.jpg"
+      />
+      <span className="jobs-applicant-name">{applicant.fullName}</span>
+      {applicant.userId && (
+        <MDBIcon fas icon="arrow-right" className="jobs-applicant-arrow" />
+      )}
+    </div>
+  );
+});
 
 const JobsComponent = () => {
   const [jobs, setJobs] = useState([]);
   const [applications, setApplications] = useState({});
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [openApplicantsId, setOpenApplicantsId] = useState(null);
-  const [pendingDeleteId, setPendingDeleteId] = useState(null);
-  const [isDeleting, setIsDeleting] = useState(false);
+  const [pendingAction, setPendingAction] = useState(null);
+  const [isConfirming, setIsConfirming] = useState(false);
   const [applyingJobId, setApplyingJobId] = useState(null);
   const [loadingJobs, setLoadingJobs] = useState(false);
   const { user: currentUser } = useAuth();
@@ -70,7 +109,7 @@ const JobsComponent = () => {
           const { jobPostId, userId, fullName } = application;
           if (!jobPostId || !userId) return;
           if (!appMap[jobPostId]) appMap[jobPostId] = new Map();
-          appMap[jobPostId].set(userId, { userId, fullName: fullName });
+          appMap[jobPostId].set(userId, { userId, fullName });
         });
         const formattedAppMap = {};
         Object.keys(appMap).forEach((jobPostId) => {
@@ -101,44 +140,59 @@ const JobsComponent = () => {
   };
 
   const handleApply = async (jobId) => {
-    if (currentUser) {
-      setApplyingJobId(jobId);
-      try {
-        await JobAPI.applyToJob(currentUser.id, jobId);
-        setJobs((prevJobs) =>
-          prevJobs.map((job) =>
-            job.id === jobId ? { ...job, applied: true } : job
-          )
-        );
-      } catch (error) {
-        console.error('Error applying to job:', error);
-      } finally {
-        setApplyingJobId(null);
-      }
-    }
-  };
-
-  const handleConfirmDelete = async () => {
-    if (!currentUser || !pendingDeleteId) return;
-    setIsDeleting(true);
+    if (!currentUser) return;
+    setApplyingJobId(jobId);
     try {
-      await JobAPI.deleteJob(currentUser.id, pendingDeleteId);
-      setJobs((prevJobs) =>
-        prevJobs.filter((job) => job.id !== pendingDeleteId)
+      await JobAPI.applyToJob(currentUser.id, jobId);
+      setJobs((prev) =>
+        prev.map((job) => (job.id === jobId ? { ...job, applied: true } : job))
       );
     } catch (error) {
-      console.error('Error deleting job:', error);
+      console.error('Error applying to job:', error);
     } finally {
-      setIsDeleting(false);
-      setPendingDeleteId(null);
+      setApplyingJobId(null);
     }
   };
 
-  const handleProfileNavigation = (userId) => {
-    navigate(`/profile/${userId}`);
+  const requestDeleteJob = (jobId) =>
+    setPendingAction({ type: DELETE_JOB, jobId });
+
+  const requestWithdrawApplication = (jobId) =>
+    setPendingAction({ type: WITHDRAW_APPLICATION, jobId });
+
+  const cancelPendingAction = () => setPendingAction(null);
+
+  const confirmPendingAction = async () => {
+    if (!currentUser || !pendingAction) return;
+    setIsConfirming(true);
+    try {
+      if (pendingAction.type === DELETE_JOB) {
+        await JobAPI.deleteJob(currentUser.id, pendingAction.jobId);
+        setJobs((prev) => prev.filter((job) => job.id !== pendingAction.jobId));
+      } else if (pendingAction.type === WITHDRAW_APPLICATION) {
+        await JobAPI.unapplyFromJob(currentUser.id, pendingAction.jobId);
+        setJobs((prev) =>
+          prev.map((job) =>
+            job.id === pendingAction.jobId ? { ...job, applied: false } : job
+          )
+        );
+      }
+    } catch (error) {
+      console.error('Error confirming action:', error);
+    } finally {
+      setIsConfirming(false);
+      setPendingAction(null);
+    }
   };
 
+  const confirmDialog = pendingAction ? CONFIRM_COPY[pendingAction.type] : null;
+
+  const handleProfileNavigation = (userId) => navigate(`/profile/${userId}`);
+
   const yourJobs = jobs.filter((job) => job.userId === currentUser?.id);
+  const appliedJobs = jobs.filter(
+    (job) => job.userId !== currentUser?.id && job.applied
+  );
   const otherJobs = jobs.filter(
     (job) => job.userId !== currentUser?.id && !job.applied
   );
@@ -172,7 +226,6 @@ const JobsComponent = () => {
     return () => observerRef.current?.disconnect();
   }, [currentUser, otherJobs]);
 
-  // Close applicants dropdown on outside click
   useEffect(() => {
     const handleClickOutside = () => setOpenApplicantsId(null);
     if (openApplicantsId !== null) {
@@ -182,209 +235,243 @@ const JobsComponent = () => {
   }, [openApplicantsId]);
 
   return (
-    <div>
-      <NavbarComponent />
-      <MDBContainer fluid className="jobs-container">
-        <MDBRow>
-          {/* Left Column — Profile Card (same as homepage) */}
-          <MDBCol md="4" className="left-column mb-4 mb-md-0">
-            <ProfileCard currentUser={currentUser} />
-          </MDBCol>
+    <>
+      <ConfirmActionModal
+        isOpen={!!confirmDialog}
+        title={confirmDialog?.title}
+        message={confirmDialog?.message}
+        confirmText={confirmDialog?.confirmText}
+        isLoading={isConfirming}
+        onConfirm={confirmPendingAction}
+        onCancel={cancelPendingAction}
+      />
 
-          {/* Center Column — Sort + Jobs (same structure as homepage) */}
-          <MDBCol
-            md="8"
-            className="center-column"
-            style={{ marginBottom: '1rem' }}
-          >
-            {/* Your Jobs */}
-            <div className="jobs-section-card">
-              <div className="jobs-section-header">
-                <h2 className="jobs-section-title">Your Jobs</h2>
-                <button
-                  className="jobs-action-btn"
-                  onClick={() => setShowCreateModal(true)}
-                >
-                  + Create Job
-                </button>
-              </div>
-              <div className="jobs-section-body">
-                {loadingJobs ? (
-                  <SkeletonCard count={2} />
-                ) : yourJobs.length === 0 ? (
-                  <p className="jobs-empty-state">No jobs created by you.</p>
-                ) : (
-                  yourJobs.map((job) => (
-                    <div className="jobs-entry" key={job.id}>
-                      <div className="jobs-entry-content">
-                        <div className="jobs-entry-title">{job.jobTitle}</div>
-                        <div className="jobs-entry-subtitle">
-                          {job.companyName}
-                        </div>
-                        <div className="jobs-entry-meta">
-                          {job.createdAt
-                            ? new Date(job.createdAt).toLocaleDateString()
-                            : '—'}
-                        </div>
-                        <div className="jobs-entry-description">
-                          {job.jobDescription}
-                        </div>
-                        {applications[job.id]?.length > 0 && (
-                          <div className="jobs-applicants-wrapper">
-                            <button
-                              className="jobs-applicants-toggle"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setOpenApplicantsId(
-                                  openApplicantsId === job.id ? null : job.id
-                                );
-                              }}
-                            >
-                              <span className="jobs-applicants-count">
-                                {applications[job.id].length}
-                              </span>
-                              {applications[job.id].length === 1
-                                ? 'Applicant'
-                                : 'Applicants'}
-                              <MDBIcon
-                                fas
-                                icon={
-                                  openApplicantsId === job.id
-                                    ? 'chevron-up'
-                                    : 'chevron-down'
-                                }
-                                className="jobs-applicants-chevron"
-                              />
-                            </button>
-                            {openApplicantsId === job.id && (
-                              <div className="jobs-applicants-panel">
-                                {applications[job.id].map((applicant, idx) => (
-                                  <div
-                                    key={applicant.userId ?? idx}
-                                    className={`jobs-applicant-row${!applicant.userId ? ' jobs-applicant-row--disabled' : ''}`}
-                                    onClick={() => {
-                                      if (!applicant.userId) return;
-                                      handleProfileNavigation(applicant.userId);
-                                      setOpenApplicantsId(null);
-                                    }}
-                                  >
-                                    <div className="jobs-applicant-avatar">
-                                      {applicant.fullName
-                                        ?.charAt(0)
-                                        .toUpperCase() || '?'}
-                                    </div>
-                                    <span className="jobs-applicant-name">
-                                      {applicant.fullName}
-                                    </span>
-                                    {applicant.userId && (
-                                      <MDBIcon
-                                        fas
-                                        icon="arrow-right"
-                                        className="jobs-applicant-arrow"
-                                      />
-                                    )}
-                                  </div>
-                                ))}
-                              </div>
-                            )}
+      <div>
+        <NavbarComponent />
+        <MDBContainer fluid className="jobs-container">
+          <MDBRow>
+            <MDBCol md="4" className="left-column mb-4 mb-md-0">
+              <ProfileCard currentUser={currentUser} />
+            </MDBCol>
+
+            <MDBCol
+              md="8"
+              className="center-column"
+              style={{ marginBottom: '1rem' }}
+            >
+              {/* Created by you */}
+              <div className="jobs-section-card">
+                <div className="jobs-section-header">
+                  <h2 className="jobs-section-title">Created by you</h2>
+                  <button
+                    className="jobs-action-btn"
+                    onClick={() => setShowCreateModal(true)}
+                  >
+                    + Create Job
+                  </button>
+                </div>
+                <div className="jobs-section-body">
+                  {loadingJobs ? (
+                    <SkeletonCard count={1} />
+                  ) : yourJobs.length === 0 ? (
+                    <p className="jobs-empty-state">No jobs created by you.</p>
+                  ) : (
+                    yourJobs.map((job) => (
+                      <div className="jobs-entry" key={job.id}>
+                        <div className="jobs-entry-content">
+                          <div className="jobs-entry-title">{job.jobTitle}</div>
+                          <div className="jobs-entry-subtitle">
+                            {job.companyName}
                           </div>
-                        )}
-                      </div>
-                      <div className="jobs-entry-actions">
-                        <button
-                          className="jobs-entry-delete"
-                          onClick={() => setPendingDeleteId(job.id)}
-                          aria-label="Delete"
-                        >
-                          <MDBIcon fas icon="times" />
-                        </button>
-                      </div>
-                    </div>
-                  ))
-                )}
-              </div>
-            </div>
-
-            {/* Sorting — between Your Jobs and Other Jobs */}
-            <SortingCard
-              sortingMethod={sortingMethod}
-              onSortChange={setSortingMethod}
-            />
-
-            {/* Other Jobs */}
-            <div className="jobs-section-card">
-              <div className="jobs-section-header">
-                <h2 className="jobs-section-title">Other Jobs</h2>
-              </div>
-              <div className="jobs-section-body">
-                {loadingJobs ? (
-                  <SkeletonCard count={3} />
-                ) : otherJobs.length === 0 ? (
-                  <p className="jobs-empty-state">No other jobs available.</p>
-                ) : (
-                  otherJobs.map((job) => (
-                    <div
-                      className="jobs-entry"
-                      key={job.id}
-                      data-job-id={job.id}
-                    >
-                      <div className="jobs-entry-content">
-                        <div className="jobs-entry-title">{job.jobTitle}</div>
-                        <div className="jobs-entry-subtitle">
-                          {job.companyName}
-                        </div>
-                        <div className="jobs-entry-meta">
-                          {new Date(job.createdAt).toLocaleDateString()}
-                          {' · '}By {job.createdBy}
-                        </div>
-                        <div className="jobs-entry-description">
-                          {job.jobDescription}
-                        </div>
-                      </div>
-                      <div className="jobs-entry-actions">
-                        {job.applied ? (
-                          <span className="jobs-applied-badge">✓ Applied</span>
-                        ) : (
-                          currentUser && (
-                            <button
-                              className="jobs-action-btn"
-                              onClick={() => handleApply(job.id)}
-                              disabled={applyingJobId === job.id}
-                            >
-                              {applyingJobId === job.id ? (
-                                <>
-                                  <Spinner />
-                                  Applying…
-                                </>
-                              ) : (
-                                'Apply'
+                          <div className="jobs-entry-meta">
+                            {job.createdAt
+                              ? new Date(job.createdAt).toLocaleDateString()
+                              : '—'}
+                          </div>
+                          <div className="jobs-entry-description">
+                            {job.jobDescription}
+                          </div>
+                          {applications[job.id]?.length > 0 && (
+                            <div className="jobs-applicants-wrapper">
+                              <button
+                                className="jobs-applicants-toggle"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setOpenApplicantsId(
+                                    openApplicantsId === job.id ? null : job.id
+                                  );
+                                }}
+                              >
+                                <span className="jobs-applicants-count">
+                                  {applications[job.id].length}
+                                </span>
+                                {applications[job.id].length === 1
+                                  ? 'Applicant'
+                                  : 'Applicants'}
+                                <MDBIcon
+                                  fas
+                                  icon={
+                                    openApplicantsId === job.id
+                                      ? 'chevron-up'
+                                      : 'chevron-down'
+                                  }
+                                  className="jobs-applicants-chevron"
+                                />
+                              </button>
+                              {openApplicantsId === job.id && (
+                                <div className="jobs-applicants-panel">
+                                  {applications[job.id].map((applicant, idx) => (
+                                    <ApplicantRow
+                                      key={applicant.userId ?? idx}
+                                      applicant={applicant}
+                                      onClick={() => {
+                                        if (!applicant.userId) return;
+                                        handleProfileNavigation(applicant.userId);
+                                        setOpenApplicantsId(null);
+                                      }}
+                                    />
+                                  ))}
+                                </div>
                               )}
-                            </button>
-                          )
-                        )}
+                            </div>
+                          )}
+                        </div>
+                        <div className="jobs-entry-actions">
+                          <button
+                            className="jobs-entry-delete"
+                            onClick={() => requestDeleteJob(job.id)}
+                            aria-label="Delete"
+                          >
+                            <MDBIcon fas icon="times" />
+                          </button>
+                        </div>
                       </div>
-                    </div>
-                  ))
-                )}
+                    ))
+                  )}
+                </div>
               </div>
-            </div>
-          </MDBCol>
-        </MDBRow>
-      </MDBContainer>
 
-      <DeleteJobModal
-        isOpen={pendingDeleteId !== null}
-        isLoading={isDeleting}
-        onConfirm={handleConfirmDelete}
-        onCancel={() => setPendingDeleteId(null)}
-      />
+              {/* Applied to */}
+              <div className="jobs-section-card">
+                <div className="jobs-section-header">
+                  <h2 className="jobs-section-title">Applied to</h2>
+                </div>
+                <div className="jobs-section-body">
+                  {loadingJobs ? (
+                    <SkeletonCard count={1} />
+                  ) : appliedJobs.length === 0 ? (
+                    <p className="jobs-empty-state">
+                      You haven't applied to any jobs yet.
+                    </p>
+                  ) : (
+                    appliedJobs.map((job) => (
+                      <div className="jobs-entry" key={job.id}>
+                        <div className="jobs-entry-content">
+                          <div className="jobs-entry-title-row">
+                            <span className="jobs-entry-title">
+                              {job.jobTitle}
+                            </span>
+                            <span className="jobs-applied-badge">✓ Applied</span>
+                          </div>
+                          <div className="jobs-entry-subtitle">
+                            {job.companyName}
+                          </div>
+                          <div className="jobs-entry-meta">
+                            {new Date(job.createdAt).toLocaleDateString()}
+                            {' · '}By {job.createdBy}
+                          </div>
+                          <div className="jobs-entry-description">
+                            {job.jobDescription}
+                          </div>
+                        </div>
+                        <div className="jobs-entry-actions">
+                          <button
+                            className="jobs-entry-delete"
+                            onClick={() => requestWithdrawApplication(job.id)}
+                            aria-label="Withdraw"
+                          >
+                            <MDBIcon fas icon="times" />
+                          </button>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
 
-      <CreateJobModal
-        isOpen={showCreateModal}
-        onClose={() => setShowCreateModal(false)}
-        onSubmit={handleCreateJob}
-      />
-    </div>
+              <SortingCard
+                sortingMethod={sortingMethod}
+                onSortChange={setSortingMethod}
+              />
+
+              {/* Top picks */}
+              <div className="jobs-section-card">
+                <div className="jobs-section-header">
+                  <h2 className="jobs-section-title">Top picks for you</h2>
+                </div>
+                <div className="jobs-section-body">
+                  {loadingJobs ? (
+                    <SkeletonCard count={1} />
+                  ) : otherJobs.length === 0 ? (
+                    <p className="jobs-empty-state">No other jobs available.</p>
+                  ) : (
+                    otherJobs.map((job) => (
+                      <div
+                        className="jobs-entry"
+                        key={job.id}
+                        data-job-id={job.id}
+                      >
+                        <div className="jobs-entry-content">
+                          <div className="jobs-entry-title">{job.jobTitle}</div>
+                          <div className="jobs-entry-subtitle">
+                            {job.companyName}
+                          </div>
+                          <div className="jobs-entry-meta">
+                            {new Date(job.createdAt).toLocaleDateString()}
+                            {' · '}By {job.createdBy}
+                          </div>
+                          <div className="jobs-entry-description">
+                            {job.jobDescription}
+                          </div>
+                        </div>
+                        <div className="jobs-entry-actions">
+                          {job.applied ? (
+                            <span className="jobs-applied-badge">✓ Applied</span>
+                          ) : (
+                            currentUser && (
+                              <button
+                                className="jobs-action-btn"
+                                onClick={() => handleApply(job.id)}
+                                disabled={applyingJobId === job.id}
+                              >
+                                {applyingJobId === job.id ? (
+                                  <>
+                                    <Spinner />
+                                    Applying…
+                                  </>
+                                ) : (
+                                  'Apply'
+                                )}
+                              </button>
+                            )
+                          )}
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+            </MDBCol>
+          </MDBRow>
+        </MDBContainer>
+
+        <CreateJobModal
+          isOpen={showCreateModal}
+          onClose={() => setShowCreateModal(false)}
+          onSubmit={handleCreateJob}
+        />
+      </div>
+    </>
   );
 };
 

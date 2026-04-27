@@ -38,6 +38,11 @@ public class JobController {
         return jobService.getJobApplications(userId);
     }
 
+    @DeleteMapping("/unapply")
+    public void unapplyFromJob(@RequestParam long userId, @RequestParam long jobPostId) {
+        jobService.unapplyFromJob(userId, jobPostId);
+    }
+
     @DeleteMapping("/delete")
     public void deleteJob(@RequestParam long userId, @RequestParam long jobPostId) {
         jobService.deleteJob(userId, jobPostId);

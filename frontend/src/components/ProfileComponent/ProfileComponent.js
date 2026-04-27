@@ -269,7 +269,7 @@ const ProfileComponent = () => {
             ? 'Skill'
             : pendingDelete?.category ?? ''
         }`}
-        message="Are you sure you want to delete this entry? This action cannot be undone."
+        message="Are you sure you want to delete this entry?"
         confirmText="Delete"
         onConfirm={handleConfirmDelete}
         onCancel={() => setPendingDelete(null)}

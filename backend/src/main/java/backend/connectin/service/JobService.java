@@ -13,6 +13,7 @@ import backend.connectin.web.dto.JobPostDTO;
 import backend.connectin.web.mappers.JobMapper;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.ArrayList;
@@ -75,6 +76,15 @@ public class JobService {
         jobApplication.setJobPostId(postId);
         jobApplication.setAppliedAt(Instant.now());
         jobApplicationRepository.save(jobApplication);
+    }
+
+    @Transactional
+    public void unapplyFromJob(long userId, long postId) {
+        userService.findUserOrThrow(userId);
+        if (jobPostRepository.findById(postId).isEmpty()) {
+            throw new RuntimeException("Job post not found");
+        }
+        jobApplicationRepository.deleteByUserIdAndJobPostId(userId, postId);
     }
 
     // returns Posts posted from user

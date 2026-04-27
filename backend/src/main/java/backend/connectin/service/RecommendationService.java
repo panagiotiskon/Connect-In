@@ -131,9 +131,13 @@ public class RecommendationService {
             }
             List<Skill> skills = personalInfo.getSkills();
 
+            List<Long> viewedJobIds = jobViews.stream().map(JobView::getJobId).toList();
+            Map<Long, JobPost> viewedJobMap = jobPostRepository.findAllById(viewedJobIds).stream()
+                    .collect(Collectors.toMap(JobPost::getId, jp -> jp));
+
             for (int jobPostIndex = 0; jobPostIndex < jobPosts.size(); jobPostIndex++) {
                 JobPost job = jobPosts.get(jobPostIndex);
-                int skillMatchScore = calculateSkillMatchForJobs(skills, job, jobViews);
+                int skillMatchScore = calculateSkillMatchForJobs(skills, job, jobViews, viewedJobMap);
                 matrix[userIndex][jobPostIndex] = Math.max(skillMatchScore, 0);
             }
         }
@@ -158,63 +162,58 @@ public class RecommendationService {
 
             List<Long> connectionIds = new ArrayList<>(connectionService.getConnectedUserIds(user.getId()));
             List<Long> postIdsFromReactions = reactionRepository.findPostIdsByUserIds(connectionIds);
-            // find the posts with the postsIds fetched before
-            List<Post> postsFromReactions= postRepository.findPostsByIdIn(postIdsFromReactions);
+            List<Post> postsFromReactions = postRepository.findPostsByIdIn(postIdsFromReactions);
             connectionIds.add(user.getId());
             connectionIds = new ArrayList<>(new HashSet<>(connectionIds));
             List<Reaction> userReactions = reactionRepository.findAllByUserId(user.getId());
             List<PostView> postViews = postViewRepository.findByUserId(user.getId());
+
+            // Fix 4: bulk-fetch all connection reactions once instead of one query per connection
+            List<Long> connectionIdsWithoutSelf = connectionIds.stream()
+                    .filter(id -> !Objects.equals(id, user.getId())).toList();
+            List<Reaction> allConnectionReactions = connectionIdsWithoutSelf.isEmpty()
+                    ? List.of()
+                    : reactionRepository.findAllByUserIdIn(connectionIdsWithoutSelf);
+
+            // Fix 4 (post-view path): bulk-fetch viewed posts once instead of per-id inside stream
+            List<Long> viewedPostIds = postViews.stream().map(PostView::getPostId).toList();
+            Map<Long, Long> viewedPostUserMap = viewedPostIds.isEmpty()
+                    ? Map.of()
+                    : postRepository.findAllById(viewedPostIds).stream()
+                            .collect(Collectors.toMap(Post::getId, Post::getUserId));
+            Map<Long, Integer> postCountByUser = new HashMap<>();
+            viewedPostUserMap.values().forEach(uid ->
+                    postCountByUser.merge(uid, 1, Integer::sum));
+
             int connectionWeight = 10;
             int threshold = 10;
             int likeWeight = 4;
             for (int postIndex = 0; postIndex < posts.size(); postIndex++) {
                 int postScore = 0;
                 Post post = posts.get(postIndex);
-                if(connectionIds.contains(post.getUserId())){   //if the post is user post or connection post add score
-                    postScore+= connectionWeight;
+                if(connectionIds.contains(post.getUserId())){
+                    postScore += connectionWeight;
                     if(!Objects.equals(post.getUserId(), user.getId())){
-                        List<Reaction> reactions = reactionRepository.findAllByUserId(user.getId());
                         Long whoPosted = post.getUserId();
-                        long howManyReactions = reactions.stream().filter(reaction -> reaction.getPost().getUserId().equals(whoPosted)).count();
+                        long howManyReactions = userReactions.stream()
+                                .filter(reaction -> reaction.getPost().getUserId().equals(whoPosted)).count();
                         postScore += (int) howManyReactions;
-                         // depending on how many likes or comments current user has done to this user add score
                     }
                 }
-                else if(postsFromReactions.contains(post)){ //if not connected but connections liked this post
-                    List<Reaction> connectionReactions = new ArrayList<>();
-                    for(var connection : connectionIds){
-                        if(!Objects.equals(connection, user.getId())) {
-                            List<Reaction> reactions = reactionRepository.findAllByUserId(connection);
-                            connectionReactions.addAll(reactions);
-                        }
-                    }
-                    long reactionCount = connectionReactions.stream().filter(reaction -> reaction.getPost().getId().equals(post.getId())).count();  //add score depending on how many likes the current post has from connected users
-                    if(reactionCount>threshold){ //dont get above the threshold because we want connection posts to be above
+                else if(postsFromReactions.contains(post)){
+                    long reactionCount = allConnectionReactions.stream()
+                            .filter(reaction -> reaction.getPost().getId().equals(post.getId())).count();
+                    if(reactionCount > threshold){
                         reactionCount = threshold;
                     }
-                    postScore+= (int) reactionCount;
+                    postScore += (int) reactionCount;
                 }
-                if(!userReactions.isEmpty()) { //if user has like this post add score
+                if(!userReactions.isEmpty()) {
                     if (userReactions.stream().anyMatch(reaction -> reaction.getPost().getId().equals(post.getId()))) {
                         postScore += likeWeight;
                     }
-                }
-                else {
-                    List<Long> viewedPostIds = postViews.stream().map(PostView::getPostId).toList(); //here if no reactions or likes from user then depending on his post views,
-                    Map<Long, Integer> postCountByUser = new HashMap<>();                            //if he liked 3 posts from a user and the post is from that user add 3 to the score of that post
-                    viewedPostIds.stream()
-                            .map(postRepository::findById)
-                            .filter(Optional::isPresent)
-                            .map(Optional::get)
-                            .forEach(viewedPost -> {
-                                long userId = viewedPost.getUserId();
-                                postCountByUser.put(userId, postCountByUser.getOrDefault(userId, 0) + 1);
-                            });
-                    for (Map.Entry<Long, Integer> entry : postCountByUser.entrySet()) {
-                        if(Objects.equals(entry.getKey(), post.getUserId())){
-                            postScore+= entry.getValue();
-                        }
-                    }
+                } else {
+                    postScore += postCountByUser.getOrDefault(post.getUserId(), 0);
                 }
                 matrix[userIndex][postIndex] = Math.max(postScore, 0);
             }
@@ -226,35 +225,35 @@ public class RecommendationService {
 
     }
 
-    private int calculateSkillMatchForJobs(List<Skill> skills, JobPost jobPost, List<JobView> jobViews) {
+    private int calculateSkillMatchForJobs(List<Skill> skills, JobPost jobPost, List<JobView> jobViews, Map<Long, JobPost> viewedJobMap) {
         int totalDistance = 0;
         int skillCount = 0;
 
         for (Skill skill : skills) {
-            int maxLength = Math.max(skill.getSkillTitle().length(), jobPost.getJobTitle().length()); // here calculate the max score we can get from Levenshtein Distance
-            int distance = calculateLevenshteinDistance(skill.getSkillTitle().toLowerCase(), jobPost.getJobTitle().toLowerCase()); // find the distance between skill title and job title
-            distance = maxLength - distance; //from the distance we get lower scores if they are relevant and higher scores if they are not, so we normalize to get high scores for relevant and lower scores for not relevant
+            int maxLength = Math.max(skill.getSkillTitle().length(), jobPost.getJobTitle().length());
+            int distance = calculateLevenshteinDistance(skill.getSkillTitle().toLowerCase(), jobPost.getJobTitle().toLowerCase());
+            distance = maxLength - distance;
             if (distance >= 0) {
                 totalDistance += distance;
                 skillCount++;
             }
         }
-        int skillScore = skillCount > 0 ? totalDistance / skillCount : 0; // the final score based on skills is the middle distance of total distance/number of skills
-        int viewBonus = calculateViewedJobBonus(jobPost, jobViews);
-        return viewBonus+skillScore;
+        int skillScore = skillCount > 0 ? totalDistance / skillCount : 0;
+        int viewBonus = calculateViewedJobBonus(jobPost, jobViews, viewedJobMap);
+        return viewBonus + skillScore;
     }
 
-    private int calculateViewedJobBonus(JobPost currentJob, List<JobView> jobViews) {
+    // Fix 2: accepts pre-fetched viewedJobMap instead of querying DB per view
+    private int calculateViewedJobBonus(JobPost currentJob, List<JobView> jobViews, Map<Long, JobPost> viewedJobMap) {
         double weightedBonus = 0.0;
         double totalWeight = 0.0;
         for (JobView jobView : jobViews) {
-            Optional<JobPost> viewedJobOpt = jobPostRepository.findById(jobView.getJobId()); //we need to know what jobs the user has seen and find their titles
-            if (viewedJobOpt.isPresent()) {                                                  //check current job relevance depending on the jobs that the user has seen
-                JobPost viewedJob = viewedJobOpt.get();
-                int maxLength = Math.max(viewedJob.getJobTitle().length(), currentJob.getJobTitle().length()); //normalize again
+            JobPost viewedJob = viewedJobMap.get(jobView.getJobId());
+            if (viewedJob != null) {
+                int maxLength = Math.max(viewedJob.getJobTitle().length(), currentJob.getJobTitle().length());
                 int titleDistance = calculateLevenshteinDistance(viewedJob.getJobTitle().toLowerCase(), currentJob.getJobTitle().toLowerCase());
-                int viewBonus = maxLength-titleDistance;
-                double weight = 1.0 + Math.log1p(Math.max(0, jobView.getViewCount() - 1)); // dampened weighting: 1 view → 1.0, 5 views → ~2.6, 50 views → ~4.9
+                int viewBonus = maxLength - titleDistance;
+                double weight = 1.0 + Math.log1p(Math.max(0, jobView.getViewCount() - 1));
                 weightedBonus += viewBonus * weight;
                 totalWeight += weight;
             }
@@ -300,64 +299,44 @@ public class RecommendationService {
     private void saveJobRecommendations(List<User> users, List<JobPost> jobPosts, double[][] results, double[][] matrix) {
         for (int userIndex = 0; userIndex < users.size(); userIndex++) {
             User user = users.get(userIndex);
-            if (user.getId() == 1) continue; // Skip admin user
+            if (user.getId() == 1) continue;
 
-            List<Recommendation> recommendations = new ArrayList<>();
+            // Fix 3: delete all existing recommendations for this user in one query
+            jobRecommendationRepository.deleteByUserId(user.getId());
+
+            List<JobRecommendation> toSave = new ArrayList<>();
             for (int jobPostIndex = 0; jobPostIndex < jobPosts.size(); jobPostIndex++) {
                 if (matrix[userIndex][jobPostIndex] != -1) {
-                    recommendations.add(new Recommendation(jobPostIndex, results[userIndex][jobPostIndex]));
+                    JobRecommendation jobRecommendation = new JobRecommendation();
+                    jobRecommendation.setJobId(jobPosts.get(jobPostIndex).getId());
+                    jobRecommendation.setUserId(user.getId());
+                    jobRecommendation.setJobScore(results[userIndex][jobPostIndex]);
+                    toSave.add(jobRecommendation);
                 }
             }
-
-            for (Recommendation recommendation : recommendations) {
-                JobPost job = jobPosts.get(recommendation.getIndex());
-                // Check if the recommendation already exists to avoid duplicates
-                List<JobRecommendation> jobRecommendations = jobRecommendationRepository.findByUserId(user.getId());
-                if (jobRecommendations != null) {
-                    for (var jobRecommendation : jobRecommendations) {
-                        if (jobRecommendation.getJobId() == job.getId()) {
-                            jobRecommendationRepository.delete(jobRecommendation);
-                        }
-                    }
-                }
-                JobRecommendation jobRecommendation = new JobRecommendation();
-                jobRecommendation.setJobId(job.getId());
-                jobRecommendation.setUserId(user.getId());
-                jobRecommendation.setJobScore(recommendation.getScore());
-                jobRecommendationRepository.save(jobRecommendation);
-            }
+            jobRecommendationRepository.saveAll(toSave);
         }
     }
 
     private void savePostRecommendations(List<User> users, List<Post> posts, double[][] results, double[][] matrix) {
         for (int userIndex = 0; userIndex < users.size(); userIndex++) {
             User user = users.get(userIndex);
-            if (user.getId() == 1) continue; // Skip admin user
+            if (user.getId() == 1) continue;
 
-            List<Recommendation> recommendations = new ArrayList<>();
+            // Fix 3: delete all existing recommendations for this user in one query
+            postRecommendationRepository.deleteByUserId(user.getId());
+
+            List<PostRecommendation> toSave = new ArrayList<>();
             for (int postIndex = 0; postIndex < posts.size(); postIndex++) {
                 if (matrix[userIndex][postIndex] != -1) {
-                    recommendations.add(new Recommendation(postIndex, results[userIndex][postIndex]));
+                    PostRecommendation postRecommendation = new PostRecommendation();
+                    postRecommendation.setPostId(posts.get(postIndex).getId());
+                    postRecommendation.setUserId(user.getId());
+                    postRecommendation.setPostScore(results[userIndex][postIndex]);
+                    toSave.add(postRecommendation);
                 }
             }
-
-            for (Recommendation recommendation : recommendations) {
-                Post post = posts.get(recommendation.getIndex());
-                // Check if the recommendation already exists to avoid duplicates
-                List<PostRecommendation> postRecommendations = postRecommendationRepository.findByUserId(user.getId());
-                if (postRecommendations != null) {
-                    for (var postRecommendation : postRecommendations) {
-                        if (postRecommendation.getPostId() == post.getId()) {
-                            postRecommendationRepository.delete(postRecommendation);
-                        }
-                    }
-                }
-                PostRecommendation postRecommendation = new PostRecommendation();
-                postRecommendation.setPostId(post.getId());
-                postRecommendation.setUserId(user.getId());
-                postRecommendation.setPostScore(recommendation.getScore());
-                postRecommendationRepository.save(postRecommendation);
-            }
+            postRecommendationRepository.saveAll(toSave);
         }
     }
 }

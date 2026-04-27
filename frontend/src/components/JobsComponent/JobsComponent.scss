@@ -83,13 +83,21 @@
   min-width: 0;
 }
 
+.jobs-entry-title-row {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0.3rem 0.5rem;
+  margin-bottom: 0.2rem;
+}
+
 .jobs-entry-title {
   font-size: 0.95rem;
   font-weight: 600;
   color: #111;
-  margin-bottom: 0.2rem;
   word-wrap: break-word;
   overflow-wrap: break-word;
+  min-width: 0;
 }
 
 .jobs-entry-subtitle {
@@ -245,14 +253,9 @@
   width: 30px;
   height: 30px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #1a8a9a, #5b4fcf);
-  color: #fff;
-  font-size: 0.75rem;
-  font-weight: 700;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  overflow: hidden;
   flex-shrink: 0;
+  background: #e5e7eb;
 }
 
 .jobs-applicant-name {

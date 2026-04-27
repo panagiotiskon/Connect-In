@@ -38,12 +38,12 @@ const PostCard = ({
     [DELETE_POST]: {
       title: 'Delete Post',
       message:
-        'Are you sure you want to delete this post? This action cannot be undone.',
+        'Are you sure you want to delete this post?',
     },
     [DELETE_COMMENT]: {
       title: 'Delete Comment',
       message:
-        'Are you sure you want to delete this comment? This action cannot be undone.',
+        'Are you sure you want to delete this comment?',
     },
   };
   const requestDeletePost = () => setPendingAction({ type: DELETE_POST });
