@@ -4,10 +4,12 @@ import NavbarComponent from '../common/NavBar';
 import { useAuth } from '../../context/AuthContext';
 import NotificationAPI from '../../api/NotificationAPI';
 import { MDBIcon } from 'mdb-react-ui-kit';
+import Spinner from '../common/Spinner';
 import './NotificationsComponent.scss';
 
 export default function NotificationComponent() {
   const [notifications, setNotifications] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
   const { user: currentUser, decrementNotificationCount } = useAuth();
 
   useEffect(() => {
@@ -18,6 +20,8 @@ export default function NotificationComponent() {
         setNotifications(data);
       } catch (error) {
         console.error('Error fetching notifications:', error);
+      } finally {
+        setIsLoading(false);
       }
     };
     fetchNotifications();
@@ -133,7 +137,11 @@ export default function NotificationComponent() {
             )}
           </div>
           <div className="notifications-card-body">
-            {notifications.length > 0 ? (
+            {isLoading ? (
+              <div className="messaging-list-pane__loader">
+                <Spinner />
+              </div>
+            ) : notifications.length > 0 ? (
               notifications.map((n) => renderNotification(n))
             ) : (
               <p className="notif-empty-state">No new notifications</p>

@@ -6,6 +6,8 @@ import ProfileCard from '../common/ProfileCard';
 import PersonalInfoService from '../../api/UserPersonalInformationAPI';
 import { useAuth } from '../../context/AuthContext';
 import NavbarComponent from '../common/NavBar';
+import ConnectInLogo from '../../assets/ConnectIn.png';
+import '../../routes/ProtectedRoute.scss';
 import './ViewProfileComponent.scss';
 
 const ViewProfileComponent = () => {
@@ -71,7 +73,15 @@ const ViewProfileComponent = () => {
   }, [userId, navigate, isAdmin]);
 
   if (!user) {
-    return <div>Loading...</div>;
+    return (
+      <div className="d-flex flex-column justify-content-center align-items-center protected-route-loader">
+        <img
+          src={ConnectInLogo}
+          alt="ConnectIn Logo"
+          className="pulsing-logo"
+        />
+      </div>
+    );
   }
   return (
     <div>
