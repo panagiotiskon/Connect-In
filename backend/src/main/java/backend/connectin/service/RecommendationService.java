@@ -166,7 +166,7 @@ public class RecommendationService {
                 matrix[userIndex][jobPostIndex] = Math.max(skillMatchScore, 0);
             }
         }
-        MatrixFactorization matrixFactorization = new MatrixFactorization(matrix, 2, 0.0001, 0.02, 6500);
+        MatrixFactorization matrixFactorization = new MatrixFactorization(matrix, 32, 0.0001, 0.02, 6500);
         double[][] results = matrixFactorization.trainAndPredict();
         saveJobRecommendations(users, jobPosts, results, matrix);
     }
@@ -244,7 +244,7 @@ public class RecommendationService {
             }
 
         }
-        MatrixFactorization matrixFactorization = new MatrixFactorization(matrix, 2, 0.0001, 0.02, 6500);
+        MatrixFactorization matrixFactorization = new MatrixFactorization(matrix, 32, 0.0001, 0.02, 6500);
         double[][] results = matrixFactorization.trainAndPredict();
         savePostRecommendations(users, posts, results, matrix);
 
