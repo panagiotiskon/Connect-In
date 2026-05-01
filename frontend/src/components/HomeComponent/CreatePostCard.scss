@@ -55,6 +55,25 @@
   }
 }
 
+.create-post-char-count {
+  margin: 0.3rem 0.5rem 0 auto;
+  font-size: 0.75rem;
+  color: #9ca3af;
+  text-align: right;
+  width: fit-content;
+  margin-left: auto;
+
+  &.near-limit {
+    color: #f59e0b;
+    font-weight: 500;
+  }
+
+  &.at-limit {
+    color: #ef4444;
+    font-weight: 600;
+  }
+}
+
 .create-post-error {
   margin: 0.4rem 0 0 0.5rem;
   font-size: 0.78rem;

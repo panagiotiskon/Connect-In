@@ -38,9 +38,15 @@ const CreatePostCard = ({
             className={`create-post-input${postError ? ' create-post-input--error' : ''}`}
             placeholder="What's on your mind?"
             value={postContent}
+            maxLength={256}
             onChange={(e) => setPostContent(e.target.value)}
           />
         </div>
+        {postContent?.length > 0 && (
+          <p className={`create-post-char-count${postContent.length >= 256 ? ' at-limit' : postContent.length >= 220 ? ' near-limit' : ''}`}>
+            {256 - postContent.length} / 256
+          </p>
+        )}
         {postError && <p className="create-post-error">{postError}</p>}
 
         {/* Media preview */}
