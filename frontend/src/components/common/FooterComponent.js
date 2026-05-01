@@ -4,7 +4,7 @@ const FooterComponent = () => {
   return (
     <footer className="footer">
       <p className="footer-text">
-        &copy; <a href="https://panagiotis-kontoeidis.com/" target="_blank" rel="noreferrer">Panagiotis Kontoeidis</a> &  Stelios Dimitriadis
+        ConnectIn 2026 &copy; All rights reserved
       </p>
     </footer>
   );

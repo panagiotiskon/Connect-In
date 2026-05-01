@@ -52,7 +52,14 @@ const LoginComponent = () => {
 
   return (
     <div className="login-wrapper">
-      <img src={ConnectInLogo} alt="ConnectIn Logo" className="connectInLogo" />
+      <img
+        src={ConnectInLogo}
+        alt="ConnectIn Logo"
+        className="connectInLogo"
+        fetchpriority="high"
+        loading="eager"
+        decoding="async"
+      />
       <div className="form-container">
         <h2 className="form-subheading">
           Welcome to your professional community!

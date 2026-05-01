@@ -70,7 +70,14 @@ const RegisterComponent = () => {
 
   return (
     <div className="register-wrapper">
-      <img src={ConnectInLogo} alt="ConnectIn Logo" className="connectInLogo" />
+      <img
+        src={ConnectInLogo}
+        alt="ConnectIn Logo"
+        className="connectInLogo"
+        fetchpriority="high"
+        loading="eager"
+        decoding="async"
+      />
       <div className="form-container">
         <h2 className="form-subheading">
           Make the most of your professional life

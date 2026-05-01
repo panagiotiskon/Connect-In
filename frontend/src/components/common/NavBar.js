@@ -48,6 +48,9 @@ const NavbarComponent = () => {
             src={ConnectInLogo}
             alt="ConnectIn Logo"
             className="navbar-logo"
+            fetchpriority="high"
+            loading="eager"
+            decoding="async"
             onClick={() => navigate('/home')}
           />
           {openNavSecond ? (
