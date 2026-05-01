@@ -1,10 +1,14 @@
 package backend.connectin.recommendation.algorithm;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 
 public class MatrixFactorization {
+
+    private static final int MIN_ITERATIONS_BEFORE_EARLY_STOP = 5;
+    private static final double EARLY_STOP_REL_THRESHOLD = 0.0001;
 
     private double[][] interactionMatrix;
     private int numUsers;
@@ -16,8 +20,13 @@ public class MatrixFactorization {
     private double[][] userFeatureMatrix;
     private double[][] itemFeatureMatrix;
     private final List<int[]> observedCells;
+    private final Random random;
 
     public MatrixFactorization(double[][] interactionMatrix, int numFeatures, double learningRate, double regularizationFactor, int maxIterations) {
+        this(interactionMatrix, numFeatures, learningRate, regularizationFactor, maxIterations, new Random());
+    }
+
+    public MatrixFactorization(double[][] interactionMatrix, int numFeatures, double learningRate, double regularizationFactor, int maxIterations, Random random) {
         this.interactionMatrix = interactionMatrix;
         this.numUsers = interactionMatrix.length;
         this.numItems = interactionMatrix[0].length;
@@ -25,15 +34,13 @@ public class MatrixFactorization {
         this.learningRate = learningRate;
         this.regularizationFactor = regularizationFactor;
         this.maxIterations = maxIterations;
+        this.random = random;
 
         userFeatureMatrix = new double[numUsers][numFeatures];
         itemFeatureMatrix = new double[numFeatures][numItems];
         initializeMatrix(userFeatureMatrix);
         initializeMatrix(itemFeatureMatrix);
 
-        // Pre-index observed positive interactions so SGD skips the sparse zero
-        // region — unseen cells were previously trained as true 0-ratings, which
-        // is both slow and teaches the model that unseen == disliked.
         observedCells = new ArrayList<>();
         for (int u = 0; u < numUsers; u++) {
             for (int i = 0; i < numItems; i++) {
@@ -47,8 +54,9 @@ public class MatrixFactorization {
     public double[][] trainAndPredict() {
         double prevError = Double.POSITIVE_INFINITY;
         for (int step = 0; step < maxIterations; step++) {
-            double totalError = 0;
+            Collections.shuffle(observedCells, random);
 
+            double totalError = 0;
             for (int[] cell : observedCells) {
                 int user = cell[0];
                 int item = cell[1];
@@ -63,10 +71,9 @@ public class MatrixFactorization {
             }
 
             totalError += calculateRegularization(userFeatureMatrix, itemFeatureMatrix, regularizationFactor);
-            // Stop on relative improvement — the prior absolute threshold (<= 0.001)
-            // was unreachable at any real scale, so all maxIterations always ran.
-            if (prevError != Double.POSITIVE_INFINITY
-                    && Math.abs(prevError - totalError) / prevError < 0.0001) {
+            if (step >= MIN_ITERATIONS_BEFORE_EARLY_STOP
+                    && prevError != Double.POSITIVE_INFINITY
+                    && Math.abs(prevError - totalError) / prevError < EARLY_STOP_REL_THRESHOLD) {
                 break;
             }
             prevError = totalError;

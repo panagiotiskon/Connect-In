@@ -23,4 +23,13 @@ public interface JobViewRepository extends JpaRepository<JobView, Long> {
     @Transactional
     @Query("UPDATE JobView jv SET jv.viewCount = jv.viewCount + 1, jv.viewedAt = :now WHERE jv.userId = :userId AND jv.jobId = :jobId")
     int incrementViewCount(@Param("userId") long userId, @Param("jobId") long jobId, @Param("now") Instant now);
+
+    @Query(value = """
+            SELECT jv.job_id
+            FROM job_view jv
+            GROUP BY jv.job_id
+            ORDER BY SUM(jv.view_count) DESC
+            LIMIT :limit
+            """, nativeQuery = true)
+    List<Long> findPopularJobIds(@Param("limit") int limit);
 }

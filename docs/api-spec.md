@@ -125,7 +125,7 @@ Sessions are stateless; the JWT is extracted from an HTTP-only cookie by `JWTAut
 | Method | Path | Request | Response |
 | --- | --- | --- | --- |
 | `POST` | `/auth/jobs/view-job` | query `userId`, `jobId` | `JobView` |
-| `GET`  | `/auth/jobs/recommend-jobs` | query `userId` | `List<JobPostDTO>` — **triggers `recommendationService.recommendJobs()` synchronously on every call** |
+| `GET`  | `/auth/jobs/recommend-jobs` | query `userId` | `List<JobPostDTO>` — reads precomputed rows from `job_recommendation`; training runs out-of-band on `RecommendationScheduler`'s fixed-delay job (see architecture §4) |
 
 ---
 
@@ -158,7 +158,7 @@ Sessions are stateless; the JWT is extracted from an HTTP-only cookie by `JWTAut
 | Method | Path | Request | Response |
 | --- | --- | --- | --- |
 | `POST` | `/auth/view-post` | query `userId`, `postId` | `PostView` |
-| `GET`  | `/auth/{userId}/recommended-posts` | — | `List<PostResourceDetailed>` — **triggers `recommendationService.recommendPosts()` synchronously on every call** |
+| `GET`  | `/auth/{userId}/recommended-posts` | query `page?` (default 0), `size?` | `List<PostResourceDetailed>` — reads precomputed rows from `post_recommendation`; training runs out-of-band on `RecommendationScheduler`'s fixed-delay job (see architecture §4) |
 
 ---
 

@@ -26,7 +26,6 @@ public class JobRecommendationController {
 
     @GetMapping("/recommend-jobs")
     public List<JobPostDTO> getRecommendedJobs(@RequestParam long userId) {
-        recommendationService.recommendJobs();
         return recommendationService.findRecommendedJobsForUser(userId);
     }
 }

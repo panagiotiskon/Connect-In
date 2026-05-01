@@ -43,4 +43,13 @@ public interface ReactionRepository extends JpaRepository<Reaction, Long> {
             GROUP BY r.post_id
             """, nativeQuery = true)
     List<Object[]> countReactionsByPostIds(@Param("postIds") List<Long> postIds);
+
+    @Query(value = """
+            SELECT r.post_id
+            FROM reactions r
+            WHERE r.post_id IN :postIds
+            GROUP BY r.post_id
+            ORDER BY COUNT(*) DESC
+            """, nativeQuery = true)
+    List<Long> findPostIdsRankedByReactionCount(@Param("postIds") List<Long> postIds);
 }

@@ -30,6 +30,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - `ALLOWED_ORIGINS` — comma-separated CORS origins (default: `http://localhost:3000,https://localhost:3000`)
 - `PORT` — server port (default: 8080)
 
+**Spring properties:**
+
+- `recommendations.refresh.interval-ms` — `RecommendationScheduler` fixed delay between training runs (default: 10800000 = 3 hours)
+- `recommendations.refresh.initial-delay-ms` — delay before the first run after startup (default: 5000)
+
 ## Architecture
 
 Spring Boot 3.2.5 REST API with layered architecture:
@@ -82,6 +87,6 @@ All endpoints are under `/auth/` or `/admin/`:
 
 - **Default admin** is seeded on startup via `DefaultAdminConfig` (admin@example.com / admin123)
 - **File uploads** stored as binary in `files` table (`FileDB` entity), max 2MB
-- **Recommendation engine** uses matrix factorization (`recommendation/algorithm/MatrixFactorization.java`)
+- **Recommendation engine** uses matrix factorization (`recommendation/algorithm/MatrixFactorization.java`); training is run by `recommendation/RecommendationScheduler.java` on a fixed delay (read endpoints serve precomputed rows from `job_recommendation` / `post_recommendation`)
 - **Connections** have status flow: `PENDING` → `ACCEPTED`
 - **Notifications** created for comments, reactions, and connection requests

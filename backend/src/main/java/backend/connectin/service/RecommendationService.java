@@ -9,8 +9,12 @@ import backend.connectin.web.dto.JobPostDTO;
 import backend.connectin.web.mappers.PostMapper;
 import backend.connectin.web.resources.PostResourceDetailed;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionDefinition;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 @Service
@@ -29,8 +33,11 @@ public class RecommendationService {
     private final PostMapper postMapper;
     private final PostViewRepository postViewRepository;
     private final FeedAssembler feedAssembler;
+    private final TransactionTemplate transactionTemplate;
+    private final AtomicBoolean jobsTrainingInFlight = new AtomicBoolean(false);
+    private final AtomicBoolean postsTrainingInFlight = new AtomicBoolean(false);
 
-    public RecommendationService(JobPostRepository jobPostRepository, UserService userService, JobViewRepository jobViewRepository, PersonalInfoRepository personalInfoRepository, JobRecommendationRepository jobRecommendationRepository, JobApplicationRepository jobApplicationRepository, PostService postService, ConnectionService connectionService, ReactionRepository reactionRepository, PostRepository postRepository, PostRecommendationRepository postRecommendationRepository, PostMapper postMapper, PostViewRepository postViewRepository, FeedAssembler feedAssembler) {
+    public RecommendationService(JobPostRepository jobPostRepository, UserService userService, JobViewRepository jobViewRepository, PersonalInfoRepository personalInfoRepository, JobRecommendationRepository jobRecommendationRepository, JobApplicationRepository jobApplicationRepository, PostService postService, ConnectionService connectionService, ReactionRepository reactionRepository, PostRepository postRepository, PostRecommendationRepository postRecommendationRepository, PostMapper postMapper, PostViewRepository postViewRepository, FeedAssembler feedAssembler, PlatformTransactionManager transactionManager) {
         this.jobPostRepository = jobPostRepository;
         this.userService = userService;
         this.jobViewRepository = jobViewRepository;
@@ -45,7 +52,12 @@ public class RecommendationService {
         this.postMapper = postMapper;
         this.postViewRepository = postViewRepository;
         this.feedAssembler = feedAssembler;
+        this.transactionTemplate = new TransactionTemplate(transactionManager);
+        // REQUIRES_NEW so per-user atomicity holds even if a future caller wraps us in their own transaction.
+        this.transactionTemplate.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
     }
+
+    private static final int COLD_START_LIMIT = 20;
 
     public List<JobPostDTO> findRecommendedJobsForUser(long userId) {
         // sorted job IDs by recommendation score, highest first
@@ -55,7 +67,11 @@ public class RecommendationService {
                 .toList();
 
         if (jobIds.isEmpty()) {
-            return List.of();
+            // Cold start: no recommendations yet (new user or zero-signal user) — fall back to globally popular jobs.
+            jobIds = jobViewRepository.findPopularJobIds(COLD_START_LIMIT);
+            if (jobIds.isEmpty()) {
+                return List.of();
+            }
         }
 
         // fetch all job posts in one query, then restore the sorted order via map lookup
@@ -115,8 +131,20 @@ public class RecommendationService {
                 .toList();
 
         Map<Long, Integer> rankByPostId = new HashMap<>();
-        for (int i = 0; i < sortedRecommendations.size(); i++) {
-            rankByPostId.put(sortedRecommendations.get(i).getPostId(), i);
+        if (sortedRecommendations.isEmpty()) {
+            // Cold start: rank the user's available feed by reaction count so they see popular posts instead of nothing.
+            List<Long> popularIds = reactionRepository.findPostIdsRankedByReactionCount(new ArrayList<>(fetchedPostIds));
+            for (int i = 0; i < popularIds.size(); i++) {
+                rankByPostId.put(popularIds.get(i), i);
+            }
+            int nextRank = popularIds.size();
+            for (Long postId : fetchedPostIds) {
+                rankByPostId.putIfAbsent(postId, nextRank++);
+            }
+        } else {
+            for (int i = 0; i < sortedRecommendations.size(); i++) {
+                rankByPostId.put(sortedRecommendations.get(i).getPostId(), i);
+            }
         }
 
         List<Post> orderedPosts = postsThatMustBeFetched.stream()
@@ -133,7 +161,10 @@ public class RecommendationService {
     }
 
     public void recommendJobs() {
-        recommendPosts();
+        if (!jobsTrainingInFlight.compareAndSet(false, true)) {
+            return;
+        }
+        try {
         List<User> users = userService.fetchAll();
         List<JobPost> jobPosts = jobPostRepository.findAll();
 
@@ -142,6 +173,7 @@ public class RecommendationService {
         }
 
         double[][] matrix = new double[users.size()][jobPosts.size()];
+        Set<Integer> usersWithSignal = new HashSet<>();
 
         for (int userIndex = 0; userIndex < users.size(); userIndex++) {
             User user = users.get(userIndex);
@@ -163,21 +195,33 @@ public class RecommendationService {
             for (int jobPostIndex = 0; jobPostIndex < jobPosts.size(); jobPostIndex++) {
                 JobPost job = jobPosts.get(jobPostIndex);
                 int skillMatchScore = calculateSkillMatchForJobs(skills, job, jobViews, viewedJobMap);
-                matrix[userIndex][jobPostIndex] = Math.max(skillMatchScore, 0);
+                int score = Math.max(skillMatchScore, 0);
+                matrix[userIndex][jobPostIndex] = score;
+                if (score > 0) {
+                    usersWithSignal.add(userIndex);
+                }
             }
         }
-        MatrixFactorization matrixFactorization = new MatrixFactorization(matrix, 32, 0.0001, 0.02, 6500);
+        MatrixFactorization matrixFactorization = new MatrixFactorization(matrix, 16, 0.0001, 0.05, 6500);
         double[][] results = matrixFactorization.trainAndPredict();
-        saveJobRecommendations(users, jobPosts, results, matrix);
+        saveJobRecommendations(users, jobPosts, results, usersWithSignal);
+        } finally {
+            jobsTrainingInFlight.set(false);
+        }
     }
 
     public void recommendPosts(){
+        if (!postsTrainingInFlight.compareAndSet(false, true)) {
+            return;
+        }
+        try {
         List<User> users = userService.fetchAll();
         List<Post> posts = postService.fetchAll();
         if (users.isEmpty() || posts.isEmpty()) {
             return;
         }
         double[][] matrix = new double[users.size()][posts.size()];
+        Set<Integer> usersWithSignal = new HashSet<>();
 
         for (int userIndex = 0; userIndex < users.size(); userIndex++) {
             User user = users.get(userIndex);
@@ -240,14 +284,20 @@ public class RecommendationService {
                 } else {
                     postScore += postCountByUser.getOrDefault(post.getUserId(), 0);
                 }
-                matrix[userIndex][postIndex] = Math.max(postScore, 0);
+                int score = Math.max(postScore, 0);
+                matrix[userIndex][postIndex] = score;
+                if (score > 0) {
+                    usersWithSignal.add(userIndex);
+                }
             }
 
         }
-        MatrixFactorization matrixFactorization = new MatrixFactorization(matrix, 32, 0.0001, 0.02, 6500);
+        MatrixFactorization matrixFactorization = new MatrixFactorization(matrix, 16, 0.0001, 0.05, 6500);
         double[][] results = matrixFactorization.trainAndPredict();
-        savePostRecommendations(users, posts, results, matrix);
-
+        savePostRecommendations(users, posts, results, usersWithSignal);
+        } finally {
+            postsTrainingInFlight.set(false);
+        }
     }
 
     private int calculateSkillMatchForJobs(List<Skill> skills, JobPost jobPost, List<JobView> jobViews, Map<Long, JobPost> viewedJobMap) {
@@ -321,47 +371,50 @@ public class RecommendationService {
                 .min().orElse(Integer.MAX_VALUE);
     }
 
-    private void saveJobRecommendations(List<User> users, List<JobPost> jobPosts, double[][] results, double[][] matrix) {
+    private void saveJobRecommendations(List<User> users, List<JobPost> jobPosts, double[][] results, Set<Integer> usersWithSignal) {
         for (int userIndex = 0; userIndex < users.size(); userIndex++) {
             User user = users.get(userIndex);
             if (user.getId() == 1) continue;
+            // Skip zero-signal users — they fall through to the cold-start fallback in findRecommendedJobsForUser.
+            if (!usersWithSignal.contains(userIndex)) continue;
 
-            // Fix 3: delete all existing recommendations for this user in one query
-            jobRecommendationRepository.deleteByUserId(user.getId());
-
+            final int uIdx = userIndex;
             List<JobRecommendation> toSave = new ArrayList<>();
             for (int jobPostIndex = 0; jobPostIndex < jobPosts.size(); jobPostIndex++) {
-                if (matrix[userIndex][jobPostIndex] != -1) {
-                    JobRecommendation jobRecommendation = new JobRecommendation();
-                    jobRecommendation.setJobId(jobPosts.get(jobPostIndex).getId());
-                    jobRecommendation.setUserId(user.getId());
-                    jobRecommendation.setJobScore(results[userIndex][jobPostIndex]);
-                    toSave.add(jobRecommendation);
-                }
+                JobRecommendation jobRecommendation = new JobRecommendation();
+                jobRecommendation.setJobId(jobPosts.get(jobPostIndex).getId());
+                jobRecommendation.setUserId(user.getId());
+                jobRecommendation.setJobScore(results[uIdx][jobPostIndex]);
+                toSave.add(jobRecommendation);
             }
-            jobRecommendationRepository.saveAll(toSave);
+
+            transactionTemplate.executeWithoutResult(status -> {
+                jobRecommendationRepository.deleteByUserId(user.getId());
+                jobRecommendationRepository.saveAll(toSave);
+            });
         }
     }
 
-    private void savePostRecommendations(List<User> users, List<Post> posts, double[][] results, double[][] matrix) {
+    private void savePostRecommendations(List<User> users, List<Post> posts, double[][] results, Set<Integer> usersWithSignal) {
         for (int userIndex = 0; userIndex < users.size(); userIndex++) {
             User user = users.get(userIndex);
             if (user.getId() == 1) continue;
+            if (!usersWithSignal.contains(userIndex)) continue;
 
-            // Fix 3: delete all existing recommendations for this user in one query
-            postRecommendationRepository.deleteByUserId(user.getId());
-
+            final int uIdx = userIndex;
             List<PostRecommendation> toSave = new ArrayList<>();
             for (int postIndex = 0; postIndex < posts.size(); postIndex++) {
-                if (matrix[userIndex][postIndex] != -1) {
-                    PostRecommendation postRecommendation = new PostRecommendation();
-                    postRecommendation.setPostId(posts.get(postIndex).getId());
-                    postRecommendation.setUserId(user.getId());
-                    postRecommendation.setPostScore(results[userIndex][postIndex]);
-                    toSave.add(postRecommendation);
-                }
+                PostRecommendation postRecommendation = new PostRecommendation();
+                postRecommendation.setPostId(posts.get(postIndex).getId());
+                postRecommendation.setUserId(user.getId());
+                postRecommendation.setPostScore(results[uIdx][postIndex]);
+                toSave.add(postRecommendation);
             }
-            postRecommendationRepository.saveAll(toSave);
+
+            transactionTemplate.executeWithoutResult(status -> {
+                postRecommendationRepository.deleteByUserId(user.getId());
+                postRecommendationRepository.saveAll(toSave);
+            });
         }
     }
 }

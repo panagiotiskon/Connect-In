@@ -28,11 +28,6 @@ public class PostRecommendationController {
             @PathVariable Long userId,
             @RequestParam(value = "page", defaultValue = "0") int page,
             @RequestParam(value = "size", required = false) Integer size) {
-        // Only retrain on the first page so paging through results doesn't re-run
-        // the matrix factorization for every "load more" click.
-        if (page <= 0) {
-            recommendationService.recommendPosts();
-        }
         return new ResponseEntity<>(recommendationService.findRecommendedPostsForUser(userId, page, size), HttpStatus.OK);
     }
 }

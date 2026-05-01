@@ -26,12 +26,13 @@ Connect-In is a professional social networking platform designed to facilitate u
 ## 4. Key Subsystems
 
 ### Recommendation Engine
-- **Algorithm:** Matrix Factorization using Stochastic Gradient Descent (SGD).
-- **Execution:** recommendations are recomputed per request. It generates a user-item interaction matrix based on:
+- **Algorithm:** Matrix Factorization using Stochastic Gradient Descent (SGD) with shuffled observed-cell updates and relative-improvement early stopping (after a minimum iteration floor).
+- **Execution:** training runs out of the request path. `RecommendationScheduler` (`@EnableScheduling` on `ConnectInApplication`) fires `recommendPosts()` and `recommendJobs()` in parallel on a fixed delay — default every 3 hours (`recommendations.refresh.interval-ms`, initial delay `recommendations.refresh.initial-delay-ms`). Each method is guarded by an `AtomicBoolean` so overlapping runs are skipped, and the scheduler is single-instance only (gate with a distributed lock before scaling out). Read endpoints (`/auth/jobs/recommend-jobs`, `/auth/{userId}/recommended-posts`) only return precomputed rows.
+- **Inputs:** the user-item interaction matrix is built from:
     - Skill-to-Job Title Levenshtein distance.
     - Connection graph weights.
     - User interaction signals (views, reactions).
-- **Storage:** Results are persisted in `job_recommendation` and `post_recommendation` tables for fast retrieval.
+- **Storage:** Results are persisted in `job_recommendation` and `post_recommendation` tables. Each user's row set is rewritten atomically per user (delete + saveAll inside a `TransactionTemplate`) so readers never observe a partial state.
 
 ### Communication & Real-Time
 - **Mechanism:** Short-polling via `setInterval`.
@@ -47,7 +48,7 @@ Connect-In is a professional social networking platform designed to facilitate u
 
 ## 6. Architectural Constraints & Risks
 - **Scalability:** - N+1 patterns in the feed were mitigated by `FeedAssembler` (batched author/file/reaction fetches); job listing paths still have hotspots.
-    - Matrix Factorization is performed in-memory, limiting the system to a few thousand concurrent users/items.
+    - Matrix Factorization is performed in-memory on a single instance, limiting the system to a few thousand concurrent users/items. The scheduler must be gated by a distributed lock before scaling the backend horizontally.
 - **Persistence:** Storing binary files in MySQL increases DB size and impacts backup/restore performance. Feed responses no longer inline Base64 blobs — images are served with HTTP cache headers via `/auth/files/view/{id}`, shrinking payloads substantially.
 - **User Experience:** Forced logouts occur every hour due to the lack of a JWT refresh token mechanism.
 - **Performance:** Complex filtering and sorting are often handled in Java collections rather than optimized SQL queries.
