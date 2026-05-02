@@ -87,10 +87,17 @@
   overflow: hidden;
   margin-bottom: 0.875rem;
   background: #f3f4f6;
+  max-height: 512px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  .post-media-img {
+    max-width: 100%;
+  }
 
   img {
-    width: 100%;
-    height: auto;
+    max-height: 512px;
     display: block;
   }
 

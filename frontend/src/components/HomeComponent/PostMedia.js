@@ -9,7 +9,11 @@ const PostMedia = ({ file }) => {
   if (file.type.startsWith('image/')) {
     return (
       <div className="post-media">
-        <OptimizedImage src={blobUrl} alt="Post content" />
+        <OptimizedImage
+          src={blobUrl}
+          alt="Post content"
+          className="post-media-img"
+        />
       </div>
     );
   }
