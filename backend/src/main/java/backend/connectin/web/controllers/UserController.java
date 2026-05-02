@@ -21,6 +21,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
@@ -51,6 +52,7 @@ public class UserController {
         this.reactionService = reactionService;
     }
 
+    @PreAuthorize("@userSecurity.isSelf(#userId)")
     @PostMapping("/{userId}/change-password")
     public ResponseEntity<String> changePassword(@PathVariable("userId") long userId,
                                                  @RequestBody UserChangePasswordRequest userChangePasswordRequest,
@@ -66,6 +68,7 @@ public class UserController {
         }
     }
 
+    @PreAuthorize("@userSecurity.isSelf(#userId)")
     @PostMapping("/{userId}/change-email")
     public ResponseEntity<String> changeEmail(@PathVariable("userId") long userId,
                                               @RequestBody UserChangeEmailRequest userChangeEmailRequest,
@@ -88,6 +91,7 @@ public class UserController {
         return new ResponseEntity<>(educationDTOS, HttpStatus.OK);
     }
 
+    @PreAuthorize("@userSecurity.isSelf(#userId)")
     @PostMapping("/{userId}/personal-info/education")
     public ResponseEntity<List<EducationDTO>> addEducation(@PathVariable long userId, @RequestBody EducationDTO educationDTO) {
         Education education = personalInfoMapper.mapToEducation(educationDTO);
@@ -103,6 +107,7 @@ public class UserController {
         return new ResponseEntity<>(experienceDTOS, HttpStatus.OK);
     }
 
+    @PreAuthorize("@userSecurity.isSelf(#userId)")
     @PostMapping("/{userId}/personal-info/experience")
     public ResponseEntity<List<ExperienceDTO>> addExperience(@PathVariable long userId, @RequestBody ExperienceDTO experienceDTO) {
         Experience experience = personalInfoMapper.mapToExperience(experienceDTO);
@@ -117,6 +122,7 @@ public class UserController {
         return ResponseEntity.ok(skills);
     }
 
+    @PreAuthorize("@userSecurity.isSelf(#userId)")
     @PostMapping("/{userId}/personal-info/skills")
     public ResponseEntity<List<SkillDTO>> addSkills(@PathVariable long userId, @RequestBody SkillDTO skillDTO) {
         Skill skill = personalInfoMapper.mapToSkill(skillDTO);
@@ -125,6 +131,7 @@ public class UserController {
         return new ResponseEntity<>(skillDTOS, HttpStatus.OK);
     }
 
+    @PreAuthorize("@userSecurity.isSelf(#userId)")
     @DeleteMapping("/{userId}/personal-info/skills/{skillId}")
     public void deleteSkill(
             @PathVariable long userId,
@@ -132,6 +139,7 @@ public class UserController {
         userService.deleteSkill(userId, skillId);
     }
 
+    @PreAuthorize("@userSecurity.isSelf(#userId)")
     @DeleteMapping("/{userId}/personal-info/experiences/{experienceId}")
     public void deleteExperience(
             @PathVariable long userId,
@@ -139,6 +147,7 @@ public class UserController {
         userService.deleteExperience(userId, experienceId);
     }
 
+    @PreAuthorize("@userSecurity.isSelf(#userId)")
     @DeleteMapping("/{userId}/personal-info/educations/{educationId}")
     public void deleteEducation(
             @PathVariable long userId,
