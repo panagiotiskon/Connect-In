@@ -4,12 +4,21 @@ export const SETTINGS_CARDS = [
     icon: '📧',
     title: 'Email Address',
     desc: 'Update the email address associated with your account.',
+    btnLabel: 'Update',
   },
   {
     type: 'password',
     icon: '🔒',
     title: 'Password',
     desc: 'Change your password to keep your account secure.',
+    btnLabel: 'Update',
+  },
+  {
+    type: 'recommendations-info',
+    icon: '✨',
+    title: 'Top Recommendations',
+    desc: 'Learn how Connect-In personalises your Top posts and jobs using your skills, connections, and activity.',
+    btnLabel: 'Learn More',
   },
 ];
 

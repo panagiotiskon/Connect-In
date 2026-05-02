@@ -6,6 +6,7 @@ import AuthService from '../../api/AuthenticationAPI';
 import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import SettingsModal from './SettingsModal';
+import RecommendationsInfoModal from './RecommendationsInfoModal';
 import { SETTINGS_CARDS } from './settingsConstants';
 import './SettingsComponent.scss';
 
@@ -14,6 +15,7 @@ export default function SettingsComponent() {
   const { user, logout } = useAuth();
 
   const [modalType, setModalType] = useState(null); // 'email' | 'password' | null
+  const [showRecoInfo, setShowRecoInfo] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [showToast, setShowToast] = useState(false);
@@ -63,7 +65,7 @@ export default function SettingsComponent() {
       <NavbarComponent />
       <MDBContainer fluid className="settings-page">
         <MDBRow className="justify-content-center g-3">
-          {SETTINGS_CARDS.map(({ type, icon, title, desc }) => (
+          {SETTINGS_CARDS.map(({ type, icon, title, desc, btnLabel }) => (
             <MDBCol key={type} xs="12" sm="10" md="5" lg="4">
               <div className="settings-card">
                 <div className="settings-card-icon-wrap">
@@ -77,9 +79,13 @@ export default function SettingsComponent() {
                 </div>
                 <button
                   className="settings-card-btn"
-                  onClick={() => setModalType(type)}
+                  onClick={() =>
+                    type === 'recommendations-info'
+                      ? setShowRecoInfo(true)
+                      : setModalType(type)
+                  }
                 >
-                  Update
+                  {btnLabel}
                 </button>
               </div>
             </MDBCol>
@@ -94,6 +100,11 @@ export default function SettingsComponent() {
         onSubmit={handleSubmit}
         loading={loading}
         error={error}
+      />
+
+      <RecommendationsInfoModal
+        show={showRecoInfo}
+        onHide={() => setShowRecoInfo(false)}
       />
 
       <Toast
