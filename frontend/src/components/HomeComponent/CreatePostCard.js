@@ -1,6 +1,12 @@
 import { useRef } from 'react';
 import { MDBCard, MDBCardBody, MDBBtn, MDBIcon } from 'mdb-react-ui-kit';
 import OptimizedImage from '../common/OptimizedImage';
+import {
+  ACCEPTED_UPLOAD_MIME,
+  MAX_UPLOAD_BYTES,
+  MAX_UPLOAD_LABEL,
+  POST_CONTENT_MAX,
+} from '../../utils/uploadConstraints';
 import './CreatePostCard.scss';
 
 const CreatePostCard = ({
@@ -11,15 +17,20 @@ const CreatePostCard = ({
   setUploadedFile,
   onSubmit,
   postError,
+  setPostError,
   submitting = false,
 }) => {
   const fileInputRef = useRef(null);
 
   const handleFileChange = (event) => {
     const file = event.target.files?.[0];
-    if (file) {
-      setUploadedFile({ file, previewUrl: URL.createObjectURL(file), type: file.type });
+    event.target.value = '';
+    if (!file) return;
+    if (file.size > MAX_UPLOAD_BYTES) {
+      setPostError?.(`File exceeds the ${MAX_UPLOAD_LABEL} upload limit.`);
+      return;
     }
+    setUploadedFile({ file, previewUrl: URL.createObjectURL(file), type: file.type });
   };
 
   return (
@@ -38,13 +49,13 @@ const CreatePostCard = ({
             className={`create-post-input${postError ? ' create-post-input--error' : ''}`}
             placeholder="What's on your mind?"
             value={postContent}
-            maxLength={256}
+            maxLength={POST_CONTENT_MAX}
             onChange={(e) => setPostContent(e.target.value)}
           />
         </div>
         {postContent?.length > 0 && (
-          <p className={`create-post-char-count${postContent.length >= 256 ? ' at-limit' : postContent.length >= 220 ? ' near-limit' : ''}`}>
-            {256 - postContent.length} / 256
+          <p className={`create-post-char-count${postContent.length >= POST_CONTENT_MAX ? ' at-limit' : postContent.length >= POST_CONTENT_MAX - 36 ? ' near-limit' : ''}`}>
+            {POST_CONTENT_MAX - postContent.length} / {POST_CONTENT_MAX}
           </p>
         )}
         {postError && <p className="create-post-error">{postError}</p>}
@@ -81,7 +92,7 @@ const CreatePostCard = ({
         <div className="create-post-actions">
           <input
             type="file"
-            accept="image/*,video/*,audio/*"
+            accept={ACCEPTED_UPLOAD_MIME}
             ref={fileInputRef}
             style={{ display: 'none' }}
             onChange={handleFileChange}

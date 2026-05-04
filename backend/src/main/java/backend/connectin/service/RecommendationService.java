@@ -34,6 +34,7 @@ public class RecommendationService {
     private final PostViewRepository postViewRepository;
     private final FeedAssembler feedAssembler;
     private final TransactionTemplate transactionTemplate;
+    private final TransactionTemplate readOnlyTransactionTemplate;
     private final AtomicBoolean jobsTrainingInFlight = new AtomicBoolean(false);
     private final AtomicBoolean postsTrainingInFlight = new AtomicBoolean(false);
 
@@ -55,6 +56,11 @@ public class RecommendationService {
         this.transactionTemplate = new TransactionTemplate(transactionManager);
         // REQUIRES_NEW so per-user atomicity holds even if a future caller wraps us in their own transaction.
         this.transactionTemplate.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
+
+        // Keeps the Hibernate Session open while training, so lazy proxies (e.g. Reaction.getPost()) load.
+        this.readOnlyTransactionTemplate = new TransactionTemplate(transactionManager);
+        this.readOnlyTransactionTemplate.setReadOnly(true);
+        this.readOnlyTransactionTemplate.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
     }
 
     private static final int COLD_START_LIMIT = 20;
@@ -210,11 +216,18 @@ public class RecommendationService {
         }
     }
 
-    public void recommendPosts(){
+    public void recommendPosts() {
         if (!postsTrainingInFlight.compareAndSet(false, true)) {
             return;
         }
         try {
+            readOnlyTransactionTemplate.executeWithoutResult(status -> trainAndSavePostRecommendations());
+        } finally {
+            postsTrainingInFlight.set(false);
+        }
+    }
+
+    private void trainAndSavePostRecommendations() {
         List<User> users = userService.fetchAll();
         List<Post> posts = postService.fetchAll();
         if (users.isEmpty() || posts.isEmpty()) {
@@ -295,9 +308,6 @@ public class RecommendationService {
         MatrixFactorization matrixFactorization = new MatrixFactorization(matrix, 16, 0.0001, 0.05, 6500);
         double[][] results = matrixFactorization.trainAndPredict();
         savePostRecommendations(users, posts, results, usersWithSignal);
-        } finally {
-            postsTrainingInFlight.set(false);
-        }
     }
 
     private int calculateSkillMatchForJobs(List<Skill> skills, JobPost jobPost, List<JobView> jobViews, Map<Long, JobPost> viewedJobMap) {

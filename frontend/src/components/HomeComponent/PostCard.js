@@ -4,6 +4,7 @@ import { MDBCard, MDBCardBody, MDBBtn, MDBIcon } from 'mdb-react-ui-kit';
 import AuthenticatedImage from '../common/AuthenticatedImage';
 import ConfirmActionModal from '../common/ConfirmActionModal';
 import PostMedia from './PostMedia';
+import { COMMENT_CONTENT_MAX } from '../../utils/uploadConstraints';
 import './PostCard.scss';
 
 const PostCard = ({
@@ -128,6 +129,7 @@ const PostCard = ({
             className={`comment-input${commentError ? ' comment-input--error' : ''}`}
             placeholder="Add a comment..."
             value={commentInput}
+            maxLength={COMMENT_CONTENT_MAX}
             onChange={(e) => onCommentInputChange(id, e.target.value)}
           />
           <MDBBtn

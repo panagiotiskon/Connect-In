@@ -86,7 +86,7 @@ All endpoints are under `/auth/` or `/admin/`:
 ## Key Patterns
 
 - **Default admin** is seeded on startup via `DefaultAdminConfig` (admin@example.com / admin123)
-- **File uploads** stored as binary in `files` table (`FileDB` entity), max 2MB
+- **File uploads** stored as binary in `files` table (`FileDB` entity), max 10MB
 - **Recommendation engine** uses matrix factorization (`recommendation/algorithm/MatrixFactorization.java`); training is run by `recommendation/RecommendationScheduler.java` on a fixed delay (read endpoints serve precomputed rows from `job_recommendation` / `post_recommendation`)
 - **Connections** have status flow: `PENDING` → `ACCEPTED`
 - **Notifications** created for comments, reactions, and connection requests

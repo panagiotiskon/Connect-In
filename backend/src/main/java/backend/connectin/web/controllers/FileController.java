@@ -23,33 +23,9 @@ import java.util.*;
 public class FileController {
 
     private final FileService fileService;
-    private final Map<String, FileDB> tempStorage = new HashMap<>();
 
     public FileController(FileService fileService) {
         this.fileService = fileService;
-    }
-
-    @PostMapping("/pre-upload")
-    public ResponseEntity<Map<String, String>> preStageUpload(@RequestParam("file") MultipartFile file) {
-        try {
-            // Generate a unique ID for the temporary file
-            String tempId = UUID.randomUUID().toString();
-
-            // Create a temporary FileDB object (without associating it with a user)
-            FileDB tempFile = new FileDB(null, file.getBytes(), file.getContentType(), file.getOriginalFilename());
-
-            // Store the file in the temporary storage with the generated ID
-            tempStorage.put(tempId, tempFile);
-
-            // Return the temp ID and original file name to the frontend
-            Map<String, String> response = new HashMap<>();
-            response.put("tempId", tempId);
-            response.put("fileName", file.getOriginalFilename());
-
-            return new ResponseEntity<>(response, HttpStatus.OK);
-        } catch (Exception e) {
-            return new ResponseEntity<>(HttpStatus.EXPECTATION_FAILED);
-        }
     }
 
     @PostMapping("/upload")

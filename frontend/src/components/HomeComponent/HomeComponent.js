@@ -16,6 +16,7 @@ import useFeed from '../../hooks/useFeed';
 import useUserInteractions from '../../hooks/useUserInteractions';
 import usePostViewObserver from '../../hooks/usePostViewObserver';
 import useEventCallback from '../../hooks/useEventCallback';
+import { MAX_UPLOAD_LABEL } from '../../utils/uploadConstraints';
 import './HomeComponent.scss';
 
 const HomeComponent = () => {
@@ -89,7 +90,15 @@ const HomeComponent = () => {
       setUploadedFile(null);
     } catch (error) {
       console.error('Error submitting post:', error);
-      setPostError('Failed to create post.');
+      const status = error?.response?.status;
+      const apiMessage = error?.response?.data?.error;
+      if (status === 413) {
+        setPostError(apiMessage || `File exceeds the ${MAX_UPLOAD_LABEL} upload limit.`);
+      } else if (status === 400 && apiMessage) {
+        setPostError(apiMessage);
+      } else {
+        setPostError('Failed to create post.');
+      }
     } finally {
       setSubmittingPost(false);
     }
@@ -172,9 +181,10 @@ const HomeComponent = () => {
         [postId]: (prev[postId] || []).filter((id) => id !== tempId),
       }));
       setCommentInputs((prev) => ({ ...prev, [postId]: content }));
+      const apiMessage = error?.response?.data?.error;
       setCommentErrors((prev) => ({
         ...prev,
-        [postId]: 'Failed to submit comment.',
+        [postId]: error?.response?.status === 400 && apiMessage ? apiMessage : 'Failed to submit comment.',
       }));
     }
   });
@@ -293,6 +303,7 @@ const HomeComponent = () => {
               uploadedFile={uploadedFile}
               setUploadedFile={handleUploadedFileChange}
               postError={postError}
+              setPostError={setPostError}
               onSubmit={handlePostSubmit}
               submitting={submittingPost}
             />

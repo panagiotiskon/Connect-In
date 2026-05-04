@@ -17,11 +17,14 @@ import backend.connectin.web.requests.UserChangeEmailRequest;
 import backend.connectin.web.requests.UserChangePasswordRequest;
 import backend.connectin.web.resources.PostResourceDetailed;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Size;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
@@ -31,6 +34,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/auth")
+@Validated
 public class UserController {
     private final UserService userService;
     private final JWTService jwtService;
@@ -176,7 +180,9 @@ public class UserController {
 
     @PostMapping("/{userId}/create-post")
     public ResponseEntity<PostResourceDetailed> createPost(@PathVariable long userId,
-                                                           @RequestParam("content") String content,
+                                                           @RequestParam("content")
+                                                           @Size(max = 256, message = "Post content cannot exceed 256 characters.")
+                                                           String content,
                                                            @RequestParam(value = "file", required = false) MultipartFile file) {
         PostRequest postRequest;
         if (file != null)
@@ -211,7 +217,7 @@ public class UserController {
     @PostMapping("/{userId}/{postId}/create-comment")
     public ResponseEntity<Long> createComment(@PathVariable long userId,
                                               @PathVariable long postId,
-                                              @RequestBody CommentRequest commentRequest) {
+                                              @Valid @RequestBody CommentRequest commentRequest) {
         return new ResponseEntity<>(commentService.createComment(userId, postId, commentRequest), HttpStatus.OK);
     }
 

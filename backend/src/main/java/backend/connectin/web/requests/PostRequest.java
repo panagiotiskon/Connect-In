@@ -1,9 +1,11 @@
 package backend.connectin.web.requests;
 
+import jakarta.validation.constraints.Size;
 import org.springframework.web.multipart.MultipartFile;
 
 public class PostRequest {
 
+    @Size(max = 256, message = "Post content cannot exceed 256 characters.")
     private String content;
     private MultipartFile file;
 
