@@ -6,7 +6,7 @@ const fetchProfileImage = async (userId) => {
   if (images?.length > 0) {
     return `data:${images[0].type};base64,${images[0].data}`;
   }
-  return '/593.jpg';
+  return '/profile-pic.png';
 };
 
 const useProfileImage = (userId) => {
@@ -20,7 +20,7 @@ const useProfileImage = (userId) => {
     }
   );
 
-  return { profileImage: data ?? '/593.jpg', isLoading };
+  return { profileImage: data ?? '/profile-pic.png', isLoading };
 };
 
 export default useProfileImage;

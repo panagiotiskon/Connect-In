@@ -81,7 +81,7 @@ const PostCard = ({
             src={posterImage}
             className="post-header-avatar"
             alt="Poster Avatar"
-            fallbackSrc="/593.jpg"
+            fallbackSrc="/profile-pic.png"
           />
           <div className="post-header-info">
             <Link to={`/profile/${userId}`} className="post-author">
@@ -158,10 +158,10 @@ const PostCard = ({
               return (
                 <div key={commentId} className="comment-item">
                   <AuthenticatedImage
-                    src={profileImage || '/593.jpg'}
+                    src={profileImage || '/profile-pic.png'}
                     className="comment-item-avatar"
                     alt="Commenter Avatar"
-                    fallbackSrc="/593.jpg"
+                    fallbackSrc="/profile-pic.png"
                   />
                   <div className="comment-bubble">
                     <div className="comment-bubble-header">

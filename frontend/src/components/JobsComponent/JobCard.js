@@ -26,7 +26,7 @@ export const ApplicantRow = ({ applicant, onClick }) => {
         src={profileImage}
         alt={applicant.fullName}
         className="jobs-applicant-avatar"
-        fallbackSrc="/593.jpg"
+        fallbackSrc="/profile-pic.png"
       />
       <span className="jobs-applicant-name">{applicant.fullName}</span>
       {applicant.userId && (

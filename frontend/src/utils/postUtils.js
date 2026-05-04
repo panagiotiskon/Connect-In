@@ -1,4 +1,4 @@
-const FALLBACK_AVATAR = '/593.jpg';
+const FALLBACK_AVATAR = '/profile-pic.png';
 
 export const processPost = (post) => {
   const author = post.author;

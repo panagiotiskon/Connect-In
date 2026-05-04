@@ -211,7 +211,7 @@ const NetworkComponent = () => {
                 id: user.userId,
                 profileImage: user.profilePic
                   ? `data:${user.profileType};base64,${user.profilePic}`
-                  : '/593.jpg',
+                  : '/profile-pic.png',
                 firstName: user.firstName,
                 lastName: user.lastName,
                 job: user.jobTitle,

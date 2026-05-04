@@ -14,7 +14,7 @@ const MessageBubble = ({ message, isSelf }) => {
           src={message.profilePictureUrl || ''}
           alt=""
           className="message-bubble__avatar"
-          fallbackSrc="/593.jpg"
+          fallbackSrc="/profile-pic.png"
         />
       )}
       <div className="message-bubble__content">
