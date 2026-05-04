@@ -1,3 +1,7 @@
 # https://www.robotstxt.org/robotstxt.html
 User-agent: *
-Disallow:
+Allow: /
+Disallow: /settings
+Disallow: /messaging
+
+Sitemap: https://connect-in.app/sitemap.xml

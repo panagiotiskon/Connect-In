@@ -1,17 +1,8 @@
 {
   "short_name": "Connect-In",
-  "name": "Connect-In",
+  "name": "Connect-In | Professional Networking",
+  "description": "Build your professional network, share updates, discover jobs, and stay in touch with your connections on Connect-In.",
   "icons": [
-    {
-      "src": "logo192.png",
-      "sizes": "192x192",
-      "type": "image/png"
-    },
-    {
-      "src": "logo512.png",
-      "sizes": "512x512",
-      "type": "image/png"
-    },
     {
       "src": "logo192.png",
       "type": "image/png",
@@ -21,10 +12,20 @@
       "src": "logo512.png",
       "type": "image/png",
       "sizes": "512x512"
+    },
+    {
+      "src": "connectin-logo.png",
+      "type": "image/png",
+      "sizes": "any",
+      "purpose": "any maskable"
     }
   ],
-  "start_url": ".",
+  "start_url": "/",
+  "scope": "/",
   "display": "standalone",
-  "theme_color": "#000000",
-  "background_color": "#ffffff"
+  "orientation": "portrait",
+  "theme_color": "#35677e",
+  "background_color": "#ffffff",
+  "categories": ["social", "business", "productivity"],
+  "lang": "en-US"
 }
