@@ -11,7 +11,7 @@ const PendingUsersCardComponent = ({
   const { firstName, lastName, profileImage = '', job, companyName } = user;
 
   return (
-    <div className="user-card">
+    <div className="modal-shell user-card">
       <button
         className="user-card__delete-btn"
         onClick={onDeletePending}

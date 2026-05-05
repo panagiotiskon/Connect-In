@@ -211,7 +211,7 @@ const JobsComponent = () => {
             <MDBCol md="8" className="center-column mb-3">
 
               {/* Created by you */}
-              <div className="jobs-section-card">
+              <div className="section-card jobs-section-card">
                 <div className="jobs-section-header">
                   <h2 className="jobs-section-title">Created by you</h2>
                   <button className="jobs-action-btn" onClick={() => setShowCreateModal(true)}>
@@ -273,7 +273,7 @@ const JobsComponent = () => {
               </div>
 
               {/* Applied to */}
-              <div className="jobs-section-card">
+              <div className="section-card jobs-section-card">
                 <div className="jobs-section-header">
                   <h2 className="jobs-section-title">Applied to</h2>
                 </div>
@@ -301,7 +301,7 @@ const JobsComponent = () => {
               <SortingCard sortingMethod={sortingMethod} onSortChange={setSortingMethod} />
 
               {/* Top picks */}
-              <div className="jobs-section-card">
+              <div className="section-card jobs-section-card">
                 <div className="jobs-section-header">
                   <h2 className="jobs-section-title">Top picks for you</h2>
                 </div>

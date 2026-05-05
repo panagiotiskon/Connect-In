@@ -1,7 +1,7 @@
 import { MDBIcon } from 'mdb-react-ui-kit';
 
 const WorkExperienceSection = ({ items, onAdd, onDelete }) => (
-  <div className="profile-section-card">
+  <div className="section-card profile-section-card">
     <div className="profile-section-header">
       <h2 className="profile-section-title">Work Experience</h2>
       <button className="profile-add-btn" onClick={onAdd}>

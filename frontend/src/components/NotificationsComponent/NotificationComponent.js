@@ -129,7 +129,7 @@ export default function NotificationComponent() {
     <div>
       <NavbarComponent />
       <div className="notifications-page">
-        <div className="notifications-card">
+        <div className="section-card notifications-card">
           <div className="notifications-card-header">
             <h2 className="notifications-card-title">Notifications</h2>
             {notifications.length > 0 && (

@@ -1,9 +1,15 @@
-// ── Shared Auth Form Styles ──────────────────────────────────────────────────
-// Used by LoginComponent and RegisterComponent.
-// Profile modal has its own scoped styles in ProfileComponent.scss but uses
-// the same visual tokens (colours, radii, focus ring) for consistency.
+$primary: #35677e;
+$teal: #1a8a9a;
+$purple: #5b4fcf;
+$bg: #f3f2ef;
+$border-light: #e8e8e8;
+$divider: #f0f0f0;
+$text-muted: #666;
+$danger: #dc3545;
+$danger-soft: #ef4444;
 
-// ── Logo ──
+$gradient-primary: linear-gradient(135deg, $teal 0%, $primary 50%, $purple 100%);
+
 .connectInLogo {
   width: 160px;
   max-width: 100%;
@@ -16,7 +22,6 @@
   }
 }
 
-// ── Card container ──
 .form-container {
   background-color: #fff;
   padding: 28px 22px;
@@ -30,9 +35,8 @@
   }
 }
 
-// ── Heading inside the card ──
 .form-subheading {
-  color: #35677e;
+  color: $primary;
   font-size: 20px;
   font-weight: 550;
   text-align: center;
@@ -43,7 +47,6 @@
   }
 }
 
-// ── Input group (scoped to avoid colliding with other Bootstrap controls) ──
 .auth-form {
   .form-label {
     font-weight: 600;
@@ -52,33 +55,32 @@
     margin-bottom: 0.4rem;
   }
 
-  // Required field asterisk
   .required-mark {
-    color: #ef4444;
+    color: $danger-soft;
     margin-left: 3px;
     font-weight: 700;
   }
 
   .form-control {
-    border: 1.5px solid #e8e8e8;
+    border: 1.5px solid $border-light;
     border-radius: 8px;
     padding: 0.65rem 0.9rem;
     font-size: 0.9rem;
     transition: border-color 0.2s, box-shadow 0.2s;
 
     &:focus {
-      border-color: #35677e;
+      border-color: $primary;
       box-shadow: 0 0 0 3px rgba(53, 103, 126, 0.1);
       outline: none;
     }
 
     &.is-invalid {
-      border-color: #dc3545;
+      border-color: $danger;
       background-image: none;   // suppress Bootstrap's warning icon
       padding-right: 0.9rem;    // reset Bootstrap's extra icon padding
 
       &:focus {
-        border-color: #dc3545;
+        border-color: $danger;
         box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.12);
       }
     }
@@ -89,7 +91,6 @@
   }
 }
 
-// ── Shared gradient button ──
 .btn-gradient {
   display: flex;
   align-items: center;
@@ -99,7 +100,7 @@
   width: 100%;
   max-width: 350px;
   height: 45px;
-  background: linear-gradient(135deg, #1a8a9a 0%, #35677e 50%, #5b4fcf 100%);
+  background: $gradient-primary;
   background-size: 200% 200%;
   background-position: left center;
   border: none;
@@ -120,9 +121,8 @@
   }
 }
 
-// ── Bottom link (sign in / join now) ──
 .link {
-  color: #35677e;
+  color: $primary;
   text-decoration: none;
   font-size: 15px;
   margin-left: 4px;
@@ -136,17 +136,16 @@
 .inner-footer-text {
   text-align: center;
   font-size: 15px;
-  color: #666;
+  color: $text-muted;
   margin-top: 20px;
 }
 
-// ── Page footer ──
 .footer {
   position: fixed;
   bottom: 0;
   width: 100%;
   color: #fff;
-  background-color: #35677e;
+  background-color: $primary;
   text-align: center;
   font-size: 10pt;
   overflow: hidden;
@@ -169,4 +168,18 @@
       opacity: 0.9;
     }
   }
+}
+
+.section-card {
+  background: #fff;
+  border: 1px solid $border-light;
+  border-radius: 16px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.modal-shell {
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  background: linear-gradient(160deg, #ffffff 0%, #f0f6fa 100%);
+  overflow: hidden;
 }

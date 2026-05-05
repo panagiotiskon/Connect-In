@@ -10,15 +10,10 @@
 }
 
 .reco-modal {
-  /* reuse the same modal shell styling as ConfirmActionModal */
   .modal-content {
-    border-radius: 20px;
-    border: 1px solid rgba(255, 255, 255, 0.6);
-    background: linear-gradient(160deg, #ffffff 0%, #f0f6fa 100%);
     box-shadow:
       0 8px 32px rgba(53, 103, 126, 0.15),
       0 2px 8px rgba(0, 0, 0, 0.08);
-    overflow: hidden;
   }
 
   /* ── Header ── */

@@ -96,7 +96,7 @@ const ViewProfileComponent = () => {
           <MDBCol md="8">
             <div className="profile-sections">
               {/* Work Experience */}
-              <div className="profile-section-card">
+              <div className="section-card profile-section-card">
                 <div className="profile-section-header">
                   <h2 className="profile-section-title">Work Experience</h2>
                 </div>
@@ -139,7 +139,7 @@ const ViewProfileComponent = () => {
               </div>
 
               {/* Education */}
-              <div className="profile-section-card">
+              <div className="section-card profile-section-card">
                 <div className="profile-section-header">
                   <h2 className="profile-section-title">Education</h2>
                 </div>
@@ -182,7 +182,7 @@ const ViewProfileComponent = () => {
               </div>
 
               {/* Skills */}
-              <div className="profile-section-card">
+              <div className="section-card profile-section-card">
                 <div className="profile-section-header">
                   <h2 className="profile-section-title">Skills</h2>
                 </div>

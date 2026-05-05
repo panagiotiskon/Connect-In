@@ -11,7 +11,7 @@ const ProfileCard = ({ currentUser, isViewOnly = false }) => {
   if (!currentUser) return null;
 
   return (
-    <div className="profile-card">
+    <div className="modal-shell profile-card">
       <div className="profile-card__banner" />
 
       <div className="profile-card__body">

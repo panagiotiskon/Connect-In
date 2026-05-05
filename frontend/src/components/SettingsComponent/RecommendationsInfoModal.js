@@ -29,6 +29,7 @@ const RecommendationsInfoModal = ({ show, onHide }) => (
     centered
     size="lg"
     className="reco-modal-root"
+    contentClassName="modal-shell"
     backdropClassName="reco-modal-backdrop"
   >
     <Modal.Header closeButton className="reco-modal__header">

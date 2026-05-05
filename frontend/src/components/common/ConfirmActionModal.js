@@ -15,7 +15,7 @@ const ConfirmActionModal = ({
   return (
     <MDBModal open={isOpen} onClose={onCancel} tabIndex="-1">
       <div className="modal-dialog modal-dialog-centered">
-        <div className="modal-content confirm-modal">
+        <div className="modal-content modal-shell confirm-modal">
           <div className="modal-header confirm-modal__header">
             <h5 className="modal-title confirm-modal__title">{title}</h5>
             <button

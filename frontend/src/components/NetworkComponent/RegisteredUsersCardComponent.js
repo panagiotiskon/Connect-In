@@ -7,7 +7,7 @@ const RegisteredUsersCardComponent = ({ user, onConnect, onShowProfile, isConnec
   const { firstName, lastName, profileImage = '', job, companyName } = user;
 
   return (
-    <div className="user-card">
+    <div className="modal-shell user-card">
       <div className="user-card__banner" />
 
       <div className="user-card__body">
