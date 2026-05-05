@@ -79,6 +79,33 @@
   z-index: 1101;
 }
 
+.navbar-nav-item i {
+  font-size: 1.4rem;
+  color: gray;
+}
+
+.nav-item-active i {
+  color: black;
+}
+
+.navbar-badge-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
+.navbar-nav-label {
+  font-size: 0.9rem;
+  font-weight: normal;
+}
+
+.nav-item-active .navbar-nav-label {
+  font-weight: bold;
+}
+
+.navbar-toggler-icon {
+  color: #333;
+}
+
 /* ── Notification count badge on bell icon ── */
 .notif-navbar-badge {
   position: absolute;

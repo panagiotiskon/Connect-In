@@ -67,7 +67,7 @@ const NavbarComponent = () => {
               aria-label="Toggle navigation"
               onClick={() => setOpenNavSecond(true)}
             >
-              <MDBIcon fas icon="bars" style={{ color: '#333' }} />
+              <MDBIcon fas icon="bars" className="navbar-toggler-icon" />
             </MDBNavbarToggler>
           )}
           <div className={`nav-menu${openNavSecond ? ' nav-menu--open' : ''}`}>
@@ -75,14 +75,7 @@ const NavbarComponent = () => {
               {navItems.map((item) => {
                 const active = isActivePage(item.path);
                 const iconComponent = (
-                  <MDBIcon
-                    fas
-                    icon={item.icon}
-                    style={{
-                      fontSize: '1.4rem',
-                      color: active ? 'black' : 'gray',
-                    }}
-                  />
+                  <MDBIcon fas icon={item.icon} />
                 );
 
                 return (
@@ -98,12 +91,7 @@ const NavbarComponent = () => {
                       className="d-flex flex-column align-items-center"
                     >
                       {item.hasBadge ? (
-                        <div
-                          style={{
-                            position: 'relative',
-                            display: 'inline-block',
-                          }}
-                        >
+                        <div className="navbar-badge-wrapper">
                           {iconComponent}
                           {notificationCount > 0 && (
                             <span className="notif-navbar-badge">
@@ -115,12 +103,7 @@ const NavbarComponent = () => {
                         iconComponent
                       )}
                       <div>
-                        <span
-                          style={{
-                            fontSize: '0.9rem',
-                            fontWeight: active ? 'bold' : 'normal',
-                          }}
-                        >
+                        <span className="navbar-nav-label">
                           {item.label}
                         </span>
                       </div>

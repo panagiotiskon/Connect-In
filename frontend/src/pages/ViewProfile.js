@@ -6,7 +6,7 @@ const ViewProfile = () => {
   const { userId } = useParams(); // Get userId from URL
 
   return (
-    <div style={{ backgroundColor: "#f3f2ef", minHeight: "100vh" }}>
+    <div className="page-layout">
       <ViewProfileComponent userId={userId} />
     </div>
   );

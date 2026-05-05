@@ -1,3 +1,8 @@
+.page-layout {
+  background-color: #f3f2ef;
+  min-height: 100vh;
+}
+
 *, *::before, *::after {
   box-sizing: border-box;
   font-family: inherit;

@@ -9,6 +9,12 @@ import {
 } from '../../utils/uploadConstraints';
 import './CreatePostCard.scss';
 
+const charCountClass = (length, max) => {
+  if (length >= max) return 'create-post-char-count at-limit';
+  if (length >= max - 36) return 'create-post-char-count near-limit';
+  return 'create-post-char-count';
+};
+
 const CreatePostCard = ({
   profileImage,
   postContent,
@@ -54,7 +60,7 @@ const CreatePostCard = ({
           />
         </div>
         {postContent?.length > 0 && (
-          <p className={`create-post-char-count${postContent.length >= POST_CONTENT_MAX ? ' at-limit' : postContent.length >= POST_CONTENT_MAX - 36 ? ' near-limit' : ''}`}>
+          <p className={charCountClass(postContent.length, POST_CONTENT_MAX)}>
             {POST_CONTENT_MAX - postContent.length} / {POST_CONTENT_MAX}
           </p>
         )}
@@ -94,7 +100,7 @@ const CreatePostCard = ({
             type="file"
             accept={ACCEPTED_UPLOAD_MIME}
             ref={fileInputRef}
-            style={{ display: 'none' }}
+            className="d-none"
             onChange={handleFileChange}
           />
           <button

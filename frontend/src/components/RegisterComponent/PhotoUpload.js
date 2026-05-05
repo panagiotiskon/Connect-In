@@ -3,6 +3,7 @@ import { useDropzone } from "react-dropzone";
 import Popup from "reactjs-popup";
 import { MDBIcon } from "mdb-react-ui-kit";
 import "reactjs-popup/dist/index.css";
+import './PhotoUpload.scss';
 
 const PhotoUpload = ({ onFileUpload }) => {
   const [previewUrl, setPreviewUrl] =
@@ -98,11 +99,7 @@ const PhotoUpload = ({ onFileUpload }) => {
           <img
             src={previewUrl}
             alt="Preview"
-            className="img-thumbnail shadow-sm"
-            style={{
-              maxHeight: "200px",
-              objectFit: "cover",
-            }}
+            className="img-thumbnail shadow-sm photo-preview-img"
           />
         </div>
       )}

@@ -119,12 +119,7 @@ export default function AdminComponent() {
   };
 
   return (
-    <div
-      style={{
-        backgroundColor: '#f3f2ef',
-        minHeight: '100vh',
-      }}
-    >
+    <div className="page-layout">
       <NavBarAdminComponent />
       <MDBContainer fluid className="py-5">
         <div className="center-content">

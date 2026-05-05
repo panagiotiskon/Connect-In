@@ -1,7 +1,3 @@
-import { MDBIcon } from 'mdb-react-ui-kit';
-import OptimizedImage from '../common/OptimizedImage';
-import useProfileImage from '../../hooks/useProfileImage';
-
 export const formatDate = (date) => (date ? new Date(date).toLocaleDateString() : '—');
 
 export const groupApplicationsByJob = (applications) => {
@@ -14,33 +10,6 @@ export const groupApplicationsByJob = (applications) => {
     Object.entries(appMap).map(([id, map]) => [id, Array.from(map.values())])
   );
 };
-
-export const ApplicantRow = ({ applicant, onClick }) => {
-  const { profileImage } = useProfileImage(applicant.userId);
-  return (
-    <div
-      className={`jobs-applicant-row${!applicant.userId ? ' jobs-applicant-row--disabled' : ''}`}
-      onClick={onClick}
-    >
-      <OptimizedImage
-        src={profileImage}
-        alt={applicant.fullName}
-        className="jobs-applicant-avatar"
-        fallbackSrc="/profile-pic.png"
-      />
-      <span className="jobs-applicant-name">{applicant.fullName}</span>
-      {applicant.userId && (
-        <MDBIcon fas icon="arrow-right" className="jobs-applicant-arrow" />
-      )}
-    </div>
-  );
-};
-
-export const DeleteButton = ({ onClick, label }) => (
-  <button className="jobs-entry-delete" onClick={onClick} aria-label={label}>
-    <MDBIcon fas icon="times" />
-  </button>
-);
 
 const JobCard = ({ job, showCreatedBy = false, badge, actions, children, ...props }) => (
   <div className="jobs-entry" {...props}>

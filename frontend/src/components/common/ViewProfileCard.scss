@@ -1,0 +1,56 @@
+.view-profile-card {
+  width: 70%;
+  margin: 2rem;
+  margin-left: 2rem;
+  height: 450px;
+  display: flex;
+}
+
+.view-profile-avatar {
+  width: 150px;
+  height: 150px;
+  object-fit: cover;
+  display: block;
+  align-self: center;
+  margin: 3rem auto;
+}
+
+.view-profile-name {
+  font-weight: bold;
+  font-size: 1.8rem;
+  font-family: 'Segoe UI', sans-serif;
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.view-profile-connections-wrapper {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+.view-profile-connections-toggle {
+  font-weight: bold;
+  font-size: 1rem;
+  font-family: 'Segoe UI', sans-serif;
+  text-align: center;
+  background-color: #35677e !important;
+}
+
+.view-profile-connection-item {
+  font-weight: bold;
+  font-size: 1rem;
+  font-family: 'Segoe UI', sans-serif;
+  cursor: pointer;
+  text-align: start;
+  padding: 1.1rem;
+}
+
+.view-profile-connection-avatar {
+  width: 30px;
+  height: 30px;
+  object-fit: cover;
+  border-radius: 50%;
+  margin-right: 10px;
+  background-color: #35677e;
+}

@@ -10,7 +10,9 @@ import ConfirmActionModal from '../common/ConfirmActionModal';
 import { useAuth } from '../../context/AuthContext';
 import JobAPI from '../../api/JobAPI';
 import { useNavigate } from 'react-router-dom';
-import JobCard, { ApplicantRow, DeleteButton, groupApplicationsByJob } from './JobCard';
+import JobCard, { groupApplicationsByJob } from './JobCard';
+import ApplicantRow from './ApplicantRow';
+import DeleteButton from './DeleteButton';
 import './JobsComponent.scss';
 
 const DELETE_JOB = 'delete-job';
@@ -206,7 +208,7 @@ const JobsComponent = () => {
               <ProfileCard currentUser={currentUser} />
             </MDBCol>
 
-            <MDBCol md="8" className="center-column" style={{ marginBottom: '1rem' }}>
+            <MDBCol md="8" className="center-column mb-3">
 
               {/* Created by you */}
               <div className="jobs-section-card">

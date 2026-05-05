@@ -293,8 +293,7 @@ const HomeComponent = () => {
           </MDBCol>
           <MDBCol
             md="8"
-            className="center-column"
-            style={{ marginBottom: '1rem' }}
+            className="center-column mb-3"
           >
             <CreatePostCard
               profileImage={profileImage}
