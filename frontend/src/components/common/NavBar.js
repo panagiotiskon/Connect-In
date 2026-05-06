@@ -8,7 +8,6 @@ import {
   MDBNavbarLink,
   MDBIcon,
   MDBContainer,
-  MDBNavbarToggler,
 } from 'mdb-react-ui-kit';
 import ConnectInLogo from '../../assets/ConnectIn.png';
 import { useAuth } from '../../context/AuthContext';
@@ -53,23 +52,14 @@ const NavbarComponent = () => {
             decoding="async"
             onClick={() => navigate('/home')}
           />
-          {openNavSecond ? (
-            <button
-              className="mobile-close-btn"
-              onClick={() => setOpenNavSecond(false)}
-              aria-label="Close menu"
-            >
-              <MDBIcon fas icon="times" />
-            </button>
-          ) : (
-            <MDBNavbarToggler
-              aria-expanded={openNavSecond}
-              aria-label="Toggle navigation"
-              onClick={() => setOpenNavSecond(true)}
-            >
-              <MDBIcon fas icon="bars" className="navbar-toggler-icon" />
-            </MDBNavbarToggler>
-          )}
+          <button
+            className="mobile-close-btn"
+            onClick={() => setOpenNavSecond(!openNavSecond)}
+            aria-label={openNavSecond ? 'Close menu' : 'Toggle navigation'}
+            aria-expanded={openNavSecond}
+          >
+            <MDBIcon fas icon={openNavSecond ? 'times' : 'bars'} />
+          </button>
           <div className={`nav-menu${openNavSecond ? ' nav-menu--open' : ''}`}>
             <MDBNavbarNav className="navbar-nav">
               {navItems.map((item) => {

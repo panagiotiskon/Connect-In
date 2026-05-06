@@ -1,3 +1,5 @@
+@use '../../styles/tokens' as *;
+
 /* ── Page Layout ── */
 .profile-page {
   max-width: 1200px;
@@ -21,7 +23,7 @@
   align-items: center;
   justify-content: space-between;
   padding: 1.25rem 1.25rem 1rem;
-  border-bottom: 1px solid #f0f0f0;
+  border-bottom: 1px solid $divider;
 }
 
 .profile-section-title {
@@ -38,7 +40,7 @@
   padding: 0.4rem 1.1rem;
   border-radius: 20px;
   border: none;
-  background: linear-gradient(135deg, #1a8a9a 0%, #35677e 50%, #5b4fcf 100%);
+  background: $gradient-primary;
   background-size: 200% 200%;
   background-position: left center;
   color: #fff;
@@ -64,7 +66,7 @@
   justify-content: space-between;
   gap: 0.75rem;
   padding: 1rem 0;
-  border-bottom: 1px solid #f0f0f0;
+  border-bottom: 1px solid $divider;
 
   &:last-child {
     border-bottom: none;
@@ -110,7 +112,7 @@
   padding: 0.15rem 0.5rem;
   border-radius: 10px;
   background: #f0f6fa;
-  color: #35677e;
+  color: $primary;
 }
 
 .profile-entry-visibility--private {
@@ -140,7 +142,7 @@
 
   &:hover {
     background: #fee2e2;
-    color: #ef4444;
+    color: $danger-soft;
   }
 }
 
@@ -157,7 +159,7 @@
 .profile-modal-btn-cancel {
   padding: 0.45rem 1.1rem;
   border-radius: 20px;
-  border: 1.5px solid #e8e8e8;
+  border: 1.5px solid $border-light;
   background: transparent;
   color: #555;
   font-size: 0.875rem;
@@ -177,7 +179,7 @@
   padding: 0.45rem 1.25rem;
   border-radius: 20px;
   border: none;
-  background: linear-gradient(135deg, #1a8a9a 0%, #35677e 50%, #5b4fcf 100%);
+  background: $gradient-primary;
   background-size: 200% 200%;
   background-position: left center;
   color: #fff;
@@ -204,7 +206,7 @@
 }
 
 .modal-content {
-  border: 1px solid #e8e8e8;
+  border: 1px solid $border-light;
   border-radius: 16px;
   box-shadow: 0 4px 24px rgba(0, 0, 0, 0.12);
   background: #fff;
@@ -213,7 +215,7 @@
 
 .modal-header {
   padding: 1.25rem 1.25rem 1rem;
-  border-bottom: 1px solid #f0f0f0;
+  border-bottom: 1px solid $divider;
   background: linear-gradient(135deg, #ffffff 0%, #f0f6fa 100%);
 
   .modal-title {
@@ -247,7 +249,7 @@
   }
 
   .form-control {
-    border: 1.5px solid #e8e8e8;
+    border: 1.5px solid $border-light;
     border-radius: 8px;
     padding: 0.6rem 0.9rem;
     font-size: 0.9rem;
@@ -256,18 +258,18 @@
       box-shadow 0.2s;
 
     &:focus {
-      border-color: #35677e;
-      box-shadow: 0 0 0 3px rgba(53, 103, 126, 0.1);
+      border-color: $primary;
+      box-shadow: 0 0 0 3px rgba($primary, 0.1);
     }
 
     &.is-invalid {
-      border-color: #dc3545;
-      background-image: none; // suppress Bootstrap's warning icon
-      padding-right: 0.9rem; // reset Bootstrap's extra icon padding
+      border-color: $danger;
+      background-image: none;
+      padding-right: 0.9rem;
 
       &:focus {
-        border-color: #dc3545;
-        box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.12);
+        border-color: $danger;
+        box-shadow: 0 0 0 3px rgba($danger, 0.12);
       }
     }
   }
@@ -277,16 +279,16 @@
   }
 
   .form-check-input {
-    border-color: #e8e8e8;
+    border-color: $border-light;
 
     &:checked {
-      background-color: #35677e;
-      border-color: #35677e;
+      background-color: $primary;
+      border-color: $primary;
     }
 
     &:focus {
-      border-color: #35677e;
-      box-shadow: 0 0 0 3px rgba(53, 103, 126, 0.1);
+      border-color: $primary;
+      box-shadow: 0 0 0 3px rgba($primary, 0.1);
     }
   }
 
@@ -299,7 +301,7 @@
 
 .modal-footer {
   padding: 1rem 1.25rem;
-  border-top: 1px solid #f0f0f0;
+  border-top: 1px solid $divider;
   background: #f9f9f9;
   display: flex;
   gap: 0.75rem;

@@ -1,3 +1,5 @@
+@use '../../styles/tokens' as *;
+
 /* ── Page Container (mirrors home-container) ── */
 .jobs-container {
   max-width: 1200px;
@@ -18,7 +20,7 @@
   align-items: center;
   justify-content: space-between;
   padding: 1.25rem 1.25rem 1rem;
-  border-bottom: 1px solid #f0f0f0;
+  border-bottom: 1px solid $divider;
 }
 
 .jobs-section-title {
@@ -40,7 +42,7 @@
   padding: 0.4rem 1.1rem;
   border-radius: 20px;
   border: none;
-  background: linear-gradient(135deg, #1a8a9a 0%, #35677e 50%, #5b4fcf 100%);
+  background: $gradient-primary;
   background-size: 200% 200%;
   background-position: left center;
   color: #fff;
@@ -66,7 +68,7 @@
   justify-content: space-between;
   gap: 0.75rem;
   padding: 1rem 0;
-  border-bottom: 1px solid #f0f0f0;
+  border-bottom: 1px solid $divider;
 
   &:last-child {
     border-bottom: none;
@@ -141,7 +143,7 @@
 
   &:hover {
     background: #fee2e2;
-    color: #ef4444;
+    color: $danger-soft;
   }
 }
 
@@ -178,7 +180,7 @@
   border-radius: 20px;
   border: 1.5px solid #e0e7ef;
   background: #f8fafc;
-  color: #35677e;
+  color: $primary;
   font-size: 0.8rem;
   font-weight: 600;
   cursor: pointer;
@@ -186,7 +188,7 @@
 
   &:hover {
     background: #eaf2f7;
-    border-color: #35677e;
+    border-color: $primary;
   }
 }
 
@@ -197,7 +199,7 @@
   min-width: 1.35rem;
   height: 1.35rem;
   border-radius: 50%;
-  background: #35677e;
+  background: $primary;
   color: #fff;
   font-size: 0.7rem;
   font-weight: 700;
@@ -211,7 +213,7 @@
 
 .jobs-applicants-panel {
   margin-top: 0.5rem;
-  border: 1px solid #e8e8e8;
+  border: 1px solid $border-light;
   border-radius: 12px;
   overflow: hidden;
   background: #fff;
@@ -231,7 +233,7 @@
   }
 
   & + & {
-    border-top: 1px solid #f0f0f0;
+    border-top: 1px solid $divider;
   }
 
   &:hover {
@@ -276,7 +278,7 @@
 .jobs-modal-btn-cancel {
   padding: 0.45rem 1.1rem;
   border-radius: 20px;
-  border: 1.5px solid #e8e8e8;
+  border: 1.5px solid $border-light;
   background: transparent;
   color: #555;
   font-size: 0.875rem;
@@ -296,7 +298,7 @@
   padding: 0.45rem 1.25rem;
   border-radius: 20px;
   border: none;
-  background: linear-gradient(135deg, #1a8a9a 0%, #35677e 50%, #5b4fcf 100%);
+  background: $gradient-primary;
   background-size: 200% 200%;
   background-position: left center;
   color: #fff;
@@ -320,7 +322,7 @@
   }
 
   .form-control {
-    border: 1.5px solid #e8e8e8;
+    border: 1.5px solid $border-light;
     border-radius: 8px;
     padding: 0.6rem 0.9rem;
     font-size: 0.9rem;
@@ -329,17 +331,17 @@
       box-shadow 0.2s;
 
     &:focus {
-      border-color: #35677e;
-      box-shadow: 0 0 0 3px rgba(53, 103, 126, 0.1);
+      border-color: $primary;
+      box-shadow: 0 0 0 3px rgba($primary, 0.1);
     }
 
     &.is-invalid {
-      border-color: #dc3545;
+      border-color: $danger;
       background-image: none;
       padding-right: 0.9rem;
 
       &:focus {
-        box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.12);
+        box-shadow: 0 0 0 3px rgba($danger, 0.12);
       }
     }
   }

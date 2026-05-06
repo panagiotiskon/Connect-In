@@ -1,3 +1,5 @@
+@use '../../styles/tokens' as *;
+
 /* ── Sticky navbar ── */
 .navbar {
   position: sticky !important;
@@ -102,16 +104,12 @@
   font-weight: bold;
 }
 
-.navbar-toggler-icon {
-  color: #333;
-}
-
 /* ── Notification count badge on bell icon ── */
 .notif-navbar-badge {
   position: absolute;
   top: -6px;
   right: -10px;
-  background: linear-gradient(135deg, #1a8a9a 0%, #35677e 100%);
+  background: linear-gradient(135deg, $teal 0%, $primary 100%);
   color: #fff;
   font-size: 0.7rem;
   font-weight: 700;
@@ -195,6 +193,6 @@
   }
 
   .nav-item-active a {
-    background: #f0f0f0;
+    background: $divider;
   }
 }

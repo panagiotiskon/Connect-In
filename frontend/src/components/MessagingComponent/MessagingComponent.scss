@@ -1,10 +1,6 @@
-/* ──────────────────────────────────────────────────────────────
-   Messaging – mobile-first layout
-   Mobile : list OR thread fills the viewport (app-style)
-   ≥768px : two-column split view (list + thread)
-   ────────────────────────────────────────────────────────────── */
+@use '../../styles/tokens' as *;
 
-/* ── Viewport shell: locks navbar + page to exactly one viewport ── */
+
 .messaging-shell {
   display: flex;
   flex-direction: column;
@@ -19,7 +15,7 @@
 }
 
 .messaging-page {
-  background-color: #f3f2ef;
+  background-color: $bg;
   flex: 1 1 auto;
   min-height: 0;
   overflow: hidden;
@@ -50,7 +46,7 @@
 .messaging-list-pane__header {
   flex: 0 0 auto;
   padding: 0.875rem;
-  border-bottom: 1px solid #f0f0f0;
+  border-bottom: 1px solid $divider;
   background: #fff;
 }
 
@@ -69,7 +65,7 @@
   justify-content: center;
   padding: 2rem 1rem;
   font-size: 1.5rem;
-  color: #1a8a9a;
+  color: $teal;
 }
 
 .messaging-list-pane__empty {
@@ -98,7 +94,7 @@
   }
 
   &:focus-visible {
-    box-shadow: inset 3px 0 0 #1a8a9a;
+    box-shadow: inset 3px 0 0 $teal;
   }
 }
 
@@ -136,7 +132,7 @@
 
 .conversation-item__badge {
   flex: 0 0 auto;
-  background-color: #dc3545;
+  background-color: $danger;
   color: #fff;
   font-size: 0.72rem;
   font-weight: 700;
@@ -234,7 +230,7 @@
   justify-content: center;
   flex: 1 1 auto;
   font-size: 1.5rem;
-  color: #1a8a9a;
+  color: $teal;
 }
 
 /* ── Bubble ── */
@@ -339,9 +335,9 @@
   }
 
   &:focus {
-    border-color: #1a8a9a;
+    border-color: $teal;
     background: #fff;
-    box-shadow: 0 0 0 3px rgba(26, 138, 154, 0.12);
+    box-shadow: 0 0 0 3px rgba($teal, 0.12);
   }
 }
 
@@ -355,7 +351,7 @@
   padding: 0;
   border: none;
   border-radius: 999px;
-  background: linear-gradient(135deg, #1a8a9a 0%, #35677e 50%, #5b4fcf 100%);
+  background: $gradient-primary;
   background-size: 200% 200%;
   background-position: left center;
   color: #fff;
@@ -368,7 +364,7 @@
   &:hover:not(:disabled),
   &:focus-visible:not(:disabled) {
     background-position: right center;
-    box-shadow: 0 4px 14px rgba(26, 138, 154, 0.28);
+    box-shadow: 0 4px 14px rgba($teal, 0.28);
     outline: none;
   }
 
@@ -402,7 +398,6 @@
 @media (min-width: 768px) {
   .messaging-page {
     padding: 1.5rem;
-    /* still fills the shell's remaining space; padding shrinks the card inset */
   }
 
   .messaging-layout {
@@ -413,7 +408,7 @@
     max-height: calc(100vh - 140px);
     border-radius: 16px;
     border: 1px solid #e5e7eb;
-    box-shadow: 0 4px 24px rgba(53, 103, 126, 0.08),
+    box-shadow: 0 4px 24px rgba($primary, 0.08),
       0 1px 4px rgba(0, 0, 0, 0.04);
   }
 

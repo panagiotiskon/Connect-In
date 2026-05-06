@@ -1,9 +1,11 @@
+@use '../../styles/tokens' as *;
+
 .sorting-card {
   display: flex;
   align-items: center;
   gap: 0.5rem;
   background: #fff;
-  border: 1px solid #e8e8e8;
+  border: 1px solid $border-light;
   border-radius: 16px;
   padding: 0.5rem 0.75rem;
   margin-bottom: 1rem;
@@ -33,7 +35,7 @@
   }
 
   &--active {
-    background: linear-gradient(135deg, #1a8a9a 0%, #35677e 50%, #5b4fcf 100%);
+    background: $gradient-primary;
     background-size: 200% 200%;
     background-position: left center;
     color: #fff;

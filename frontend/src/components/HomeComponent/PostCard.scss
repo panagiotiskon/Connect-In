@@ -1,6 +1,8 @@
+@use '../../styles/tokens' as *;
+
 .post-card {
   border-radius: 16px;
-  border: 1px solid #e8e8e8;
+  border: 1px solid $border-light;
   background: #fff;
   margin-top: 1rem;
 }
@@ -43,7 +45,7 @@
   transition: color 0.15s;
 
   &:hover {
-    color: #35677e;
+    color: $primary;
     text-decoration: none;
   }
 }
@@ -67,7 +69,7 @@
 
   &:hover {
     background: #fee2e2;
-    color: #ef4444;
+    color: $danger-soft;
   }
 }
 
@@ -111,7 +113,7 @@
 /* ── Divider ── */
 .post-divider {
   height: 1px;
-  background: #f0f0f0;
+  background: $divider;
   margin: 0.75rem 0;
 }
 
@@ -127,7 +129,7 @@
   gap: 0.4rem;
   padding: 0.4rem 1.1rem;
   border-radius: 20px;
-  border: 1.5px solid #e8e8e8;
+  border: 1.5px solid $border-light;
   background: transparent;
   font-size: 0.875rem;
   font-weight: 500;
@@ -136,8 +138,8 @@
   transition: border-color 0.18s, color 0.18s, background 0.18s;
 
   &:hover {
-    border-color: #35677e;
-    color: #35677e;
+    border-color: $primary;
+    color: $primary;
   }
 
   &.reacted {
@@ -176,7 +178,7 @@
   }
 
   &--error {
-    border-color: #ef4444;
+    border-color: $danger-soft;
     background: #fff5f5;
 
     &:focus {
@@ -188,7 +190,7 @@
 .comment-error {
   margin: 0.3rem 0 0 0.75rem;
   font-size: 0.78rem;
-  color: #ef4444;
+  color: $danger-soft;
   animation: fadeInDown 0.18s ease;
 }
 
@@ -206,7 +208,7 @@
 .comment-submit-btn {
   padding: 0.45rem 1.1rem !important;
   border-radius: 20px !important;
-  background: linear-gradient(135deg, #1a8a9a 0%, #35677e 50%, #5b4fcf 100%) !important;
+  background: $gradient-primary !important;
   background-size: 200% 200% !important;
   background-position: left center !important;
   border: none !important;
@@ -268,7 +270,7 @@
   transition: color 0.15s;
 
   &:hover {
-    color: #35677e;
+    color: $primary;
     text-decoration: none;
   }
 }
@@ -277,7 +279,7 @@
   font-size: 0.65rem;
   font-weight: 600;
   letter-spacing: 0.02em;
-  color: #35677e;
+  color: $primary;
   background: #e3edf2;
   padding: 0.1rem 0.45rem;
   border-radius: 10px;
@@ -316,7 +318,7 @@
   transition: color 0.15s;
 
   &:hover {
-    color: #ef4444;
+    color: $danger-soft;
   }
 }
 

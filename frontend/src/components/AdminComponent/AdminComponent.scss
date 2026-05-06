@@ -1,3 +1,5 @@
+@use '../../styles/tokens' as *;
+
 html, body {
     height: 100%;
     margin: 0;
@@ -34,7 +36,7 @@ html, body {
     &__btn {
         border: none;
         background: none;
-        color: #1a8a9a;
+        color: $teal;
         font-size: 1.1rem;
         cursor: pointer;
         padding: 0.5rem;
@@ -53,7 +55,7 @@ html, body {
 
 .admin-loader {
   font-size: 2rem;
-  color: #1a8a9a;
+  color: $teal;
   margin: 3rem auto;
   display: block;
 }
@@ -91,7 +93,7 @@ html, body {
 }
 
 .btn-custom {
-    background: linear-gradient(135deg, #1a8a9a 0%, #35677e 50%, #5b4fcf 100%) !important;
+    background: $gradient-primary !important;
     background-size: 200% 200% !important;
     background-position: left center !important;
     transition: background-position 0.4s ease !important;
@@ -122,4 +124,3 @@ html, body {
         max-height: none;
     }
 }
-

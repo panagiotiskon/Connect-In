@@ -9,6 +9,7 @@ import Messaging from "../pages/Messaging";
 import Admin from "../pages/Admin";
 import Network from "../pages/Network";
 import Unauthorized from "../pages/Unauthorized";
+import NotFound from "../pages/NotFound";
 import ProtectedRoute from "./ProtectedRoute";
 import Jobs from "../pages/Jobs";
 import ViewProfile from "../pages/ViewProfile";
@@ -25,6 +26,7 @@ function AuthLayout() {
 export const router = createBrowserRouter([
   {
     element: <AuthLayout />,
+    errorElement: <NotFound />,
     children: [
       {
         path: "/",
@@ -82,6 +84,10 @@ export const router = createBrowserRouter([
       {
         path: "/unauthorized",
         element: <Unauthorized />,
+      },
+      {
+        path: "*",
+        element: <NotFound />,
       },
     ],
   },

@@ -23,7 +23,14 @@ const ProfileCard = ({ currentUser, isViewOnly = false }) => {
           />
         </div>
 
-        <p className="profile-card__name" onClick={() => navigate('/profile')}>
+        <p
+          className="profile-card__name"
+          onClick={() =>
+            isViewOnly
+              ? navigate(`/profile/${currentUser.id}`)
+              : navigate('/profile')
+          }
+        >
           {currentUser.firstName} {currentUser.lastName}
         </p>
         <p className="profile-card__email">{currentUser.email}</p>

@@ -1,3 +1,5 @@
+@use '../../styles/tokens' as *;
+
 /* ── Page Layout ── */
 .notifications-page {
   max-width: 700px;
@@ -15,7 +17,7 @@
   align-items: center;
   justify-content: space-between;
   padding: 1.25rem 1.25rem 1rem;
-  border-bottom: 1px solid #f0f0f0;
+  border-bottom: 1px solid $divider;
 }
 
 .notifications-card-title {
@@ -34,7 +36,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #1a8a9a 0%, #35677e 100%);
+  background: linear-gradient(135deg, $teal 0%, $primary 100%);
   color: #fff;
   font-size: 0.75rem;
   font-weight: 700;
@@ -51,7 +53,7 @@
   justify-content: space-between;
   gap: 0.75rem;
   padding: 1rem 0;
-  border-bottom: 1px solid #f0f0f0;
+  border-bottom: 1px solid $divider;
 
   &:last-child {
     border-bottom: none;
@@ -79,17 +81,17 @@
 
   &--connection {
     background: #e8f4f8;
-    color: #35677e;
+    color: $primary;
   }
 
   &--reaction {
     background: #eeebfa;
-    color: #5b4fcf;
+    color: $purple;
   }
 
   &--comment {
     background: #e6f7f8;
-    color: #1a8a9a;
+    color: $teal;
   }
 }
 
@@ -108,7 +110,7 @@
 
   &:hover {
     text-decoration: underline;
-    color: #35677e;
+    color: $primary;
   }
 }
 
@@ -135,20 +137,20 @@
 
   &--accept {
     background: #e8f4f8;
-    color: #35677e;
+    color: $primary;
 
     &:hover {
-      background: #35677e;
+      background: $primary;
       color: #fff;
     }
   }
 
   &--decline {
     background: #fef2f2;
-    color: #ef4444;
+    color: $danger-soft;
 
     &:hover {
-      background: #ef4444;
+      background: $danger-soft;
       color: #fff;
     }
   }
@@ -159,7 +161,7 @@
 
     &:hover {
       background: #fee2e2;
-      color: #ef4444;
+      color: $danger-soft;
     }
   }
 }

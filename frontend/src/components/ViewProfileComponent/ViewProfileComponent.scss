@@ -1,3 +1,5 @@
+@use '../../styles/tokens' as *;
+
 /* ── Page Layout ── */
 .profile-page {
   max-width: 1200px;
@@ -20,7 +22,7 @@
   align-items: center;
   justify-content: space-between;
   padding: 1.25rem 1.25rem 1rem;
-  border-bottom: 1px solid #f0f0f0;
+  border-bottom: 1px solid $divider;
 }
 
 .profile-section-title {
@@ -42,7 +44,7 @@
   justify-content: space-between;
   gap: 0.75rem;
   padding: 1rem 0;
-  border-bottom: 1px solid #f0f0f0;
+  border-bottom: 1px solid $divider;
 
   &:last-child {
     border-bottom: none;
@@ -88,7 +90,7 @@
   padding: 0.15rem 0.5rem;
   border-radius: 10px;
   background: #f0f6fa;
-  color: #35677e;
+  color: $primary;
 }
 
 .profile-entry-visibility--private {

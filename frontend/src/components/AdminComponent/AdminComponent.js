@@ -6,7 +6,6 @@ import { MDBContainer, MDBBtn, MDBIcon } from 'mdb-react-ui-kit';
 import AdminUserCard from './AdminUserCard';
 import Spinner from '../common/Spinner';
 import SearchInput from '../common/SearchInput';
-import { convertToXML } from './xmlConverter';
 
 import './AdminComponent.scss';
 
@@ -85,7 +84,7 @@ export default function AdminComponent() {
       const content =
         format === 'json'
           ? JSON.stringify(userDetails, null, 2)
-          : convertToXML(userDetails);
+          : await import('./xmlConverter').then((m) => m.convertToXML(userDetails));
 
       downloadFile(fileName, content, mimeType);
     } catch (error) {

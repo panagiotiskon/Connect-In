@@ -1,3 +1,5 @@
+@use '../../styles/tokens' as *;
+
 .network-container {
   max-width: 1200px;
   margin: 0 auto;
@@ -27,13 +29,21 @@
   width: 100%;
   max-width: 280px;
   margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+
+  .user-card {
+    flex: 1;
+    height: 100%;
+  }
 }
 
 .no-users-found {
   grid-column: 1 / -1;
   text-align: center;
   padding: 3rem 1rem;
-  color: #666;
+  color: $text-muted;
   font-size: 1.1rem;
 }
 

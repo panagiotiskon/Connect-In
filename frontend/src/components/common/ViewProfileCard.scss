@@ -1,3 +1,5 @@
+@use '../../styles/tokens' as *;
+
 .view-profile-card {
   width: 70%;
   margin: 2rem;
@@ -34,7 +36,7 @@
   font-size: 1rem;
   font-family: 'Segoe UI', sans-serif;
   text-align: center;
-  background-color: #35677e !important;
+  background-color: $primary !important;
 }
 
 .view-profile-connection-item {
@@ -52,5 +54,5 @@
   object-fit: cover;
   border-radius: 50%;
   margin-right: 10px;
-  background-color: #35677e;
+  background-color: $primary;
 }

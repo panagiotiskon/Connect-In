@@ -1,3 +1,5 @@
+@use '../../styles/tokens' as *;
+
 // Mobile-first: baseline rules target the smallest viewport,
 // then enhance upwards at the Bootstrap `sm` breakpoint (≥576 px).
 .register-wrapper {
@@ -61,7 +63,7 @@
   margin-bottom: 0;
 
   &.photo-btn-add {
-    background: linear-gradient(135deg, #1a8a9a 0%, #35677e 50%, #5b4fcf 100%);
+    background: $gradient-primary;
     background-size: 200% 200%;
     background-position: left center;
     color: #fff;
@@ -73,11 +75,11 @@
 
   &.photo-btn-remove {
     background: transparent;
-    border: 1.5px solid #dc3545;
-    color: #dc3545;
+    border: 1.5px solid $danger;
+    color: $danger;
 
     &:hover:not(:disabled) {
-      background-color: #dc3545;
+      background-color: $danger;
       color: #fff;
     }
 

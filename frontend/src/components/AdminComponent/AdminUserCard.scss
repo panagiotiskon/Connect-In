@@ -1,3 +1,5 @@
+@use '../../styles/tokens' as *;
+
 .admin-user-card {
   background-color: #fff;
   border-radius: 12px;
@@ -13,7 +15,7 @@
 
   &__banner {
     height: 75px;
-    background: linear-gradient(135deg, #35677e 0%, #1e4052 100%);
+    background: linear-gradient(135deg, $primary 0%, #1e4052 100%);
   }
 
   &__body {
@@ -52,13 +54,13 @@
     &:hover {
       text-decoration: underline;
       transition: all 0.2s ease;
-      color: #35677e;
+      color: $primary;
     }
   }
 
   &__email {
     font-size: 0.9rem;
-    color: #666;
+    color: $text-muted;
     margin: 0 0 1rem 0;
     word-break: break-all;
   }
@@ -84,8 +86,8 @@
 
   &__cta {
     background-color: transparent;
-    border: 1px solid #35677e;
-    color: #35677e;
+    border: 1px solid $primary;
+    color: $primary;
     padding: 0.4rem 1rem;
     border-radius: 20px;
     font-weight: 600;
@@ -95,7 +97,7 @@
 
     &:hover {
       background-color: #f0f4f7;
-      box-shadow: inset 0 0 0 1px #35677e;
+      box-shadow: inset 0 0 0 1px $primary;
     }
   }
 }

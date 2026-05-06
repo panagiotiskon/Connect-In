@@ -1,3 +1,5 @@
+@use '../../styles/tokens' as *;
+
 /* ── Page Layout ── */
 .settings-page {
   max-width: 1200px;
@@ -5,7 +7,7 @@
   padding: 1.5rem 1rem;
 
   @media (min-width: 768px) {
-    min-height: calc(60dvh - 56px); // 56px = Bootstrap navbar height
+    min-height: calc(60dvh - 56px);
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -23,7 +25,7 @@
 /* ── Setting Card ── */
 .settings-card {
   background: #fff;
-  border: 1px solid #e8e8e8;
+  border: 1px solid $border-light;
   border-radius: 16px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
   padding: 1.5rem 1.25rem;
@@ -73,7 +75,7 @@
   padding: 0.4rem 1.2rem;
   border-radius: 20px;
   border: none;
-  background: linear-gradient(135deg, #1a8a9a 0%, #35677e 50%, #5b4fcf 100%);
+  background: $gradient-primary;
   background-size: 200% 200%;
   background-position: left center;
   color: #fff;
